@@ -1,0 +1,41 @@
+{
+  "stage": "optimizer_step_complete",
+  "questions": [
+    "financebench_id_01226",
+    "financebench_id_03029"
+  ],
+  "records": 4,
+  "valid_action_sequences": 4,
+  "group_stats": {
+    "financebench_id_01226": {
+      "rewards": [
+        0.8333333333333333,
+        0.9230769230769231
+      ],
+      "mean": 0.8782051282051282,
+      "std": 0.044871794871794934
+    },
+    "financebench_id_03029": {
+      "rewards": [
+        0.8,
+        0.75
+      ],
+      "mean": 0.775,
+      "std": 0.025000000000000022
+    }
+  },
+  "mean_reward": 0.826602564102564,
+  "mean_answer_reward": 1.0,
+  "mean_evidence_reward": 0.6532051282051282,
+  "loss_sum": 0.103515625,
+  "action_tokens": 2053,
+  "grad_norm": 3.888361692428589,
+  "trainable_checksum_before": 128543.01861572266,
+  "trainable_checksum_after": 128567.70458987728,
+  "parameter_delta_l1": 24.685974154621363,
+  "learning_rate": 1e-06,
+  "lora_rank": 32,
+  "max_seq_length": 16384,
+  "elapsed_s": 89.66417980194092,
+  "adapter": "/workspace/results/financebench_grpo_trial_qwen35_4b_r32_16k/adapter-step-1"
+}

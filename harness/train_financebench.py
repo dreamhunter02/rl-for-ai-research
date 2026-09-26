@@ -1,0 +1,115 @@
+"""Train the structured FinanceBench agent on Tinker.
+
+Default model is the post-trained Qwen3.5-9B, deliberately not the Base model.
+All experiment knobs are environment variables so each run is reproducible from
+its logged manifest.
+"""
+import asyncio
+import json
+import os
+import sys
+from datetime import datetime
+
+sys.path.insert(0, os.path.dirname(__file__))
+from tinker_cookbook import cli_utils
+from tinker_cookbook.rl import train
+import finance_env
+
+BASE_MODEL = os.environ.get("MODEL", "Qwen/Qwen3.5-9B")
+
+
+def load_tinker_key() -> str:
+    path = os.path.expanduser("~/.config/tinker/key")
+    value = open(path).read().strip()
+    if "=" in value:
+        value = value.split("=", 1)[1].strip()
+    if value.startswith("tinker-"):
+        value = "tml-" + value[len("tinker-"):]
+    return value
+
+
+def tinker_evaluator_builder(split_name: str = "eval"):
+    """Tinker RL test-set evaluator on a named split (held-out eval for ablation)."""
+    from tinker_cookbook.rl.metric_util import RLTestSetEvaluator
+    from tinker_cookbook.rl.train import _sanitize_filename_component
+
+    def builder():
+        return RLTestSetEvaluator(
+            testset_builder=finance_env.FinanceDatasetBuilder(
+                model_name_for_tokenizer=BASE_MODEL,
+                batch_size=1,
+                group_size=1,
+                renderer_name=os.environ.get("RENDERER", "qwen3_5"),
+                max_turns=6,
+                split_name=split_name,
+                seed=0,
+            ),
+            name="financebench_" + _sanitize_filename_component(split_name),
+        )
+
+    return builder
+
+
+async def main():
+    steps = int(os.environ.get("STEPS", "50"))
+    batch = int(os.environ.get("BATCH", "4"))
+    group = int(os.environ.get("GROUP", "8"))
+    lr = float(os.environ.get("LR", "2e-5"))
+    max_turns = int(os.environ.get("MAX_TURNS", "6"))
+    split_name = os.environ.get("SPLIT_NAME", "train")
+    renderer = os.environ.get("RENDERER", "qwen3_5")
+    seed = int(os.environ.get("SEED", "0"))
+    run_name = os.environ.get("RUN_NAME", f"finbench_structured_{BASE_MODEL.lower().replace('/', '-')}_bs{batch}_gs{group}_lr{lr}_{datetime.now():%Y%m%d-%H%M%S}")
+    log_path = os.environ.get("LOG_PATH", f"/tmp/tinker-examples/rl_finance/{run_name}")
+    cli_utils.check_log_dir(log_path, behavior_if_exists="overwrite")
+
+    builder = finance_env.FinanceDatasetBuilder(
+        model_name_for_tokenizer=BASE_MODEL,
+        batch_size=batch,
+        group_size=group,
+        renderer_name=renderer,
+        max_turns=max_turns,
+        format_coef=0.1,
+        seed=seed,
+        split_name=split_name,
+    )
+    manifest = {
+        "model": BASE_MODEL,
+        "renderer": renderer,
+        "split": split_name,
+        "steps": steps,
+        "batch": batch,
+        "group": group,
+        "learning_rate": lr,
+        "max_turns": max_turns,
+        "seed": seed,
+        "harness": "structured_sparse_agent_v1",
+        "timestamp": datetime.now().isoformat(),
+    }
+    os.makedirs(log_path, exist_ok=True)
+    with open(os.path.join(log_path, "experiment_manifest.json"), "w") as f:
+        json.dump(manifest, f, indent=2)
+
+    config = train.Config(
+        model_name=BASE_MODEL,
+        recipe_name="recipe_financebench_structured",
+        renderer_name=renderer,
+        log_path=log_path,
+        dataset_builder=builder,
+        learning_rate=lr,
+        max_tokens=1024,
+        lora_rank=32,
+        max_steps=steps,
+        eval_every=int(os.environ.get("EVAL_EVERY", "0")),
+        save_every=int(os.environ.get("SAVE_EVERY", "0")),
+        evaluator_builders=[tinker_evaluator_builder("eval")] if int(os.environ.get("EVAL_EVERY", "0")) > 0 else [],
+        rollout_json_export=True,
+        enable_trace=True,
+        num_groups_to_log=4,
+    )
+    await train.main(config)
+
+
+if __name__ == "__main__":
+    os.environ.setdefault("TINKER_API_KEY", load_tinker_key())
+    asyncio.run(main())

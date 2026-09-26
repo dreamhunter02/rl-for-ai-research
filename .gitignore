@@ -1,0 +1,28 @@
+# Local corpus, caches, model outputs, and secrets
+filings/
+text/
+artifacts/
+
+# Large or non-source experiment logs
+results/tinker_runs/
+results/local_eval/financebench_grpo_trial_qwen35_4b_r32_16k/adapter-step-1/
+
+# Python/build/runtime files
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+
+# Local configuration and credentials
+.env
+.env.*
+*.pem
+*.key
+*.secret
+credentials.json
+client_secret*.json
+*_token.json
+
+# Temporary outputs
+*.tmp
+*.bak
