@@ -1,0 +1,228 @@
+[
+  {
+    "backend": "openai",
+    "model": "gpt-5.6-terra",
+    "answer_text": "Adobe’s **total current liabilities** were **$3.527 billion** as of December 1, 2017.\n\n\\[\n\\text{Deferred revenue} \\div \\text{Total current liabilities}\n= \\frac{2{,}405.950}{3{,}527.457}\n= 68.2\\%\n\\]\n\nSo, **deferred revenue accounted for approximately 68.2% of Adobe’s total current liabilities**.",
+    "tool_calls": [
+      {
+        "turn": 0,
+        "name": "bm25_search",
+        "arguments": {
+          "query_list": [
+            "Adobe 2017 Form 10-K cash flows total current liabilities operating cash flow"
+          ],
+          "company": "Adobe",
+          "year": 2017,
+          "filing_type": "10-K",
+          "document_id": "",
+          "scope": "both",
+          "top_k": 5
+        },
+        "latency_s": 0.0
+      },
+      {
+        "turn": 1,
+        "name": "read",
+        "arguments": {
+          "document_id": "ADOBE_2017_10K",
+          "page": 57,
+          "start": 0,
+          "end": 4000,
+          "passage_id": ""
+        },
+        "latency_s": 0.0
+      }
+    ],
+    "messages": [
+      {
+        "role": "assistant",
+        "content": "Adobe’s **total current liabilities** were **$3.527 billion** as of December 1, 2017.\n\n\\[\n\\text{Deferred revenue} \\div \\text{Total current liabilities}\n= \\frac{2{,}405.950}{3{,}527.457}\n= 68.2\\%\n\\]\n\nSo, **deferred revenue accounted for approximately 68.2% of Adobe’s total current liabilities**.",
+        "tool_calls": [
+          {
+            "turn": 0,
+            "name": "bm25_search",
+            "arguments": {
+              "query_list": [
+                "Adobe 2017 Form 10-K cash flows total current liabilities operating cash flow"
+              ],
+              "company": "Adobe",
+              "year": 2017,
+              "filing_type": "10-K",
+              "document_id": "",
+              "scope": "both",
+              "top_k": 5
+            },
+            "latency_s": 0.0
+          },
+          {
+            "turn": 1,
+            "name": "read",
+            "arguments": {
+              "document_id": "ADOBE_2017_10K",
+              "page": 57,
+              "start": 0,
+              "end": 4000,
+              "passage_id": ""
+            },
+            "latency_s": 0.0
+          }
+        ]
+      }
+    ],
+    "openai_response_id": "resp_00bbbcf0363dc2ac016ab55262d52887d080b58c062d6526ad",
+    "financebench_id": "financebench_id_03856",
+    "question": "What is the FY2017 operating cash flow ratio for Adobe? Operating cash flow ratio is defined as: cash from operations / total current liabilities. Round your answer to two decimal places. Please utilize information provided primarily within the balance sheet and the cash flow statement.",
+    "gold": "0.83",
+    "reward": 0.0
+  },
+  {
+    "backend": "openai",
+    "model": "gpt-5.6-terra",
+    "answer_text": "Net income as a percentage of net sales was **1.7%** in the third quarter of fiscal year 2022.",
+    "tool_calls": [
+      {
+        "turn": 0,
+        "name": "bm25_search",
+        "arguments": {
+          "query_list": [
+            "Amazon 2019 income statement net income attributable shareholders"
+          ],
+          "company": "Amazon",
+          "year": 2019,
+          "filing_type": "10-K",
+          "document_id": "",
+          "scope": "both",
+          "top_k": 5
+        },
+        "latency_s": 0.0
+      },
+      {
+        "turn": 1,
+        "name": "search_tables",
+        "arguments": {
+          "query_list": [
+            "consolidated statements of operations net income 2019 2018 2017"
+          ],
+          "document_id": "AMAZON_2019_10K",
+          "company": "Amazon",
+          "year": 2019,
+          "top_k": 10
+        },
+        "latency_s": 0.0
+      },
+      {
+        "turn": 2,
+        "name": "calculate",
+        "arguments": {
+          "expression": "3033/177866*100"
+        },
+        "latency_s": 0.0
+      }
+    ],
+    "messages": [
+      {
+        "role": "assistant",
+        "content": "Net income as a percentage of net sales was **1.7%** in the third quarter of fiscal year 2022.",
+        "tool_calls": [
+          {
+            "turn": 0,
+            "name": "bm25_search",
+            "arguments": {
+              "query_list": [
+                "Amazon 2019 income statement net income attributable shareholders"
+              ],
+              "company": "Amazon",
+              "year": 2019,
+              "filing_type": "10-K",
+              "document_id": "",
+              "scope": "both",
+              "top_k": 5
+            },
+            "latency_s": 0.0
+          },
+          {
+            "turn": 1,
+            "name": "search_tables",
+            "arguments": {
+              "query_list": [
+                "consolidated statements of operations net income 2019 2018 2017"
+              ],
+              "document_id": "AMAZON_2019_10K",
+              "company": "Amazon",
+              "year": 2019,
+              "top_k": 10
+            },
+            "latency_s": 0.0
+          },
+          {
+            "turn": 2,
+            "name": "calculate",
+            "arguments": {
+              "expression": "3033/177866*100"
+            },
+            "latency_s": 0.0
+          }
+        ]
+      }
+    ],
+    "openai_response_id": "resp_08e451ab80f22f87016ab5526c402487d08c20b23e4a94a75f",
+    "financebench_id": "financebench_id_08286",
+    "question": "By drawing conclusions from the information stated only in the income statement, what is Amazon's FY2019 net income attributable to shareholders (in USD millions)?",
+    "gold": "$11588.00",
+    "reward": 0.0
+  },
+  {
+    "backend": "openai",
+    "model": "gpt-5.6-terra",
+    "answer_text": "Amcor’s July 1, 2022 Form 8-K reported an **issuer substitution for certain senior notes**:\n\n- On **June 30, 2022**, **Amcor Flexibles North America, Inc.** replaced **Amcor Finance (USA), Inc.** as issuer and assumed the former issuer’s covenants under the applicable indentures.\n- This was implemented through:\n  - a **Second Supplemental Indenture** covering the 2016 Indenture, including **3.625% Guaranteed Senior Notes due 2026** and **4.500% Guaranteed Senior Notes due 2028**; and\n  - a **First Supplemental Indenture** covering the 2019 Indenture and the related exchanged notes.\n- **Deutsche Bank Trust Company Americas** served as trustee.\n\nIn short, the filing concerned a legal/structural transfer of note-issuer obligations within Amcor’s wholly owned subsidiaries—not a new financing or change in the stated notes’ terms.",
+    "tool_calls": [
+      {
+        "turn": 0,
+        "name": "bm25_search",
+        "arguments": {
+          "query_list": [
+            "AMCOR 8-K July 1 2022 agenda",
+            "AMCOR \"July 1, 2022\" 8-K"
+          ],
+          "company": "AMCOR",
+          "year": 2022,
+          "filing_type": "8-K",
+          "document_id": "",
+          "scope": "both",
+          "top_k": 10
+        },
+        "latency_s": 0.0
+      }
+    ],
+    "messages": [
+      {
+        "role": "assistant",
+        "content": "Amcor’s July 1, 2022 Form 8-K reported an **issuer substitution for certain senior notes**:\n\n- On **June 30, 2022**, **Amcor Flexibles North America, Inc.** replaced **Amcor Finance (USA), Inc.** as issuer and assumed the former issuer’s covenants under the applicable indentures.\n- This was implemented through:\n  - a **Second Supplemental Indenture** covering the 2016 Indenture, including **3.625% Guaranteed Senior Notes due 2026** and **4.500% Guaranteed Senior Notes due 2028**; and\n  - a **First Supplemental Indenture** covering the 2019 Indenture and the related exchanged notes.\n- **Deutsche Bank Trust Company Americas** served as trustee.\n\nIn short, the filing concerned a legal/structural transfer of note-issuer obligations within Amcor’s wholly owned subsidiaries—not a new financing or change in the stated notes’ terms.",
+        "tool_calls": [
+          {
+            "turn": 0,
+            "name": "bm25_search",
+            "arguments": {
+              "query_list": [
+                "AMCOR 8-K July 1 2022 agenda",
+                "AMCOR \"July 1, 2022\" 8-K"
+              ],
+              "company": "AMCOR",
+              "year": 2022,
+              "filing_type": "8-K",
+              "document_id": "",
+              "scope": "both",
+              "top_k": 10
+            },
+            "latency_s": 0.0
+          }
+        ]
+      }
+    ],
+    "openai_response_id": "resp_01cbcf40735a32eb016ab552703bb087d08eedf369806bf5df",
+    "financebench_id": "financebench_id_01935",
+    "question": "What was the key agenda of the AMCOR's 8k filing dated 1st July 2022?",
+    "gold": "Amcor Finance (USA), Inc. and Amcor Flexibles North America, Inc., entered into supplemental indentures relating to Guaranteed Senior Notes due 2026 and 2028. This involved the substitution of the Substitute Issuer (Amcor Flexibles North America) for the Former Issuer (Amcor Finance) and the assumption of covenants under the indentures. (In essence a novation agreement)",
+    "reward": 0.0
+  }
+]

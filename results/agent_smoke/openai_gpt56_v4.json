@@ -1,0 +1,379 @@
+[
+  {
+    "backend": "openai",
+    "model": "gpt-5.6-terra",
+    "answer_text": "Adobe reported **net cash provided by operating activities of $2.913 billion** in fiscal 2017 (specifically, **$2,912.853 million**).",
+    "tool_calls": [
+      {
+        "turn": 0,
+        "name": "bm25_search",
+        "arguments": {
+          "query_list": [
+            "Adobe FY 2017 cash flows cash from operations total current liabilities balance sheet"
+          ],
+          "company": "Adobe",
+          "year": 2017,
+          "filing_type": "10-K",
+          "document_id": "",
+          "scope": "both",
+          "top_k": 5
+        },
+        "latency_s": 0.0
+      },
+      {
+        "turn": 1,
+        "name": "grep_document",
+        "arguments": {
+          "document_id": "ADOBE_2017_10K",
+          "patterns": [
+            "Net cash provided by operating activities",
+            "Cash flows from operating activities"
+          ],
+          "page_start": -1,
+          "page_end": -1,
+          "context_lines": 2,
+          "grep_type": "text"
+        },
+        "latency_s": 0.0
+      }
+    ],
+    "messages": [
+      {
+        "role": "assistant",
+        "content": "Adobe reported **net cash provided by operating activities of $2.913 billion** in fiscal 2017 (specifically, **$2,912.853 million**).",
+        "tool_calls": [
+          {
+            "turn": 0,
+            "name": "bm25_search",
+            "arguments": {
+              "query_list": [
+                "Adobe FY 2017 cash flows cash from operations total current liabilities balance sheet"
+              ],
+              "company": "Adobe",
+              "year": 2017,
+              "filing_type": "10-K",
+              "document_id": "",
+              "scope": "both",
+              "top_k": 5
+            },
+            "latency_s": 0.0
+          },
+          {
+            "turn": 1,
+            "name": "grep_document",
+            "arguments": {
+              "document_id": "ADOBE_2017_10K",
+              "patterns": [
+                "Net cash provided by operating activities",
+                "Cash flows from operating activities"
+              ],
+              "page_start": -1,
+              "page_end": -1,
+              "context_lines": 2,
+              "grep_type": "text"
+            },
+            "latency_s": 0.0
+          }
+        ]
+      }
+    ],
+    "openai_response_id": "resp_0c45f358e720cfc5016ab559f7f11887d099db93c9864e494c",
+    "financebench_id": "financebench_id_03856",
+    "question": "What is the FY2017 operating cash flow ratio for Adobe? Operating cash flow ratio is defined as: cash from operations / total current liabilities. Round your answer to two decimal places. Please utilize information provided primarily within the balance sheet and the cash flow statement.",
+    "gold": "0.83",
+    "reward": 0.0
+  },
+  {
+    "backend": "openai",
+    "model": "gpt-5.6-terra",
+    "financebench_id": "financebench_id_08286",
+    "question": "By drawing conclusions from the information stated only in the income statement, what is Amazon's FY2019 net income attributable to shareholders (in USD millions)?",
+    "gold": "$11588.00",
+    "error": "APIConnectionError('Connection error.')",
+    "reward": 0.0
+  },
+  {
+    "backend": "openai",
+    "model": "gpt-5.6-terra",
+    "answer_text": "",
+    "tool_calls": [
+      {
+        "turn": 0,
+        "name": "bm25_search",
+        "arguments": {
+          "query_list": [
+            "AMCOR 8-K July 1 2022 agenda",
+            "AMCOR \"July 1, 2022\" 8-K"
+          ],
+          "company": "AMCOR",
+          "year": 2022,
+          "filing_type": "8-K",
+          "document_id": "",
+          "scope": "both",
+          "top_k": 10
+        },
+        "latency_s": 0.0
+      },
+      {
+        "turn": 1,
+        "name": "read",
+        "arguments": {
+          "document_id": "AMCOR_2022_8K_2022-07-01",
+          "page": 2,
+          "start": 0,
+          "end": 8000,
+          "passage_id": ""
+        },
+        "latency_s": 0.0
+      },
+      {
+        "turn": 2,
+        "name": "read",
+        "arguments": {
+          "document_id": "AMCOR_2022_8K_2022-07-01",
+          "page": 5,
+          "start": 0,
+          "end": 12000,
+          "passage_id": ""
+        },
+        "latency_s": 0.0
+      },
+      {
+        "turn": 3,
+        "name": "read",
+        "arguments": {
+          "document_id": "AMCOR_2022_8K_2022-07-01",
+          "page": 7,
+          "start": 0,
+          "end": 12000,
+          "passage_id": ""
+        },
+        "latency_s": 0.0
+      },
+      {
+        "turn": 4,
+        "name": "grep_document",
+        "arguments": {
+          "document_id": "AMCOR_2022_8K_2022-07-01",
+          "patterns": [
+            "Amended and Restated Indenture dated as of June 13, 2019",
+            "5.625% Guaranteed Senior Notes due 2026",
+            "First Supplemental Indenture",
+            "Supplemental Indenture, dated as of June 30, 2022",
+            "Section 101. Substitution"
+          ],
+          "page_start": -1,
+          "page_end": -1,
+          "context_lines": 3,
+          "grep_type": "text"
+        },
+        "latency_s": 0.0
+      },
+      {
+        "turn": 5,
+        "name": "read",
+        "arguments": {
+          "document_id": "AMCOR_2022_8K_2022-07-01",
+          "page": 4,
+          "start": 0,
+          "end": 8000,
+          "passage_id": ""
+        },
+        "latency_s": 0.0
+      },
+      {
+        "turn": 6,
+        "name": "read",
+        "arguments": {
+          "document_id": "AMCOR_2022_8K_2022-07-01",
+          "page": 5,
+          "start": 0,
+          "end": 8000,
+          "passage_id": ""
+        },
+        "latency_s": 0.0
+      },
+      {
+        "turn": 7,
+        "name": "read",
+        "arguments": {
+          "document_id": "AMCOR_2022_8K_2022-07-01",
+          "page": 6,
+          "start": 0,
+          "end": 8000,
+          "passage_id": ""
+        },
+        "latency_s": 0.0
+      },
+      {
+        "turn": 8,
+        "name": "read",
+        "arguments": {
+          "document_id": "AMCOR_2022_8K_2022-07-01",
+          "page": 7,
+          "start": 0,
+          "end": 8000,
+          "passage_id": ""
+        },
+        "latency_s": 0.0
+      },
+      {
+        "turn": 9,
+        "name": "read",
+        "arguments": {
+          "document_id": "AMCOR_2022_8K_2022-07-01",
+          "page": 8,
+          "start": 0,
+          "end": 6000,
+          "passage_id": ""
+        },
+        "latency_s": 0.0
+      }
+    ],
+    "messages": [
+      {
+        "role": "assistant",
+        "content": "",
+        "tool_calls": [
+          {
+            "turn": 0,
+            "name": "bm25_search",
+            "arguments": {
+              "query_list": [
+                "AMCOR 8-K July 1 2022 agenda",
+                "AMCOR \"July 1, 2022\" 8-K"
+              ],
+              "company": "AMCOR",
+              "year": 2022,
+              "filing_type": "8-K",
+              "document_id": "",
+              "scope": "both",
+              "top_k": 10
+            },
+            "latency_s": 0.0
+          },
+          {
+            "turn": 1,
+            "name": "read",
+            "arguments": {
+              "document_id": "AMCOR_2022_8K_2022-07-01",
+              "page": 2,
+              "start": 0,
+              "end": 8000,
+              "passage_id": ""
+            },
+            "latency_s": 0.0
+          },
+          {
+            "turn": 2,
+            "name": "read",
+            "arguments": {
+              "document_id": "AMCOR_2022_8K_2022-07-01",
+              "page": 5,
+              "start": 0,
+              "end": 12000,
+              "passage_id": ""
+            },
+            "latency_s": 0.0
+          },
+          {
+            "turn": 3,
+            "name": "read",
+            "arguments": {
+              "document_id": "AMCOR_2022_8K_2022-07-01",
+              "page": 7,
+              "start": 0,
+              "end": 12000,
+              "passage_id": ""
+            },
+            "latency_s": 0.0
+          },
+          {
+            "turn": 4,
+            "name": "grep_document",
+            "arguments": {
+              "document_id": "AMCOR_2022_8K_2022-07-01",
+              "patterns": [
+                "Amended and Restated Indenture dated as of June 13, 2019",
+                "5.625% Guaranteed Senior Notes due 2026",
+                "First Supplemental Indenture",
+                "Supplemental Indenture, dated as of June 30, 2022",
+                "Section 101. Substitution"
+              ],
+              "page_start": -1,
+              "page_end": -1,
+              "context_lines": 3,
+              "grep_type": "text"
+            },
+            "latency_s": 0.0
+          },
+          {
+            "turn": 5,
+            "name": "read",
+            "arguments": {
+              "document_id": "AMCOR_2022_8K_2022-07-01",
+              "page": 4,
+              "start": 0,
+              "end": 8000,
+              "passage_id": ""
+            },
+            "latency_s": 0.0
+          },
+          {
+            "turn": 6,
+            "name": "read",
+            "arguments": {
+              "document_id": "AMCOR_2022_8K_2022-07-01",
+              "page": 5,
+              "start": 0,
+              "end": 8000,
+              "passage_id": ""
+            },
+            "latency_s": 0.0
+          },
+          {
+            "turn": 7,
+            "name": "read",
+            "arguments": {
+              "document_id": "AMCOR_2022_8K_2022-07-01",
+              "page": 6,
+              "start": 0,
+              "end": 8000,
+              "passage_id": ""
+            },
+            "latency_s": 0.0
+          },
+          {
+            "turn": 8,
+            "name": "read",
+            "arguments": {
+              "document_id": "AMCOR_2022_8K_2022-07-01",
+              "page": 7,
+              "start": 0,
+              "end": 8000,
+              "passage_id": ""
+            },
+            "latency_s": 0.0
+          },
+          {
+            "turn": 9,
+            "name": "read",
+            "arguments": {
+              "document_id": "AMCOR_2022_8K_2022-07-01",
+              "page": 8,
+              "start": 0,
+              "end": 6000,
+              "passage_id": ""
+            },
+            "latency_s": 0.0
+          }
+        ]
+      }
+    ],
+    "openai_response_id": "resp_0bb96da2015dcf93016ab55a22598887d09a99c7a3e0c798f0",
+    "financebench_id": "financebench_id_01935",
+    "question": "What was the key agenda of the AMCOR's 8k filing dated 1st July 2022?",
+    "gold": "Amcor Finance (USA), Inc. and Amcor Flexibles North America, Inc., entered into supplemental indentures relating to Guaranteed Senior Notes due 2026 and 2028. This involved the substitution of the Substitute Issuer (Amcor Flexibles North America) for the Former Issuer (Amcor Finance) and the assumption of covenants under the indentures. (In essence a novation agreement)",
+    "reward": 0.0
+  }
+]

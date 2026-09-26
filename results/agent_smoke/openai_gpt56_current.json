@@ -1,0 +1,204 @@
+[
+  {
+    "backend": "openai",
+    "model": "gpt-5.6-terra",
+    "answer_text": "2,912,853 is approximately **82.58%** of 3,527,457.",
+    "tool_calls": [
+      {
+        "turn": 0,
+        "name": "bm25_search",
+        "arguments": {
+          "query_list": [
+            "Adobe fiscal 2017 cash flows cash from operations total current liabilities balance sheet"
+          ],
+          "company": "Adobe",
+          "year": 2017,
+          "filing_type": "10-K",
+          "document_id": "",
+          "scope": "both",
+          "top_k": 10
+        },
+        "latency_s": 0.0
+      },
+      {
+        "turn": 1,
+        "name": "calculate",
+        "arguments": {
+          "expression": "2912853 / 3527457 * 100"
+        },
+        "latency_s": 0.0
+      }
+    ],
+    "messages": [
+      {
+        "role": "assistant",
+        "content": "2,912,853 is approximately **82.58%** of 3,527,457.",
+        "tool_calls": [
+          {
+            "turn": 0,
+            "name": "bm25_search",
+            "arguments": {
+              "query_list": [
+                "Adobe fiscal 2017 cash flows cash from operations total current liabilities balance sheet"
+              ],
+              "company": "Adobe",
+              "year": 2017,
+              "filing_type": "10-K",
+              "document_id": "",
+              "scope": "both",
+              "top_k": 10
+            },
+            "latency_s": 0.0
+          },
+          {
+            "turn": 1,
+            "name": "calculate",
+            "arguments": {
+              "expression": "2912853 / 3527457 * 100"
+            },
+            "latency_s": 0.0
+          }
+        ]
+      }
+    ],
+    "openai_response_id": "resp_0ba5dfb137848211016ab55b71bb0087d084cc5b9f74de9452",
+    "financebench_id": "financebench_id_03856",
+    "question": "What is the FY2017 operating cash flow ratio for Adobe? Operating cash flow ratio is defined as: cash from operations / total current liabilities. Round your answer to two decimal places. Please utilize information provided primarily within the balance sheet and the cash flow statement.",
+    "gold": "0.83",
+    "reward": 0.9
+  },
+  {
+    "backend": "openai",
+    "model": "gpt-5.6-terra",
+    "answer_text": "Amazon’s **net income** for 2019 was **$11.588 billion**.\n\nCalculation:  \n\\[\n\\frac{\\$11.588\\text{ billion}}{\\$280.522\\text{ billion net sales}} \\times 100\n= 4.13\\%\n\\]\n\nSo, Amazon’s 2019 net income represented **approximately 4.1% of total net sales**.",
+    "tool_calls": [
+      {
+        "turn": 0,
+        "name": "bm25_search",
+        "arguments": {
+          "query_list": [
+            "Amazon FY 2019 income statement net income attributable to shareholders"
+          ],
+          "company": "Amazon",
+          "year": 2019,
+          "filing_type": "10-K",
+          "document_id": "",
+          "scope": "both",
+          "top_k": 5
+        },
+        "latency_s": 0.0
+      },
+      {
+        "turn": 1,
+        "name": "search_tables",
+        "arguments": {
+          "query_list": [
+            "consolidated statements of operations net income 2019"
+          ],
+          "document_id": "AMAZON_2019_10K",
+          "company": "Amazon",
+          "year": 2019,
+          "top_k": 5
+        },
+        "latency_s": 0.0
+      }
+    ],
+    "messages": [
+      {
+        "role": "assistant",
+        "content": "Amazon’s **net income** for 2019 was **$11.588 billion**.\n\nCalculation:  \n\\[\n\\frac{\\$11.588\\text{ billion}}{\\$280.522\\text{ billion net sales}} \\times 100\n= 4.13\\%\n\\]\n\nSo, Amazon’s 2019 net income represented **approximately 4.1% of total net sales**.",
+        "tool_calls": [
+          {
+            "turn": 0,
+            "name": "bm25_search",
+            "arguments": {
+              "query_list": [
+                "Amazon FY 2019 income statement net income attributable to shareholders"
+              ],
+              "company": "Amazon",
+              "year": 2019,
+              "filing_type": "10-K",
+              "document_id": "",
+              "scope": "both",
+              "top_k": 5
+            },
+            "latency_s": 0.0
+          },
+          {
+            "turn": 1,
+            "name": "search_tables",
+            "arguments": {
+              "query_list": [
+                "consolidated statements of operations net income 2019"
+              ],
+              "document_id": "AMAZON_2019_10K",
+              "company": "Amazon",
+              "year": 2019,
+              "top_k": 5
+            },
+            "latency_s": 0.0
+          }
+        ]
+      }
+    ],
+    "openai_response_id": "resp_0474afb49941634d016ab55b77979c87d09d772e5e08199a4d",
+    "financebench_id": "financebench_id_08286",
+    "question": "By drawing conclusions from the information stated only in the income statement, what is Amazon's FY2019 net income attributable to shareholders (in USD millions)?",
+    "gold": "$11588.00",
+    "reward": 0.0
+  },
+  {
+    "backend": "openai",
+    "model": "gpt-5.6-terra",
+    "answer_text": "Amcor’s Form 8-K filed on July 1, 2022 covered the substitution of **Amcor Flexibles North America, Inc.** for **Amcor Finance (USA), Inc.** as issuer under the relevant indentures, with the substitute issuer assuming the former issuer’s covenants.\n\nThe agenda consisted of entering into:\n\n1. A **Second Supplemental Indenture** for the 2016 indenture, covering the **3.625% Guaranteed Senior Notes due 2026** and **4.500% Guaranteed Senior Notes due 2028**; and  \n2. A **First Supplemental Indenture** for the 2019 indenture, covering the corresponding **New 2026 Notes** and **New 2028 Notes**.\n\nBoth supplemental indentures were dated **June 30, 2022**, with Deutsche Bank Trust Company Americas as trustee.",
+    "tool_calls": [
+      {
+        "turn": 0,
+        "name": "bm25_search",
+        "arguments": {
+          "query_list": [
+            "AMCOR 8-K July 1 2022 agenda",
+            "AMCOR 8-K 1 July 2022"
+          ],
+          "company": "AMCOR",
+          "year": 2022,
+          "filing_type": "8-K",
+          "document_id": "",
+          "scope": "both",
+          "top_k": 10
+        },
+        "latency_s": 0.0
+      }
+    ],
+    "messages": [
+      {
+        "role": "assistant",
+        "content": "Amcor’s Form 8-K filed on July 1, 2022 covered the substitution of **Amcor Flexibles North America, Inc.** for **Amcor Finance (USA), Inc.** as issuer under the relevant indentures, with the substitute issuer assuming the former issuer’s covenants.\n\nThe agenda consisted of entering into:\n\n1. A **Second Supplemental Indenture** for the 2016 indenture, covering the **3.625% Guaranteed Senior Notes due 2026** and **4.500% Guaranteed Senior Notes due 2028**; and  \n2. A **First Supplemental Indenture** for the 2019 indenture, covering the corresponding **New 2026 Notes** and **New 2028 Notes**.\n\nBoth supplemental indentures were dated **June 30, 2022**, with Deutsche Bank Trust Company Americas as trustee.",
+        "tool_calls": [
+          {
+            "turn": 0,
+            "name": "bm25_search",
+            "arguments": {
+              "query_list": [
+                "AMCOR 8-K July 1 2022 agenda",
+                "AMCOR 8-K 1 July 2022"
+              ],
+              "company": "AMCOR",
+              "year": 2022,
+              "filing_type": "8-K",
+              "document_id": "",
+              "scope": "both",
+              "top_k": 10
+            },
+            "latency_s": 0.0
+          }
+        ]
+      }
+    ],
+    "openai_response_id": "resp_04819b22ed1d6bdf016ab55b7b619c87d0bd71c4f5fdee3b7d",
+    "financebench_id": "financebench_id_01935",
+    "question": "What was the key agenda of the AMCOR's 8k filing dated 1st July 2022?",
+    "gold": "Amcor Finance (USA), Inc. and Amcor Flexibles North America, Inc., entered into supplemental indentures relating to Guaranteed Senior Notes due 2026 and 2028. This involved the substitution of the Substitute Issuer (Amcor Flexibles North America) for the Former Issuer (Amcor Finance) and the assumption of covenants under the indentures. (In essence a novation agreement)",
+    "reward": 0.0
+  }
+]

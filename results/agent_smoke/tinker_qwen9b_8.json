@@ -1,0 +1,74 @@
+[
+  {
+    "backend": "tinker",
+    "model": "Qwen/Qwen3.5-9B",
+    "financebench_id": "financebench_id_03856",
+    "question": "What is the FY2017 operating cash flow ratio for Adobe? Operating cash flow ratio is defined as: cash from operations / total current liabilities. Round your answer to two decimal places. Please utilize information provided primarily within the balance sheet and the cash flow statement.",
+    "gold": "0.83",
+    "error": "BillingError(\"Error code: 402 - {'detail': 'Access for  is blocked due to billing status. Please add payment at https://tinker.thinkingmachines.ai/billing/balance'}\")",
+    "reward": 0.0
+  },
+  {
+    "backend": "tinker",
+    "model": "Qwen/Qwen3.5-9B",
+    "financebench_id": "financebench_id_08286",
+    "question": "By drawing conclusions from the information stated only in the income statement, what is Amazon's FY2019 net income attributable to shareholders (in USD millions)?",
+    "gold": "$11588.00",
+    "error": "BillingError(\"Error code: 402 - {'detail': 'Access for  is blocked due to billing status. Please add payment at https://tinker.thinkingmachines.ai/billing/balance'}\")",
+    "reward": 0.0
+  },
+  {
+    "backend": "tinker",
+    "model": "Qwen/Qwen3.5-9B",
+    "financebench_id": "financebench_id_01935",
+    "question": "What was the key agenda of the AMCOR's 8k filing dated 1st July 2022?",
+    "gold": "Amcor Finance (USA), Inc. and Amcor Flexibles North America, Inc., entered into supplemental indentures relating to Guaranteed Senior Notes due 2026 and 2028. This involved the substitution of the Substitute Issuer (Amcor Flexibles North America) for the Former Issuer (Amcor Finance) and the assumption of covenants under the indentures. (In essence a novation agreement)",
+    "error": "BillingError(\"Error code: 402 - {'detail': 'Access for  is blocked due to billing status. Please add payment at https://tinker.thinkingmachines.ai/billing/balance'}\")",
+    "reward": 0.0
+  },
+  {
+    "backend": "tinker",
+    "model": "Qwen/Qwen3.5-9B",
+    "financebench_id": "financebench_id_01928",
+    "question": "What Was AMCOR's Adjusted Non GAAP EBITDA for FY 2023",
+    "gold": "AMCOR's Adj. EBITDA was $2,018mn in FY 2023",
+    "error": "BillingError(\"Error code: 402 - {'detail': 'Access for  is blocked due to billing status. Please add payment at https://tinker.thinkingmachines.ai/billing/balance'}\")",
+    "reward": 0.0
+  },
+  {
+    "backend": "tinker",
+    "model": "Qwen/Qwen3.5-9B",
+    "financebench_id": "financebench_id_01930",
+    "question": "How much was the Real change in Sales for AMCOR in FY 2023 vs FY 2022, if we exclude the impact of FX movement, passthrough costs and one-off items?",
+    "gold": "The Real Growth was flat in FY 2023 vs FY 2022.",
+    "error": "BillingError(\"Error code: 402 - {'detail': 'Access for  is blocked due to billing status. Please add payment at https://tinker.thinkingmachines.ai/billing/balance'}\")",
+    "reward": 0.0
+  },
+  {
+    "backend": "tinker",
+    "model": "Qwen/Qwen3.5-9B",
+    "financebench_id": "financebench_id_03069",
+    "question": "Answer the following question as if you are an equity research analyst and have lost internet connection so you do not have access to financial metric providers. According to the details clearly outlined within the P&L statement and the statement of cash flows, what is the FY2015 depreciation and amortization (D&A from cash flow statement) % margin for AMD?",
+    "gold": "4.2%",
+    "error": "BillingError(\"Error code: 402 - {'detail': 'Access for  is blocked due to billing status. Please add payment at https://tinker.thinkingmachines.ai/billing/balance'}\")",
+    "reward": 0.0
+  },
+  {
+    "backend": "tinker",
+    "model": "Qwen/Qwen3.5-9B",
+    "financebench_id": "financebench_id_04254",
+    "question": "Basing your judgments off of the cash flow statement and the income statement, what is American Water Works's FY2021 unadjusted operating income + depreciation and amortization from the cash flow statement (unadjusted EBITDA) in USD millions?",
+    "gold": "$1832.00",
+    "error": "BillingError(\"Error code: 402 - {'detail': 'Access for  is blocked due to billing status. Please add payment at https://tinker.thinkingmachines.ai/billing/balance'}\")",
+    "reward": 0.0
+  },
+  {
+    "backend": "tinker",
+    "model": "Qwen/Qwen3.5-9B",
+    "financebench_id": "financebench_id_04417",
+    "question": "What is the year end FY2019 total amount of inventories for Best Buy? Answer in USD millions. Base your judgments on the information provided primarily in the balance sheet.",
+    "gold": "$5409.00",
+    "error": "BillingError(\"Error code: 402 - {'detail': 'Access for  is blocked due to billing status. Please add payment at https://tinker.thinkingmachines.ai/billing/balance'}\")",
+    "reward": 0.0
+  }
+]
