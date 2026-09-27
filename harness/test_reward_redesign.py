@@ -1,7 +1,7 @@
 import asyncio
 import unittest
 
-from reward_calculation import RewardConfig, answer_quality_with_judge, reward_formula
+from reward_calculation import RewardConfig, _numeric_or_decision_hard_veto, answer_quality_with_judge, reward_formula
 
 
 class FakeJudge:
@@ -55,6 +55,10 @@ class RewardRedesignTests(unittest.TestCase):
         ))
         self.assertEqual(q, 0.0)
         self.assertEqual(meta["judge_verdict"], "ambiguous")
+
+    def test_numeric_scale_suffixes_do_not_trigger_veto(self):
+        self.assertEqual(_numeric_or_decision_hard_veto("Revenue was $4.2 Billion.", "Revenue was $4200M."), (False, ""))
+        self.assertEqual(_numeric_or_decision_hard_veto("Revenue was $4.2B.", "Revenue was $4.2 million."), (True, "numeric_mismatch"))
 
     def test_grounded_formula(self):
         self.assertEqual(reward_formula(1.0, 1.0), 1.0)

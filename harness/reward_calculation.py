@@ -154,7 +154,9 @@ class DeepSeekJudge:
         result["cache_hit"] = False
         async with self._cache_lock:
             self.cache[key] = result
-            self._write_cache()
+            # JSON serialization and atomic replace are blocking filesystem work;
+            # keep them off the event loop while the lock prevents concurrent writes.
+            await asyncio.to_thread(self._write_cache)
         return result
 
     def _write_cache(self) -> None:
@@ -220,10 +222,12 @@ whether the candidate is grounded; it does not change the answer's factual corre
             confidence = _clip(float(judgment.get("confidence", 0.0)))
         except (TypeError, ValueError):
             confidence = 0.0
+        numeric_raw = judgment.get("numeric_ok", False)
+        numeric_ok = numeric_raw if isinstance(numeric_raw, bool) else str(numeric_raw).strip().lower() in {"1", "true", "yes"}
         return {
             "verdict": verdict,
             "confidence": confidence,
-            "numeric_ok": bool(judgment.get("numeric_ok", False)),
+            "numeric_ok": numeric_ok,
             "reason_code": str(judgment.get("reason_code", "unknown"))[:80],
             "reason": str(judgment.get("reason", ""))[:300],
             "model": self.config.judge_model,
@@ -314,6 +318,7 @@ async def answer_quality_with_judge(
         "judge_cache_hit": bool(judgment.get("cache_hit", False)),
         "judge_reason_code": judgment.get("reason_code", ""),
         "judge_reason": judgment.get("reason", ""),
+        "judge_numeric_ok": bool(judgment.get("numeric_ok", False)),
     })
     if judgment.get("verdict") != "entailed" or float(judgment.get("confidence", 0.0)) < config.judge_confidence_threshold:
         return 0.0, meta

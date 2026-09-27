@@ -7,3 +7,8 @@ The reward contract is: a valid `finish(answer, evidence_document, evidence_page
 The evaluator caches judgments by a SHA-256 hash of model, question, gold answer, candidate answer, and bounded evidence. Provider errors are recorded in metrics and fall back to the deterministic score rather than being silently converted to zero. The cache contains judgment data only, never API credentials.
 
 Before a new long GRPO run, calibrate the DeepSeek judge on a labeled residual set containing paraphrases, wrong directions, wrong numbers, unsupported claims, and verbose keyword stuffing. Do not start that run until live DeepInfra authentication and the calibration report are available.
+
+
+## Stability notes
+
+The numeric gate accepts equivalent scale forms such as `$4.2 Billion`, `$4.2B`, and `$4200M`, while rejecting a true scale mismatch; regression tests cover this behavior. DeepSeek cache serialization runs in `asyncio.to_thread` under the cache lock so large cache writes do not block the reward event loop. The judge's `numeric_ok` value is parsed and logged, but is not a blanket veto because DeepSeek is called only for qualitative residuals; numeric cases are already decided by the deterministic numeric gate.
