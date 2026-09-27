@@ -27,6 +27,8 @@ import unsloth  # noqa: F401; must precede transformers/trl imports
 import torch
 from unsloth import FastLanguageModel
 
+import sys
+sys.path.insert(0, str(Path(__file__).resolve().parent))
 import financebench_harness as hb
 
 if Path("/workspace/split.json").exists():
