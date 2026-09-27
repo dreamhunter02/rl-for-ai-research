@@ -61,7 +61,7 @@ async def main():
     seed = int(os.environ.get("SEED", "0"))
     run_name = os.environ.get("RUN_NAME", f"finbench_structured_{BASE_MODEL.lower().replace('/', '-')}_bs{batch}_gs{group}_lr{lr}_{datetime.now():%Y%m%d-%H%M%S}")
     log_path = os.environ.get("LOG_PATH", f"/tmp/tinker-examples/rl_finance/{run_name}")
-    cli_utils.check_log_dir(log_path, behavior_if_exists="overwrite")
+    cli_utils.check_log_dir(log_path, behavior_if_exists="delete")
 
     builder = finance_env.FinanceDatasetBuilder(
         model_name_for_tokenizer=BASE_MODEL,
