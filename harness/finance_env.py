@@ -29,6 +29,10 @@ class CoercingTool:
     def __init__(self, tool: Tool):
         self._tool = tool
 
+    @property
+    def name(self):
+        return self._tool.name
+
     def to_spec(self):
         return self._tool.to_spec()
 
