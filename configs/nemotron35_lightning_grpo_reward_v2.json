@@ -26,7 +26,9 @@
     "JUDGE_MAX_ANSWER_CHARS": 6000,
     "JUDGE_MAX_EVIDENCE_CHARS": 8000,
     "JUDGE_MAX_ANSWER_TO_GOLD_RATIO": 3.0,
-    "JUDGE_CACHE_PATH": "results/tinker_runs/nemotron35_lightning_grpo_reward_v2_20260927/deepseek_judge_cache.json"
+    "JUDGE_CACHE_PATH": "results/tinker_runs/nemotron35_lightning_grpo_reward_v2_20260927/deepseek_judge_cache.json",
+    "JUDGE_KEYRING_SERVICE": "DEEPINFRA_API_KEY",
+    "JUDGE_KEYRING_USERNAME": "dreamhunter"
   },
   "tinker_config": {
     "learning_rate": 1e-05,
@@ -91,6 +93,7 @@
     "judge_failures": "fall back to deterministic score and log judge_error; never synthesize a zero"
   },
   "preflight": [
+    "The adapter retrieves JUDGE_KEYRING_SERVICE/JUDGE_KEYRING_USERNAME from GNOME Keyring at request time; do not export or store the API key.",
     "Provide DEEPINFRA_API_KEY through a runtime secret manager; never put it in this file.",
     "Run the 20\u201330 trace semantic calibration subset and inspect judge precision/false positives.",
     "Run a 1-step Tinker smoke with JUDGE_BACKEND=deepinfra before the 27-step run."

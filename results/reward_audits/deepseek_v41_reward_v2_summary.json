@@ -1,0 +1,66 @@
+{
+  "date": "2026-09-27",
+  "reward_audit": {
+    "path": "results/reward_audits/deepseek_v41_reward_audit_small_live.json",
+    "cases": 20,
+    "judge_used": 1,
+    "judge_cache_hit": false,
+    "judge_errors": 0,
+    "deterministic_zero_to_positive": 1,
+    "judge_recovered": 1,
+    "semantic_case": "known_01148_false_negative",
+    "semantic_verdict": "entailed",
+    "semantic_confidence": 0.95,
+    "hard_negative_preserved": "known_00566_hard_negative"
+  },
+  "small_grpo": {
+    "path": "results/tinker_runs/nemotron35_lightning_grpo_reward_v2_small3_20260927",
+    "status": "completed_successfully",
+    "steps": 3,
+    "batch_size": 1,
+    "group_size": 4,
+    "trajectories": 12,
+    "per_step": [
+      {
+        "step": 0,
+        "episodes": 4,
+        "mean_grounded_reward": 0.21875,
+        "mean_answer_quality": 0.25,
+        "mean_evidence_quality": 0.1875,
+        "finish_rate": 0.25,
+        "judge_used": 0.0,
+        "parse_error": 0,
+        "max_turns": 0,
+        "max_tokens": 0
+      },
+      {
+        "step": 1,
+        "episodes": 4,
+        "mean_grounded_reward": 0.0,
+        "mean_answer_quality": 0.0,
+        "mean_evidence_quality": 0.0,
+        "finish_rate": 0.0,
+        "judge_used": 0.0,
+        "parse_error": 0,
+        "max_turns": 1.0,
+        "max_tokens": 0
+      },
+      {
+        "step": 2,
+        "episodes": 4,
+        "mean_grounded_reward": 0,
+        "mean_answer_quality": 0,
+        "mean_evidence_quality": 0,
+        "finish_rate": 0,
+        "judge_used": 0,
+        "parse_error": 1.0,
+        "max_turns": 0,
+        "max_tokens": 1.0
+      }
+    ],
+    "total_reward_sum": 0.4750000000000001,
+    "final_sampler_path": "tinker://3b775623-2232-56a5-bdb1-74c9a400c5aa:train:0/sampler_weights/final",
+    "known_logging_issue": "train_rollout_summaries final_reward remains zero; total_reward and metrics.jsonl are authoritative",
+    "judge_calls_in_rollouts": 0.0
+  }
+}

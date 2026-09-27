@@ -1,0 +1,11 @@
+{
+  "c9e99d63ff9396efdf417285367edd145a96ebb45e5bdff929c28c68bba734c4": {
+    "verdict": "entailed",
+    "confidence": 0.95,
+    "numeric_ok": true,
+    "reason_code": "same_industry",
+    "reason": "Candidate identifies packaging industry, matching gold's packaging production description; extra details are consistent.",
+    "model": "deepseek-ai/DeepSeek-V4.1-Flash",
+    "cache_hit": false
+  }
+}

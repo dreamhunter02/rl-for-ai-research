@@ -1,0 +1,673 @@
+[
+  {
+    "financebench_id": "known_01148_false_negative",
+    "question": "What industry does AMCOR primarily operate in?",
+    "gold": "Amcor is a global leader in packaging production for various use cases.",
+    "answer_text": "Amcor primarily operates in the packaging industry, focusing on flexible and rigid packaging, specialty cartons, and closures for fast-moving consumer goods. This is identified in its 2019 10-K filing.",
+    "old_deterministic_reward": 0.0,
+    "opus_reference": {
+      "verdict": "reference_false_negative"
+    },
+    "current_deterministic_quality": 0.0,
+    "new_answer_quality": 1.0,
+    "new_evidence_quality": 0.0,
+    "new_grounded_reward": 0.5,
+    "judge_meta": {
+      "deterministic_quality": 0.0,
+      "judge_used": 1.0,
+      "judge_verdict": "entailed",
+      "judge_confidence": 0.95,
+      "judge_cache_hit": false,
+      "semantic_length_factor": 1.0,
+      "hard_gate": "pass",
+      "judge_error": "",
+      "judge_reason_code": "same_industry",
+      "judge_reason": "Candidate identifies packaging industry, matching gold's packaging production description; extra details are consistent.",
+      "judge_numeric_ok": true
+    },
+    "evidence_parts": {
+      "evidence": 0.0,
+      "strong_source": 0.0,
+      "gold_claim_support": 0.0,
+      "candidate_claim_support": 0.0
+    }
+  },
+  {
+    "financebench_id": "known_00566_hard_negative",
+    "question": "Has Verizon increased its debt on balance sheet between 2022 and the 2021 fiscal period?",
+    "gold": "No. Verizon's debt decreased by $229 million.",
+    "answer_text": "Yes. Verizon's debt increased by about $407 million.",
+    "old_deterministic_reward": 0.0,
+    "opus_reference": {
+      "verdict": "reference_hard_negative"
+    },
+    "current_deterministic_quality": 0.0,
+    "new_answer_quality": 0.0,
+    "new_evidence_quality": 0.0,
+    "new_grounded_reward": 0.0,
+    "judge_meta": {
+      "deterministic_quality": 0.0,
+      "judge_used": 0.0,
+      "judge_verdict": "not_used",
+      "judge_confidence": 0.0,
+      "judge_cache_hit": false,
+      "semantic_length_factor": 1.0,
+      "hard_gate": "explicit_contradiction",
+      "judge_error": ""
+    },
+    "evidence_parts": {
+      "evidence": 0.0,
+      "strong_source": 0.0,
+      "gold_claim_support": 0.0,
+      "candidate_claim_support": 0.0
+    }
+  },
+  {
+    "financebench_id": "known_00684_positive",
+    "question": "Does AMCOR have an improving gross margin profile as of FY2023?",
+    "gold": "No. For AMCOR there has been a slight decline in gross margins by 0.8%.",
+    "answer_text": "No, Amcor's gross margin did not improve; it fell from about 19.4% to 18.5%, a decline of about 0.8 percentage points.",
+    "old_deterministic_reward": 1.0,
+    "opus_reference": {
+      "verdict": "reference_positive"
+    },
+    "current_deterministic_quality": 1.0,
+    "new_answer_quality": 1.0,
+    "new_evidence_quality": 0.0,
+    "new_grounded_reward": 0.5,
+    "judge_meta": {
+      "deterministic_quality": 1.0,
+      "judge_used": 0.0,
+      "judge_verdict": "not_used",
+      "judge_confidence": 0.0,
+      "judge_cache_hit": false,
+      "semantic_length_factor": 1.0,
+      "hard_gate": "pass",
+      "judge_error": ""
+    },
+    "evidence_parts": {
+      "evidence": 0.0,
+      "strong_source": 0.0,
+      "gold_claim_support": 0.0,
+      "candidate_claim_support": 0.0
+    }
+  },
+  {
+    "financebench_id": "financebench_id_00566",
+    "question": "Has Verizon increased its debt on balance sheet between 2022 and the 2021 fiscal period?",
+    "gold": "No. Verizon's debt decreased by $229 million.",
+    "answer_text": "Answer: No; total debt decreased by $229 million.",
+    "old_deterministic_reward": 0.0,
+    "opus_reference": {
+      "verdict": "pass",
+      "correctness": 4,
+      "grounding": 2,
+      "gold_issue": false,
+      "reason": "The retrieved evidence shows Total debt of $150,639M (2022) vs $150,868M (2021), a decrease of $229M. The candidate correctly states that debt decreased by $229M, matching both the gold answer and the evidence."
+    },
+    "current_deterministic_quality": 1.0,
+    "new_answer_quality": 1.0,
+    "new_evidence_quality": 0.0,
+    "new_grounded_reward": 0.5,
+    "judge_meta": {
+      "deterministic_quality": 1.0,
+      "judge_used": 0.0,
+      "judge_verdict": "not_used",
+      "judge_confidence": 0.0,
+      "judge_cache_hit": false,
+      "semantic_length_factor": 1.0,
+      "hard_gate": "pass",
+      "judge_error": ""
+    },
+    "evidence_parts": {
+      "evidence": 0.0,
+      "strong_source": 1.0,
+      "gold_claim_support": 0.0,
+      "candidate_claim_support": 0.0
+    }
+  },
+  {
+    "financebench_id": "financebench_id_00684",
+    "question": "Does AMCOR have an improving gross margin profile as of FY2023? If gross margin is not a useful metric for a company like this, then state that and explain why.",
+    "gold": "No. For AMCOR there has been a slight decline in gross margins by 0.8%.",
+    "answer_text": "Answer: No — Amcor's gross margin did not improve in FY2023. Per the FY2023 10-K (p. 33), gross profit fell 3% to $2,725 million from $2,820 million, and gross profit as a percentage of net sales declined to 18.5% from 19.4%, mainly due to pass-through of higher raw material costs and the impact of disposed operations. Gross margin is of limited usefulness for Amcor because a large portion of net sales reflects raw-material cost pass-throughs (e.g., $516 million in the Flexibles segment), so margin percentages are distorted by input-cost movements; management therefore emphasizes Adjusted EBIT (Flexibles 12.8%, Rigid Packaging 7.5%) as the key profitability metric.",
+    "old_deterministic_reward": 0.0,
+    "opus_reference": {
+      "verdict": "pass",
+      "correctness": 4,
+      "grounding": 2,
+      "gold_issue": false,
+      "reason": "The candidate correctly identifies that Amcor's gross margin declined from 19.4% to 18.5% (a 0.9 percentage point decline, consistent with the gold's ~0.8% figure which is approximate). The answer is well-grounded in the retrieved 10-K evidence showing gross profit of $2,725M vs $2,820M and the margin percentages. The candidate also adds useful context about why gross margin is a limited metric for Amcor due to raw material cost pass-throughs, which is supported by the evidence. The gold answer's 0.8% is slightly imprecise (the actual decline is 0.9 pp) but the candidate's answer is more accurate."
+    },
+    "current_deterministic_quality": 1.0,
+    "new_answer_quality": 1.0,
+    "new_evidence_quality": 0.8,
+    "new_grounded_reward": 0.9,
+    "judge_meta": {
+      "deterministic_quality": 1.0,
+      "judge_used": 0.0,
+      "judge_verdict": "not_used",
+      "judge_confidence": 0.0,
+      "judge_cache_hit": false,
+      "semantic_length_factor": 1.0,
+      "hard_gate": "pass",
+      "judge_error": ""
+    },
+    "evidence_parts": {
+      "evidence": 0.8,
+      "strong_source": 1.0,
+      "gold_claim_support": 1.0,
+      "candidate_claim_support": 0.8
+    }
+  },
+  {
+    "financebench_id": "financebench_id_01148",
+    "question": "What industry does AMCOR primarily operate in?",
+    "gold": "Amcor is a global leader in packaging production for various use cases.",
+    "answer_text": "\n\nAnswer: The packaging industry — Amcor is a global leader in developing and producing packaging products (flexible and rigid packaging, specialty cartons, and closures) for food, beverage, pharmaceutical, medical-device, home- and personal-care and other consumer-goods end markets (AMCOR_2021_10K, Item 1 Business, p.6; Note 1 Business Description, p.54).",
+    "old_deterministic_reward": 0.0,
+    "opus_reference": {
+      "verdict": "pass",
+      "correctness": 4,
+      "grounding": 2,
+      "gold_issue": false,
+      "reason": "The candidate correctly identifies that Amcor primarily operates in the packaging industry, describing it as a global leader in developing and producing packaging products. This is consistent with the gold answer and supported by the retrieved evidence from Amcor's 10-K filing, which describes Amcor as a packaging company (including the Bemis acquisition of flexible packaging products). The candidate provides additional accurate detail about product types and end markets."
+    },
+    "current_deterministic_quality": 0.95,
+    "new_answer_quality": 0.95,
+    "new_evidence_quality": 0.75,
+    "new_grounded_reward": 0.8312499999999999,
+    "judge_meta": {
+      "deterministic_quality": 0.95,
+      "judge_used": 0.0,
+      "judge_verdict": "not_used",
+      "judge_confidence": 0.0,
+      "judge_cache_hit": false,
+      "semantic_length_factor": 1.0,
+      "hard_gate": "pass",
+      "judge_error": ""
+    },
+    "evidence_parts": {
+      "evidence": 0.75,
+      "strong_source": 0.0,
+      "gold_claim_support": 1.0,
+      "candidate_claim_support": 1.0
+    }
+  },
+  {
+    "financebench_id": "financebench_id_00070",
+    "question": "Does American Water Works have positive working capital based on FY2022 data? If working capital is not a useful or relevant metric for this company, then please state that and explain why.",
+    "gold": "No, American Water Works had negative working capital of -$1561M in FY 2022.",
+    "answer_text": "\n\nAnswer: No — American Water Works had **negative working capital** at FY2022 year-end. Per the FY2022 10-K Consolidated Balance Sheets (page 81–82, Dec. 31, 2022), total current assets were **$1,250 million** and total current liabilities were **$2,811 million**, giving working capital of **–$1,561 million** (current ratio ≈ 0.44x). The deficit is largely due to $1,175 million of short-term debt (commercial paper) plus $281 million current maturities of long-term debt. The company itself confirms this in the risk factors (page 38): \"As of December 31, 2022, our aggregate long-term and short-term debt balance (including preferred stock with mandatory redemption requirements) was $12.4 billion, and our working capital (defined as current assets less current liabilities) was in a deficit position.\"\n\nWorking capital is not a very meaningful metric for this regulated utility: its assets are overwhelmingly long-lived property, plant and equipment ($23,223 million net PP&E vs. only $1,250 million current assets), it has steady, regulator-approved cash collections from customers, and it deliberately funds short-term needs through its commercial paper program/revolving credit facility ($2.60 billion CP and a $2.75 billion revolver, both increased in October 2022) rather than by holding large current asset balances. A persistent working-capital deficit is therefore normal and not a liquidity red flag — the company states it \"utilized existing sources of liquidity, such as current cash balances, cash flows from operations and borrowings under our commercial paper program, to meet our short-term liquidity requirements\" and believes those sources are sufficient for the foreseeable future.",
+    "old_deterministic_reward": 0.0,
+    "opus_reference": {
+      "verdict": "pass",
+      "correctness": 4,
+      "grounding": 2,
+      "gold_issue": false,
+      "reason": "The candidate correctly identifies that American Water Works had negative working capital of -$1,561M in FY2022, matching the gold answer. The candidate provides the exact current assets ($1,250M) and current liabilities ($2,811M) figures from the 2022 10-K balance sheet, which is confirmed by the retrieved evidence showing total current assets of $1,250M on page 81 of the 2022 10-K. The candidate also provides valuable additional context about why working capital is not a particularly meaningful metric for this regulated utility, which adds quality beyond the gold answer. The calculation is verified (-$1,561M) and all key facts are grounded in the retrieved evidence."
+    },
+    "current_deterministic_quality": 0.95,
+    "new_answer_quality": 0.0,
+    "new_evidence_quality": 0.0,
+    "new_grounded_reward": 0.0,
+    "judge_meta": {
+      "deterministic_quality": 0.95,
+      "judge_used": 0.0,
+      "judge_verdict": "not_used",
+      "judge_confidence": 0.0,
+      "judge_cache_hit": false,
+      "semantic_length_factor": 1.0,
+      "hard_gate": "numeric_mismatch",
+      "judge_error": ""
+    },
+    "evidence_parts": {
+      "evidence": 0.0,
+      "strong_source": 1.0,
+      "gold_claim_support": 0.0,
+      "candidate_claim_support": 0.6470588235294118
+    }
+  },
+  {
+    "financebench_id": "financebench_id_00206",
+    "question": "About JPMorgan: Are JPM's gross margins historically consistent (not fluctuating more than roughly 2% each year)? If gross margins are not a relevant metric for a company like this, then please state that and explain why.",
+    "gold": "Since JPM is a financial institution, gross margin is not a relevant metric.",
+    "answer_text": "I have sufficient evidence from JPM's filings to answer this question. The consolidated income statements in the 10-Ks show JPM's revenue structure, and a document-wide grep for \"gross margin,\" \"cost of goods sold,\" \"cost of revenue,\" and \"gross profit\" returns zero matches in JPM's 10-K.\n\n**Answer:** Gross margins are not a relevant metric for JPMorgan Chase, so the consistency question doesn't meaningfully apply. JPM is a bank/financial-services firm, and its income statement contains no \"cost of goods sold,\" \"gross profit,\" or \"gross margin\" line items — a grep of the 10-K for these terms returns no matches. Instead of selling goods, JPM's total net revenue is composed of (1) noninterest revenue — investment banking fees, principal transactions, lending- and deposit-related fees, asset management/administration/commissions, mortgage fees, card income, and other income — and (2) net interest income, i.e., interest income less interest expense (e.g., 2022: noninterest revenue $61,985M + net interest income $66,710M = total net revenue $128,695M; 2021: $69,338M + $52,311M = $121,649M; 2020: $65,388M + $54,563M = $119,951M). Its largest costs are noninterest expenses (compensation, occupancy, technology/communications, professional services, marketing, other) plus the provision for credit losses — not a production cost that could be netted against revenue to form a gross margin. JPM itself emphasizes bank-specific profitability metrics instead, such as the overhead ratio (noninterest expense / total net revenue), net interest margin (\"net yield on average interest-earning assets,\" 1.64% in 2021, 1.98% in 2020, 2.46% in 2019), ROA, and ROE. (Source: JPMORGAN_2022_10K and JPMORGAN_2021_10K, Consolidated Statements of Income; JPMORGAN_2021_10K, Calculation of certain U.S. GAAP and non-GAAP financial measures.)",
+    "old_deterministic_reward": 0.0,
+    "opus_reference": {
+      "verdict": "pass",
+      "correctness": 4,
+      "grounding": 2,
+      "gold_issue": false,
+      "reason": "The candidate correctly states that gross margins are not a relevant metric for JPMorgan Chase because it is a financial institution/bank. The answer goes further than the gold answer by explaining why (no COGS, no gross profit line items, revenue composed of net interest income and noninterest revenue, bank-specific metrics like overhead ratio and net interest margin are used instead). All claims are well-supported by the retrieved evidence from JPM's 10-K filings."
+    },
+    "current_deterministic_quality": 1.0,
+    "new_answer_quality": 1.0,
+    "new_evidence_quality": 0.6018518518518519,
+    "new_grounded_reward": 0.8009259259259259,
+    "judge_meta": {
+      "deterministic_quality": 1.0,
+      "judge_used": 0.0,
+      "judge_verdict": "not_used",
+      "judge_confidence": 0.0,
+      "judge_cache_hit": false,
+      "semantic_length_factor": 1.0,
+      "hard_gate": "pass",
+      "judge_error": ""
+    },
+    "evidence_parts": {
+      "evidence": 0.6018518518518519,
+      "strong_source": 1.0,
+      "gold_claim_support": 1.0,
+      "candidate_claim_support": 0.5
+    }
+  },
+  {
+    "financebench_id": "financebench_id_00216",
+    "question": "Does Verizon have a reasonably healthy liquidity profile based on its quick ratio for FY 2022? If the quick ratio is not relevant to measure liquidity, please state that and explain why.",
+    "gold": "No. The quick ratio was approximately 0.54 for Verizon. It indicated that Verizon does not have a healthy liquidity profile.",
+    "answer_text": "Answer: No—Verizon’s FY 2022 quick ratio was 0.54:1 (($2.605 billion cash + $24.506 billion net receivables) ÷ $50.171 billion current liabilities), indicating quick assets did not cover current obligations; the quick ratio is relevant because it measures near-term liquidity excluding inventory and prepaids.",
+    "old_deterministic_reward": 0.0,
+    "opus_reference": {
+      "verdict": "pass",
+      "correctness": 4,
+      "grounding": 2,
+      "gold_issue": false,
+      "reason": "The candidate correctly identifies the quick ratio as approximately 0.54, computed from the retrieved balance sheet data (cash $2,605M + net receivables $24,506M divided by current liabilities $50,171M). The conclusion that Verizon does not have a healthy liquidity profile matches the gold answer. The candidate also correctly notes the quick ratio is relevant for measuring near-term liquidity. Fully grounded in the evidence."
+    },
+    "current_deterministic_quality": 1.0,
+    "new_answer_quality": 1.0,
+    "new_evidence_quality": 0.5,
+    "new_grounded_reward": 0.75,
+    "judge_meta": {
+      "deterministic_quality": 1.0,
+      "judge_used": 0.0,
+      "judge_verdict": "not_used",
+      "judge_confidence": 0.0,
+      "judge_cache_hit": false,
+      "semantic_length_factor": 1.0,
+      "hard_gate": "pass",
+      "judge_error": ""
+    },
+    "evidence_parts": {
+      "evidence": 0.5,
+      "strong_source": 1.0,
+      "gold_claim_support": 1.0,
+      "candidate_claim_support": 0.4
+    }
+  },
+  {
+    "financebench_id": "financebench_id_00222",
+    "question": "Does AMD have a reasonably healthy liquidity profile based on its quick ratio for FY22? If the quick ratio is not relevant to measure liquidity, please state that and explain why.",
+    "gold": "Yes. The quick ratio is 1.57, calculated as (cash and cash equivalents+Short term investments+Accounts receivable, net+receivables from related parties)/ (current liabilities).",
+    "answer_text": "I found AMD's FY22 consolidated balance sheet (10-K, Consolidated Balance Sheets, p. 56 of the filing). Quick assets (cash and cash equivalents $4,835M + short-term investments $1,020M + accounts receivable, net $4,126M + receivables from related parties $2M = $9,983M) divided by total current liabilities of $6,369M gives a quick ratio of ~1.57x. The metric is relevant here: AMD carries substantial inventory ($3,771M, roughly a quarter of its $15,019M current assets), so excluding it gives a more conservative, appropriate measure of near-term liquidity.\n\nAnswer: Yes — AMD's FY22 quick ratio is approximately 1.57x ($9,983M quick assets vs. $6,369M total current liabilities, per the FY22 10-K Consolidated Balance Sheets), comfortably above 1.0, indicating a reasonably healthy liquidity profile; the quick ratio is a relevant measure for AMD since its large inventory balance is rightly excluded from quick assets.",
+    "old_deterministic_reward": 0.0,
+    "opus_reference": {
+      "verdict": "pass",
+      "correctness": 4,
+      "grounding": 2,
+      "gold_issue": false,
+      "reason": "The candidate correctly identifies the quick ratio components from the FY22 balance sheet (cash $4,835M + short-term investments $1,020M + accounts receivable $4,126M + receivables from related parties $2M = $9,983M), divides by total current liabilities of $6,369M, and arrives at ~1.57x, matching the gold answer. The answer is fully grounded in the retrieved evidence and provides additional useful context about why the quick ratio is relevant for AMD."
+    },
+    "current_deterministic_quality": 1.0,
+    "new_answer_quality": 1.0,
+    "new_evidence_quality": 0.0,
+    "new_grounded_reward": 0.5,
+    "judge_meta": {
+      "deterministic_quality": 1.0,
+      "judge_used": 0.0,
+      "judge_verdict": "not_used",
+      "judge_confidence": 0.0,
+      "judge_cache_hit": false,
+      "semantic_length_factor": 1.0,
+      "hard_gate": "pass",
+      "judge_error": ""
+    },
+    "evidence_parts": {
+      "evidence": 0.0,
+      "strong_source": 0.0,
+      "gold_claim_support": 0.0,
+      "candidate_claim_support": 0.4
+    }
+  },
+  {
+    "financebench_id": "financebench_id_00302",
+    "question": "Did Pfizer grow its PPNE between FY20 and FY21?",
+    "gold": "Yes, change in PPNE was positive year over year",
+    "answer_text": "Answer: Yes—PP&E increased from $13.745 billion in FY20 to $14.882 billion in FY21.",
+    "old_deterministic_reward": 0.0,
+    "opus_reference": {
+      "verdict": "pass",
+      "correctness": 4,
+      "grounding": 2,
+      "gold_issue": false,
+      "reason": "The candidate correctly states that PP&E grew from $13.745B in FY20 to $14.882B in FY21, which is directly supported by the retrieved evidence from Pfizer's 2021 10-K. This aligns with the gold answer that the change was positive year over year."
+    },
+    "current_deterministic_quality": 1.0,
+    "new_answer_quality": 1.0,
+    "new_evidence_quality": 0.5,
+    "new_grounded_reward": 0.75,
+    "judge_meta": {
+      "deterministic_quality": 1.0,
+      "judge_used": 0.0,
+      "judge_verdict": "not_used",
+      "judge_confidence": 0.0,
+      "judge_cache_hit": false,
+      "semantic_length_factor": 1.0,
+      "hard_gate": "pass",
+      "judge_error": ""
+    },
+    "evidence_parts": {
+      "evidence": 0.5,
+      "strong_source": 1.0,
+      "gold_claim_support": 1.0,
+      "candidate_claim_support": 0.0
+    }
+  },
+  {
+    "financebench_id": "financebench_id_00382",
+    "question": "About MGM Resorts: Which region had the Highest EBITDAR Contribution for MGM during FY2022?",
+    "gold": "Las Vegas resorts contributed ~90% of company level EBITDAR during FY2022.",
+    "answer_text": "Answer: Las Vegas Strip Resorts",
+    "old_deterministic_reward": 0.0,
+    "opus_reference": {
+      "verdict": "pass",
+      "correctness": 4,
+      "grounding": 2,
+      "gold_issue": false,
+      "reason": "The candidate correctly identifies Las Vegas Strip Resorts as the region with the highest EBITDAR contribution for MGM during FY2022. The retrieved evidence shows Las Vegas Strip Resorts had $3,142,308 thousand in Adjusted Property EBITDAR, far exceeding Regional Operations ($1,294,630 thousand) and MGM China (-$203,136 thousand). The gold answer adds that this was ~90% of company-level EBITDAR, which is approximately correct ($3.14B / $3.50B ≈ 90%). The candidate's answer is substantively correct and well-grounded in the evidence."
+    },
+    "current_deterministic_quality": 0.95,
+    "new_answer_quality": 0.0,
+    "new_evidence_quality": 0.0,
+    "new_grounded_reward": 0.0,
+    "judge_meta": {
+      "deterministic_quality": 0.95,
+      "judge_used": 0.0,
+      "judge_verdict": "not_used",
+      "judge_confidence": 0.0,
+      "judge_cache_hit": false,
+      "semantic_length_factor": 1.0,
+      "hard_gate": "missing_numeric_claim",
+      "judge_error": ""
+    },
+    "evidence_parts": {
+      "evidence": 0.0,
+      "strong_source": 0.0,
+      "gold_claim_support": 0.0,
+      "candidate_claim_support": 1.0
+    }
+  },
+  {
+    "financebench_id": "financebench_id_00407",
+    "question": "About MGM Resorts: Which type of debt received the largest investment among the short term investments for MGM in H1 FY2023?",
+    "gold": "the biggest short term investment is in corporate bonds (almost 82% of the total investment)",
+    "answer_text": "\n\nEvidence found in MGM Resorts' Q2 FY2023 10-Q (MGMRESORTS_2023Q2_10Q, page 1, debt investments table): Short-term investments as of June 30, 2023 consisted of U.S. government securities $57,696K, U.S. agency securities $29,049K, commercial paper and certificates of deposit $4,561K, and corporate bonds $416,420K (total $507,726K).\n\nAnswer: Corporate bonds — approximately $416.4 million, the largest component of MGM's short-term investments (Level 2) as of June 30, 2023.",
+    "old_deterministic_reward": 0.0,
+    "opus_reference": {
+      "verdict": "pass",
+      "correctness": 4,
+      "grounding": 2,
+      "gold_issue": false,
+      "reason": "The candidate correctly identifies corporate bonds as the largest short-term investment for MGM in H1 FY2023, citing $416.4 million out of $507.7 million total (~82%), which matches the gold answer. The evidence from MGMRESORTS_2023Q2_10Q supports this answer with the specific figures mentioned in the candidate's response."
+    },
+    "current_deterministic_quality": 0.95,
+    "new_answer_quality": 0.0,
+    "new_evidence_quality": 0.0,
+    "new_grounded_reward": 0.0,
+    "judge_meta": {
+      "deterministic_quality": 0.95,
+      "judge_used": 0.0,
+      "judge_verdict": "not_used",
+      "judge_confidence": 0.0,
+      "judge_cache_hit": false,
+      "semantic_length_factor": 1.0,
+      "hard_gate": "numeric_mismatch",
+      "judge_error": ""
+    },
+    "evidence_parts": {
+      "evidence": 0.0,
+      "strong_source": 0.0,
+      "gold_claim_support": 0.0,
+      "candidate_claim_support": 0.6666666666666666
+    }
+  },
+  {
+    "financebench_id": "financebench_id_00438",
+    "question": "Does Adobe have an improving operating margin profile as of FY2022? If operating margin is not a useful metric for a company like this, then state that and explain why.",
+    "gold": "No the operating margins of Adobe have recently declined from 36.8% in FY 2021 to 34.6% in FY2022. A drop by 2.2% in a year.",
+    "answer_text": "Answer: No—operating margin was 34.6% in FY2022, down from 36.8% in FY2021 (though up from 32.9% in FY2020); it remains a useful profitability metric for Adobe’s software business.",
+    "old_deterministic_reward": 0.0,
+    "opus_reference": {
+      "verdict": "pass",
+      "correctness": 4,
+      "grounding": 2,
+      "gold_issue": false,
+      "reason": "The candidate correctly identifies that Adobe's operating margin declined from 36.8% in FY2021 to 34.6% in FY2022, matching the gold answer. The candidate additionally notes the FY2020 margin of 32.9%, which is accurate and supported by the evidence. The candidate also correctly states that operating margin remains a useful metric for Adobe, which is reasonable. All figures are well-grounded in the retrieved consolidated statements of income."
+    },
+    "current_deterministic_quality": 0.95,
+    "new_answer_quality": 0.95,
+    "new_evidence_quality": 0.6666666666666666,
+    "new_grounded_reward": 0.7916666666666665,
+    "judge_meta": {
+      "deterministic_quality": 0.95,
+      "judge_used": 0.0,
+      "judge_verdict": "not_used",
+      "judge_confidence": 0.0,
+      "judge_cache_hit": false,
+      "semantic_length_factor": 1.0,
+      "hard_gate": "pass",
+      "judge_error": ""
+    },
+    "evidence_parts": {
+      "evidence": 0.6666666666666666,
+      "strong_source": 1.0,
+      "gold_claim_support": 0.6666666666666666,
+      "candidate_claim_support": 1.0
+    }
+  },
+  {
+    "financebench_id": "financebench_id_00464",
+    "question": "Is Boeing's business subject to cyclicality?",
+    "gold": "Yes, Boeing's business is subject to cyclicality due to its exposure to the airline industry which is a cyclical industry.",
+    "answer_text": "Answer: Yes; commercial and defense markets are cyclical, although their cycles sometimes offset.",
+    "old_deterministic_reward": 0.0,
+    "opus_reference": {
+      "verdict": "pass",
+      "correctness": 4,
+      "grounding": 2,
+      "gold_issue": false,
+      "reason": "The candidate correctly answers 'Yes' to whether Boeing's business is subject to cyclicality, and specifically references the cyclicality of commercial and defense markets with their offsetting cycles. This is directly supported by the retrieved evidence from Boeing's 10-K filing which states 'the cyclicality of commercial and defense markets sometimes offset.' The gold answer focuses only on the airline industry cyclicality, but the candidate's answer is actually more complete and precise, citing both commercial and defense market cyclicality as stated in Boeing's own filings."
+    },
+    "current_deterministic_quality": 0.95,
+    "new_answer_quality": 0.95,
+    "new_evidence_quality": 0.625,
+    "new_grounded_reward": 0.771875,
+    "judge_meta": {
+      "deterministic_quality": 0.95,
+      "judge_used": 0.0,
+      "judge_verdict": "not_used",
+      "judge_confidence": 0.0,
+      "judge_cache_hit": false,
+      "semantic_length_factor": 1.0,
+      "hard_gate": "pass",
+      "judge_error": ""
+    },
+    "evidence_parts": {
+      "evidence": 0.625,
+      "strong_source": 1.0,
+      "gold_claim_support": 1.0,
+      "candidate_claim_support": 1.0
+    }
+  },
+  {
+    "financebench_id": "financebench_id_00494",
+    "question": "What production rate changes is Boeing forecasting for FY2023?",
+    "gold": "Boeing forecasts an increase in the production rates for the 737, 777X and 787 aircrafts in 2023.",
+    "answer_text": "Answer: 787 to gradually rise to 5 aircraft per month; 777X production to resume; and 737 production to increase gradually from 31 aircraft per month, subject to demand and supply-chain capacity.",
+    "old_deterministic_reward": 0.0,
+    "opus_reference": {
+      "verdict": "pass",
+      "correctness": 4,
+      "grounding": 2,
+      "gold_issue": false,
+      "reason": "The candidate's answer correctly identifies the three production rate changes Boeing forecasted for FY2023: 787 gradually increasing to 5 per month, 777X production resuming, and 737 production increasing from 31 per month. These details are directly supported by the retrieved evidence from Boeing's 2022 10-K filing. The answer is more detailed than the gold answer but fully consistent with it."
+    },
+    "current_deterministic_quality": 1.0,
+    "new_answer_quality": 1.0,
+    "new_evidence_quality": 1.0,
+    "new_grounded_reward": 1.0,
+    "judge_meta": {
+      "deterministic_quality": 1.0,
+      "judge_used": 0.0,
+      "judge_verdict": "not_used",
+      "judge_confidence": 0.0,
+      "judge_cache_hit": false,
+      "semantic_length_factor": 1.0,
+      "hard_gate": "pass",
+      "judge_error": ""
+    },
+    "evidence_parts": {
+      "evidence": 1.0,
+      "strong_source": 1.0,
+      "gold_claim_support": 1.0,
+      "candidate_claim_support": 1.0
+    }
+  },
+  {
+    "financebench_id": "financebench_id_00499",
+    "question": "Is 3M a capital-intensive business based on FY2022 data?",
+    "gold": "No, the company is managing its CAPEX and Fixed Assets pretty efficiently, which is evident from below key metrics:\nCAPEX/Revenue Ratio: 5.1%\nFixed assets/Total Assets: 20%\nReturn on Assets= 12.4%",
+    "answer_text": "Based on 3M's FY2022 10-K data:\n\n- **Net PP&E**: $9,178M vs. **Total assets** of $46,455M → PP&E is only ~19.8% of total assets\n- **Capex (Purchases of PP&E)**: $1,749M vs. **Net sales** of $34,229M → capex is ~5.1% of sales\n- **Capex vs. Operating cash flow**: $1,749M vs. $7,454M → capex consumes ~23.5% of operating cash flow\n\nThese ratios indicate that PP&E represents a relatively modest share of 3M's asset base and revenue, and capital spending absorbs only about a quarter of operating cash flow — well below what is typical for highly capital-intensive industries (e.g., utilities or semiconductors, where PP&E often exceeds 50% of assets and capex 15%+ of sales).\n\nAnswer: 3M is only moderately capital-intensive, not a heavily capital-intensive business, based on FY2022 data (net PP&E of $9,178M is ~19.8% of $46,455M total assets, and $1,749M capex is ~5.1% of $34,229M net sales and ~23.5% of $7,454M operating cash flow; source: 3M 2022 10-K, pp. 48, 50, 52, 68).",
+    "old_deterministic_reward": 0.0,
+    "opus_reference": {
+      "verdict": "pass",
+      "correctness": 4,
+      "grounding": 2,
+      "gold_issue": false,
+      "reason": "The candidate correctly concludes that 3M is not a heavily capital-intensive business based on FY2022 data, consistent with the gold answer. The key metrics match: CAPEX/Revenue of ~5.1% ($1,749M / $34,229M), Fixed assets/Total Assets of ~19.8% ($9,178M / $46,455M) which is essentially the gold's 20%, and the candidate adds a useful capex-to-OCF ratio. The candidate also provides additional context comparing to capital-intensive industries. All figures are well-grounded in the retrieved 10-K evidence."
+    },
+    "current_deterministic_quality": 0.95,
+    "new_answer_quality": 0.95,
+    "new_evidence_quality": 0.3589743589743589,
+    "new_grounded_reward": 0.6455128205128206,
+    "judge_meta": {
+      "deterministic_quality": 0.95,
+      "judge_used": 0.0,
+      "judge_verdict": "not_used",
+      "judge_confidence": 0.0,
+      "judge_cache_hit": false,
+      "semantic_length_factor": 1.0,
+      "hard_gate": "pass",
+      "judge_error": ""
+    },
+    "evidence_parts": {
+      "evidence": 0.3589743589743589,
+      "strong_source": 1.0,
+      "gold_claim_support": 0.6666666666666666,
+      "candidate_claim_support": 0.5384615384615384
+    }
+  },
+  {
+    "financebench_id": "financebench_id_00517",
+    "question": "Are there any product categories / service categories that represent more than 20% of Boeing's revenue for FY2022?",
+    "gold": "Yes. Boeing has product and service categories that represent more than 20% of Boeing's revenue for FY2022. These categories are Commercial Airplanes which comprises 39% of total revenue, Defence which comprises 35% of total revenue and Services which comprises 26% of total revenue.",
+    "answer_text": "\n\n**Yes.** Boeing organizes its business by the products and services it offers and reports revenue in four segments. For FY2022 (total revenue $66,608 million):\n\n| Segment (product/service category) | FY2022 Revenue ($M) | % of Total Revenue | >20%? |\n|---|---|---|---|\n| Commercial Airplanes (BCA) | 25,867 | 38.8% | **Yes** |\n| Defense, Space & Security (BDS) | 23,162 | 34.8% | **Yes** |\n| Global Services (BGS) | 17,611 | 26.4% | **Yes** |\n| Boeing Capital (BCC) | 199 | 0.3% | No |\n| Unallocated items, eliminations & other | (231) | (0.3)% | No |\n| **Total** | **66,608** | **100.0%** | |\n\nThree of the four product/service categories each exceeded 20% of FY2022 revenue; only Boeing Capital fell well below that threshold. (Source: Boeing 2022 Form 10-K, Summary of Business Segment Data, p. 58/62.)\n\nAnswer: Yes — Commercial Airplanes (38.8%), Defense, Space & Security (34.8%), and Global Services (26.4%) each represented more than 20% of Boeing's FY2022 revenue; Boeing Capital (0.3%) did not.",
+    "old_deterministic_reward": 0.0,
+    "opus_reference": {
+      "verdict": "pass",
+      "correctness": 4,
+      "grounding": 2,
+      "gold_issue": false,
+      "reason": "The candidate correctly identifies the three Boeing segments exceeding 20% of FY2022 revenue: Commercial Airplanes (38.8%), Defense, Space & Security (34.8%), and Global Services (26.4%). The revenue figures and percentages are directly supported by the retrieved 10-K data and computed calculations. The candidate also provides additional detail (Boeing Capital, unallocated items) that is accurate and grounded in the evidence."
+    },
+    "current_deterministic_quality": 1.0,
+    "new_answer_quality": 1.0,
+    "new_evidence_quality": 0.45000000000000007,
+    "new_grounded_reward": 0.7250000000000001,
+    "judge_meta": {
+      "deterministic_quality": 1.0,
+      "judge_used": 0.0,
+      "judge_verdict": "not_used",
+      "judge_confidence": 0.0,
+      "judge_cache_hit": false,
+      "semantic_length_factor": 1.0,
+      "hard_gate": "pass",
+      "judge_error": ""
+    },
+    "evidence_parts": {
+      "evidence": 0.45000000000000007,
+      "strong_source": 0.0,
+      "gold_claim_support": 0.75,
+      "candidate_claim_support": 0.8
+    }
+  },
+  {
+    "financebench_id": "financebench_id_00540",
+    "question": "Roughly how many times has AES Corporation sold its inventory in FY2022? Calculate inventory turnover ratio for the FY2022; if conventional inventory management is not meaningful for the company then state that and explain why.",
+    "gold": "AES has converted inventory 9.5 times in FY 2022.",
+    "answer_text": "\n\nAnswer: Roughly 9.5 times (Total cost of sales $10,069M ÷ year-end inventory $1,055M ≈ 9.5x, ~38 days of inventory; using average inventory of ($1,055M + $604M)/2 = $830M gives ≈12.1x). However, conventional inventory turnover is not really meaningful for AES: it is a power generation/utility company that sells electricity and capacity, not inventory. Its inventory is only fuel and other raw materials ($733M) plus operational spare parts and supplies ($322M) held for its own use (AES_2022_10K, Note 2, p.149; accounting policy p.140), and its \"cost of sales\" line is a broad operating-cost caption that includes electricity and fuel purchases, O&M, depreciation and amortization, bad debt, and G&A/support costs rather than a pure cost of goods sold (p.86). Thus the fuel inventory consumed is not the driver of cost of sales, so the computed ratio overstates/misrepresents \"inventory turns.\"",
+    "old_deterministic_reward": 0.0,
+    "opus_reference": {
+      "verdict": "pass",
+      "correctness": 4,
+      "grounding": 1,
+      "gold_issue": false,
+      "reason": "The candidate correctly computes the inventory turnover ratio as approximately 9.5x (cost of sales $10,069M / ending inventory $1,055M), matching the gold answer. The candidate also provides a valuable additional discussion about why conventional inventory turnover may not be fully meaningful for a utility/power generation company like AES, noting that inventory consists of fuel and spare parts rather than goods for resale, and that cost of sales includes many non-inventory costs. While the retrieved evidence is somewhat sparse (no direct table hits for AES inventory or cost of sales were shown), the candidate references specific page numbers from the AES 2022 10-K, and the retrieved prose from page 140 confirms the inventory accounting policy description. The mathematical calculations are verified by the tool observations."
+    },
+    "current_deterministic_quality": 1.0,
+    "new_answer_quality": 1.0,
+    "new_evidence_quality": 0.0,
+    "new_grounded_reward": 0.5,
+    "judge_meta": {
+      "deterministic_quality": 1.0,
+      "judge_used": 0.0,
+      "judge_verdict": "not_used",
+      "judge_confidence": 0.0,
+      "judge_cache_hit": false,
+      "semantic_length_factor": 1.0,
+      "hard_gate": "pass",
+      "judge_error": ""
+    },
+    "evidence_parts": {
+      "evidence": 0.0,
+      "strong_source": 1.0,
+      "gold_claim_support": 0.0,
+      "candidate_claim_support": 0.47058823529411764
+    }
+  },
+  {
+    "financebench_id": "financebench_id_00591",
+    "question": "Does Adobe have an improving Free cashflow conversion as of FY2022?",
+    "gold": "Yes, the FCF conversion (using net income as the denominator) for Adobe has improved by ~13% from 143% in 2021 to 156% in 2022",
+    "answer_text": "Answer: Yes — 155.5%",
+    "old_deterministic_reward": 0.0,
+    "opus_reference": {
+      "verdict": "pass",
+      "correctness": 4,
+      "grounding": 2,
+      "gold_issue": false,
+      "reason": "The candidate correctly identifies that Adobe's FCF conversion improved as of FY2022. Using FCF = Operating Cash Flow - CapEx and Net Income as the denominator: FY2022 = (7838-442)/4756 = ~155.5%, FY2021 = (7230-348)/4822 = ~142.7%. This shows improvement of ~13 percentage points, consistent with the gold answer. The candidate's answer of 155.5% for FY2022 is correct and well-grounded in the retrieved evidence. The gold answer rounds to 156% vs the candidate's 155.5%, which is a trivial rounding difference."
+    },
+    "current_deterministic_quality": 0.95,
+    "new_answer_quality": 0.95,
+    "new_evidence_quality": 0.16666666666666666,
+    "new_grounded_reward": 0.5541666666666667,
+    "judge_meta": {
+      "deterministic_quality": 0.95,
+      "judge_used": 0.0,
+      "judge_verdict": "not_used",
+      "judge_confidence": 0.0,
+      "judge_cache_hit": false,
+      "semantic_length_factor": 1.0,
+      "hard_gate": "pass",
+      "judge_error": ""
+    },
+    "evidence_parts": {
+      "evidence": 0.16666666666666666,
+      "strong_source": 1.0,
+      "gold_claim_support": 0.1111111111111111,
+      "candidate_claim_support": 0.0
+    }
+  }
+]

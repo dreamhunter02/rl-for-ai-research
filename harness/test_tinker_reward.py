@@ -38,6 +38,17 @@ class TinkerRewardTests(unittest.TestCase):
         self.assertEqual(parts["evidence_quality"], 0.0)
         self.assertEqual(reward, 0.5)
 
+    def test_tinker_metrics_are_numeric(self):
+        history = [
+            {"role": "user", "content": "What happened?"},
+            {"role": "assistant", "content": "", "tool_calls": [{
+                "id": "finish-1",
+                "function": {"name": "finish", "arguments": json.dumps({"answer": "Supplemental indentures."})},
+            }]},
+        ]
+        _, parts = asyncio.run(FinanceAnswerReward(["Amcor entered into supplemental indentures."])(history))
+        self.assertTrue(all(isinstance(value, (int, float, bool)) for value in parts.values()), parts)
+
     def test_missing_finish_is_gated(self):
         history = [
             {"role": "user", "content": "What happened?"},

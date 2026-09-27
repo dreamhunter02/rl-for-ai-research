@@ -333,9 +333,12 @@ class FinanceAnswerReward:
             "finish_penalty": finish_missing,
             "answer_nonempty": answer_nonempty,
             "judge_used": 0.0,
-            "judge_verdict": "not_used",
             "judge_confidence": 0.0,
-            "judge_error": "",
+            "judge_cache_hit": 0.0,
+            "judge_entailment": 0.0,
+            "judge_numeric_ok": 0.0,
+            "judge_error_flag": 0.0,
+            "hard_gate_veto": 0.0,
         }
 
     async def __call__(self, history: list[Message]) -> tuple[float, dict[str, Any]]:
@@ -409,8 +412,13 @@ class FinanceAnswerReward:
             "answer_nonempty": 1.0,
         }
         for key, value in judge_parts.items():
-            if key.startswith("judge_") or key == "semantic_length_factor":
-                metrics[key] = value
+            if key.startswith("judge_") and isinstance(value, (int, float, bool)):
+                metrics[key] = float(value)
+            elif key == "semantic_length_factor" and isinstance(value, (int, float, bool)):
+                metrics[key] = float(value)
+        metrics["judge_entailment"] = float(judge_parts.get("judge_verdict") == "entailed")
+        metrics["judge_error_flag"] = float(bool(judge_parts.get("judge_error")))
+        metrics["hard_gate_veto"] = float(judge_parts.get("hard_gate", "pass") != "pass")
         return float(best.get("grounded", 0.0)), metrics
 
 def load_financebench(split_name: str = "train") -> list[dict]:

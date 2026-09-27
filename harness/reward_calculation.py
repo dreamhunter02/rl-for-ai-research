@@ -25,7 +25,7 @@ import tempfile
 import time
 import urllib.error
 import urllib.request
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Protocol
 
@@ -53,6 +53,8 @@ class RewardConfig:
     max_judge_answer_chars: int = 6000
     max_judge_evidence_chars: int = 8000
     max_answer_to_gold_ratio: float = 3.0
+    keyring_service: str = "DEEPINFRA_API_KEY"
+    keyring_username: str = field(default_factory=lambda: os.environ.get("USER", ""))
 
     @classmethod
     def from_env(cls) -> "RewardConfig":
@@ -68,6 +70,8 @@ class RewardConfig:
             max_judge_answer_chars=int(os.environ.get("JUDGE_MAX_ANSWER_CHARS", "6000")),
             max_judge_evidence_chars=int(os.environ.get("JUDGE_MAX_EVIDENCE_CHARS", "8000")),
             max_answer_to_gold_ratio=float(os.environ.get("JUDGE_MAX_ANSWER_TO_GOLD_RATIO", "3.0")),
+            keyring_service=os.environ.get("JUDGE_KEYRING_SERVICE", "DEEPINFRA_API_KEY"),
+            keyring_username=os.environ.get("JUDGE_KEYRING_USERNAME", os.environ.get("USER", "")),
         )
 
     def summary(self) -> dict[str, Any]:
@@ -78,6 +82,8 @@ class RewardConfig:
             "judge_endpoint": self.judge_endpoint if self.judge_backend != "none" else "",
             "judge_confidence_threshold": self.judge_confidence_threshold,
             "judge_cache_path": self.judge_cache_path if self.judge_backend != "none" else "",
+            "keyring_service": self.keyring_service if self.judge_backend != "none" else "",
+            "keyring_username": self.keyring_username if self.judge_backend != "none" else "",
             "answer_metric": "deterministic gates plus semantic judge on qualitative residuals",
             "grounded_formula": "clip(answer_quality * (0.5 + 0.5 * evidence_quality), 0, 1)",
             "finish_bonus": False,
@@ -118,9 +124,10 @@ class DeepSeekJudge:
         if config.judge_backend != "deepinfra":
             raise ValueError("DeepSeekJudge requires JUDGE_BACKEND=deepinfra")
         self.config = config
+        # A key supplied explicitly is transient process memory. Otherwise the
+        # Secret Service item is fetched only when a request is made; its value
+        # is never written to source, cache, logs, or the response.
         self.api_key = api_key or os.environ.get("DEEPINFRA_API_KEY", "")
-        if not self.api_key:
-            raise RuntimeError("JUDGE_BACKEND=deepinfra requires DEEPINFRA_API_KEY; no credential was preserved")
         self.cache_path = Path(config.judge_cache_path).expanduser()
         self.cache: dict[str, dict[str, Any]] = self._load_cache()
         self._cache_lock = asyncio.Lock()
@@ -150,7 +157,11 @@ class DeepSeekJudge:
             cached = self.cache.get(key)
         if cached is not None:
             return {**cached, "cache_hit": True}
-        result = await asyncio.to_thread(self._request, question, gold, candidate, evidence)
+        api_key = self.api_key or await self._load_keyring_secret()
+        result = await asyncio.to_thread(self._request, question, gold, candidate, evidence, api_key)
+        # Do not retain a key fetched from the keyring after the request.
+        if not self.api_key:
+            api_key = ""
         result["cache_hit"] = False
         async with self._cache_lock:
             self.cache[key] = result
@@ -172,7 +183,45 @@ class DeepSeekJudge:
             except FileNotFoundError:
                 pass
 
-    def _request(self, question: str, gold: str, candidate: str, evidence: str) -> dict[str, Any]:
+    async def _load_keyring_secret(self) -> str:
+        """Read the Secret Service item transiently without printing or caching it."""
+        try:
+            from dbus_next import BusType, Variant
+            from dbus_next.aio import MessageBus
+        except ImportError as exc:
+            raise RuntimeError("dbus-next is required for GNOME Keyring retrieval") from exc
+        bus = await MessageBus(bus_type=BusType.SESSION).connect()
+        session_path = None
+        try:
+            root_info = await bus.introspect("org.freedesktop.secrets", "/org/freedesktop/secrets")
+            root = bus.get_proxy_object("org.freedesktop.secrets", "/org/freedesktop/secrets", root_info)
+            service = root.get_interface("org.freedesktop.Secret.Service")
+            unlocked, locked = await service.call_search_items({
+                "service": self.config.keyring_service,
+                "username": self.config.keyring_username,
+            })
+            paths = list(unlocked)
+            if not paths:
+                raise RuntimeError(f"no unlocked GNOME Keyring item for service {self.config.keyring_service}")
+            _, session_path = await service.call_open_session("plain", Variant("s", ""))
+            item_info = await bus.introspect("org.freedesktop.secrets", paths[0])
+            item = bus.get_proxy_object("org.freedesktop.secrets", paths[0], item_info).get_interface("org.freedesktop.Secret.Item")
+            secret = await item.call_get_secret(session_path)
+            value = bytes(secret[2]).decode("utf-8").strip()
+            if not value:
+                raise RuntimeError("GNOME Keyring item is empty")
+            return value
+        finally:
+            if session_path:
+                try:
+                    session_info = await bus.introspect("org.freedesktop.secrets", session_path)
+                    session = bus.get_proxy_object("org.freedesktop.secrets", session_path, session_info).get_interface("org.freedesktop.Secret.Session")
+                    await session.call_close()
+                except Exception:
+                    pass
+            bus.disconnect()
+
+    def _request(self, question: str, gold: str, candidate: str, evidence: str, api_key: str) -> dict[str, Any]:
         system = """You are a conservative FinanceBench semantic-equivalence judge.
 Return ONLY one JSON object with these keys:
 verdict: one of entailed, contradicted, insufficient, ambiguous
@@ -203,7 +252,7 @@ whether the candidate is grounded; it does not change the answer's factual corre
         request = urllib.request.Request(
             self.config.judge_endpoint,
             data=json.dumps(payload, ensure_ascii=False).encode("utf-8"),
-            headers={"Authorization": f"Bearer {self.api_key}", "Content-Type": "application/json"},
+            headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
             method="POST",
         )
         try:
