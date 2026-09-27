@@ -415,7 +415,7 @@ def main() -> None:
     ap.add_argument("--reference-kl",action=argparse.BooleanOptionalAction,default=True)
     args=ap.parse_args()
     if args.ids_file:
-        args.ids=[x.strip() for x in Path(args.ids_file).read_text().splitlines() if x.strip()]
+        args.ids=[x.strip() for x in Path(args.ids_file).read_text().splitlines() if x.strip() and not x.lstrip().startswith("#")]
     else:
         args.ids=[x.strip() for x in args.ids.split(",") if x.strip()]
     run_id=time.strftime("%Y%m%d_%H%M%S")+f"_qwen4b_g{args.group_size}_s{args.seed}"
