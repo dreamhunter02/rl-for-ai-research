@@ -58,6 +58,15 @@ def _arg_list(args: dict[str, Any], key: str) -> list[str]:
     return [str(value)] if value else []
 
 
+def bounded_tool_text(payload: object) -> str:
+    """Keep inference-time tool observations within the same cap as training."""
+    raw = payload if isinstance(payload, str) else json.dumps(payload, ensure_ascii=False)
+    if len(raw) <= fe.OBS_CAP:
+        return raw
+    envelope = {"truncated": True, "original_chars": len(raw), "content": raw[: fe.OBS_CAP - 96]}
+    return json.dumps(envelope, ensure_ascii=False)
+
+
 def execute_local(index: hb.StructuredIndex, name: str, args: dict[str, Any]) -> str:
     if name == "bm25_search":
         query_list = _arg_list(args, "query_list")
@@ -69,26 +78,26 @@ def execute_local(index: hb.StructuredIndex, name: str, args: dict[str, Any]) ->
             out["prose_hits"] = index.search_prose(query_list, filters, top_k)
         if scope in ("tables", "table", "both"):
             out["table_hits"] = index.search_tables(query_list, filters, top_k)
-        return json.dumps(out, ensure_ascii=False)
+        return bounded_tool_text(out)
     if name == "grep_document":
         out = index.grep_document(args["document_id"], _arg_list(args, "patterns"), int(args.get("page_start", -1)), int(args.get("page_end", -1)), int(args.get("context_lines", 2)))
-        return json.dumps({"grep_type_requested": args.get("grep_type", "text"), "backend_used": "page_text", "matches": out}, ensure_ascii=False)
+        return bounded_tool_text({"grep_type_requested": args.get("grep_type", "text"), "backend_used": "page_text", "matches": out})
     if name == "search_tables":
         filters = {"document_id": args.get("document_id", ""), "company": args.get("company", ""), "year": args.get("year", -1)}
         out = index.search_tables(_arg_list(args, "query_list"), filters, max(1, min(int(args.get("top_k", 3)), 8)))
-        return json.dumps({"queries": _arg_list(args, "query_list"), "table_hits": out}, ensure_ascii=False)
+        return bounded_tool_text({"queries": _arg_list(args, "query_list"), "table_hits": out})
     if name == "read":
-        return json.dumps(index.read(args["document_id"], int(args.get("page", -1)), int(args.get("start", 0)), int(args.get("end", hb.MAX_READ)), args.get("passage_id", "")), ensure_ascii=False)
+        return bounded_tool_text(index.read(args["document_id"], int(args.get("page", -1)), int(args.get("start", 0)), int(args.get("end", hb.MAX_READ)), args.get("passage_id", "")))
     if name == "read_table":
-        return json.dumps(index.read_table(args["table_id"], bool(args.get("include_neighbors", True))), ensure_ascii=False)
+        return bounded_tool_text(index.read_table(args["table_id"], bool(args.get("include_neighbors", True))))
     if name == "calculate":
         try:
-            return json.dumps({"expression": args["expression"], "value": hb.calculate(args["expression"])})
+            return bounded_tool_text({"expression": args["expression"], "value": hb.calculate(args["expression"])})
         except Exception as exc:
-            return json.dumps({"error": str(exc)})
+            return bounded_tool_text({"error": str(exc)})
     if name == "finish":
-        return json.dumps({"status": "finished", "answer": str(args.get("answer", "")), "evidence_document": str(args.get("evidence_document", "")), "evidence_page": int(args.get("evidence_page", -1))})
-    return json.dumps({"error": f"Unknown tool {name}"})
+        return bounded_tool_text({"status": "finished", "answer": str(args.get("answer", "")), "evidence_document": str(args.get("evidence_document", "")), "evidence_page": int(args.get("evidence_page", -1))})
+    return bounded_tool_text({"error": f"Unknown tool {name}"})
 
 
 def answer_reward(text: str, gold: str) -> float:
@@ -206,6 +215,9 @@ def run_tinker(index: hb.StructuredIndex, row: dict[str, Any], model: str, proje
         calls.append({"turn": turn, "name": name, "arguments": args, "latency_s": time.time() - started})
         messages.append({"role": "tool", "content": result})
         trace.append({"role": "tool", "call_id": f"eval-{turn}", "name": name, "content": result})
+        if name == "finish":
+            final = str(args.get("answer", ""))
+            break
     return {"backend": "tinker", "model": model, "answer_text": final, "tool_calls": calls, "messages": messages, "trace": trace}
 
 
