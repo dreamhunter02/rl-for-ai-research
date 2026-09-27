@@ -267,8 +267,12 @@ class FinanceAnswerReward:
                 for call in (message.get("tool_calls") or []) if isinstance(message, dict) else []:
                     if isinstance(call, dict):
                         fn = call.get("function", call)
-                        name = fn.get("name", "") if isinstance(fn, dict) else ""
-                        raw = fn.get("arguments", {}) if isinstance(fn, dict) else {}
+                        if isinstance(fn, dict):
+                            name = fn.get("name", "")
+                            raw = fn.get("arguments", {})
+                        else:
+                            name = getattr(fn, "name", "")
+                            raw = getattr(fn, "arguments", {})
                         call_id = call.get("id", call.get("call_id", ""))
                     else:
                         fn = getattr(call, "function", None)
