@@ -1,0 +1,49 @@
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+{"i": 1, "id": "financebench_id_03856", "reward": 1.0, "error": null}
+{"i": 2, "id": "financebench_id_08286", "reward": 1.0, "error": null}
+{"i": 3, "id": "financebench_id_01935", "reward": 0.95, "error": null}
+{"i": 4, "id": "financebench_id_01928", "reward": 0.0, "error": null}
+{"i": 5, "id": "financebench_id_01930", "reward": 0.95, "error": null}
+{"i": 6, "id": "financebench_id_03069", "reward": 0.0, "error": null}
+{"i": 7, "id": "financebench_id_04254", "reward": 1.0, "error": null}
+{"i": 8, "id": "financebench_id_04417", "reward": 0.0, "error": null}
+{"i": 9, "id": "financebench_id_00288", "reward": 0.0, "error": null}
+{"i": 10, "id": "financebench_id_00460", "reward": 0.95, "error": null}
+{"i": 11, "id": "financebench_id_01902", "reward": 0.95, "error": null}
+{"i": 12, "id": "financebench_id_04660", "reward": 0.0, "error": null}
+{"i": 13, "id": "financebench_id_10285", "reward": 1.0, "error": null}
+{"i": 14, "id": "financebench_id_09724", "reward": 0.0, "error": null}
+{"i": 15, "id": "financebench_id_10130", "reward": 0.0, "error": null}
+{"i": 16, "id": "financebench_id_05915", "reward": 0.0, "error": null}
+{"i": 17, "id": "financebench_id_00839", "reward": 0.0, "error": null}
+{"i": 18, "id": "financebench_id_04103", "reward": 0.0, "error": null}
+{"i": 19, "id": "financebench_id_01488", "reward": 0.0, "error": null}
+{"i": 20, "id": "financebench_id_01490", "reward": 0.0, "error": null}
+{"i": 21, "id": "financebench_id_01491", "reward": 1.0, "error": null}
+{"i": 22, "id": "financebench_id_01487", "reward": 1.0, "error": null}
+{"i": 23, "id": "financebench_id_00394", "reward": 0.0, "error": null}
+{"i": 24, "id": "financebench_id_02049", "reward": 1.0, "error": null}
+{"i": 25, "id": "financebench_id_03031", "reward": 0.0, "error": null}
+{"i": 26, "id": "financebench_id_04171", "reward": 0.0, "error": null}
+{"i": 27, "id": "financebench_id_01254", "reward": 0.0, "error": null}
+{"i": 28, "id": "financebench_id_00552", "reward": 0.0, "error": null}
+{"i": 29, "id": "financebench_id_03282", "reward": 0.0, "error": null}
+{"i": 30, "id": "financebench_id_03531", "reward": 1.0, "error": null}
+{"i": 31, "id": "financebench_id_01163", "reward": 0.95, "error": null}
+{"i": 32, "id": "financebench_id_04980", "reward": 0.0, "error": null}
+{"i": 33, "id": "financebench_id_01474", "reward": 0.95, "error": null}
+{"i": 34, "id": "financebench_id_01476", "reward": 1.0, "error": null}
+{"i": 35, "id": "financebench_id_00283", "reward": 0.0, "error": null}
+{"i": 36, "id": "financebench_id_00724", "reward": 0.0, "error": null}
+{"i": 37, "id": "financebench_id_02419", "reward": 0.0, "error": null}
+{"i": 38, "id": "financebench_id_00746", "reward": 0.0, "error": null}
+{"i": 39, "id": "financebench_id_00521", "reward": 0.0, "error": null}
+{"i": 40, "id": "financebench_id_00859", "reward": 1.0, "error": null}
+{"i": 41, "id": "financebench_id_02024", "reward": 1.0, "error": null}
+{"i": 42, "id": "financebench_id_04784", "reward": 0.0, "error": null}
+{
+  "n": 42,
+  "valid": 42,
+  "mean_reward": 0.3976190476190476,
+  "exact_or_numeric": 17
+}
