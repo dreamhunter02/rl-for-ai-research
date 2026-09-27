@@ -180,6 +180,7 @@ def run_tinker(index: hb.StructuredIndex, row: dict[str, Any], model: str, proje
     client = ServiceClient(project_id=project, api_key=load_tinker_key()).create_sampling_client(model_path=model_path, base_model=None if model_path else model)
     params = SamplingParams(temperature=0.2, top_p=0.95, max_tokens=1024)
     calls = []
+    trace = []
     final = ""
     for turn in range(max_turns):
         prompt = renderer.build_generation_prompt(messages)
@@ -192,9 +193,11 @@ def run_tinker(index: hb.StructuredIndex, row: dict[str, Any], model: str, proje
         if not parsed:
             final = text
             messages.append({"role": "assistant", "content": text})
+            trace.append({"role": "assistant", "content": text})
             break
         name, args = parsed
         messages.append({"role": "assistant", "content": text})
+        trace.append({"role": "assistant", "content": text, "tool_calls": [{"name": name, "arguments": args, "call_id": f"eval-{turn}"}]})
         started = time.time()
         try:
             result = execute_local(index, name, args)
@@ -202,7 +205,8 @@ def run_tinker(index: hb.StructuredIndex, row: dict[str, Any], model: str, proje
             result = json.dumps({"error": f"tool execution failed: {type(exc).__name__}: {exc}"}, ensure_ascii=False)
         calls.append({"turn": turn, "name": name, "arguments": args, "latency_s": time.time() - started})
         messages.append({"role": "tool", "content": result})
-    return {"backend": "tinker", "model": model, "answer_text": final, "tool_calls": calls, "messages": messages}
+        trace.append({"role": "tool", "call_id": f"eval-{turn}", "name": name, "content": result})
+    return {"backend": "tinker", "model": model, "answer_text": final, "tool_calls": calls, "messages": messages, "trace": trace}
 
 
 def load_tinker_key() -> str:
