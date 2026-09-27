@@ -258,6 +258,7 @@ class FinanceAnswerReward:
     def _history_trace(history: list[Message]) -> list[dict]:
         """Convert Tinker messages into the harness trace schema for grounding."""
         trace: list[dict] = []
+        pending_tool_names: list[str] = []
         for message in history:
             role = message.get("role") if isinstance(message, dict) else getattr(message, "role", "")
             content = _message_text(message) if isinstance(message, dict) else str(message)
@@ -282,10 +283,17 @@ class FinanceAnswerReward:
                     else:
                         arguments = raw if isinstance(raw, dict) else {"raw": str(raw)}
                     calls.append({"name": name, "arguments": arguments, "call_id": call_id})
+                    if name:
+                        pending_tool_names.append(name)
                 trace.append({"role": "assistant", "content": content, "tool_calls": calls})
             elif role == "tool":
                 call_id = message.get("tool_call_id", message.get("call_id", "")) if isinstance(message, dict) else getattr(message, "tool_call_id", "")
-                trace.append({"role": "tool", "call_id": call_id, "name": message.get("name", "") if isinstance(message, dict) else getattr(message, "name", ""), "content": content})
+                name = message.get("name", "") if isinstance(message, dict) else getattr(message, "name", "")
+                if not name and pending_tool_names:
+                    name = pending_tool_names.pop(0)
+                elif pending_tool_names:
+                    pending_tool_names.pop(0)
+                trace.append({"role": "tool", "call_id": call_id, "name": name, "content": content})
             else:
                 trace.append({"role": role, "content": content})
         return trace
