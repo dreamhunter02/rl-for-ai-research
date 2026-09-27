@@ -1,0 +1,1871 @@
+[
+  {
+    "path": "split.json",
+    "bytes": 990064,
+    "sha256": "49876e3bd5ac15b46c1db5f97f380deb13e0626199df3f8d9cad2f33c3dce47d"
+  },
+  {
+    "path": "data/financebench_document_information.jsonl",
+    "bytes": 88781,
+    "sha256": "1c69127783879de8cdadb159d2181f39bc3123b8e0ebf74031c3969d69189575"
+  },
+  {
+    "path": "data/financebench_merged.jsonl",
+    "bytes": 958087,
+    "sha256": "7a1c81789e0fd2f1c37057a7ec0097756d726b05e7228e68e57db8e18c54fd0b"
+  },
+  {
+    "path": "data/financebench_open_source.jsonl",
+    "bytes": 929848,
+    "sha256": "a5a2aa673e573e55675fc3c0f9aa38c1cf59d2abc91edb077534f71f10a71877"
+  },
+  {
+    "path": "artifacts/page_cache/3M_2015_10K.json",
+    "bytes": 662435,
+    "sha256": "70ad5846cd34d7b0f0300388daf58b87e170ab8406b16cffb1d15befc6f8d59c"
+  },
+  {
+    "path": "artifacts/page_cache/3M_2016_10K.json",
+    "bytes": 793170,
+    "sha256": "4d16f0c7e7319f1a49b1097c0576054ff80c9e4bf4ac49041da14bcaf9eb6f18"
+  },
+  {
+    "path": "artifacts/page_cache/3M_2017_10K.json",
+    "bytes": 680844,
+    "sha256": "1a25c04e7ce605c6537cf223dd8790b13db5fff1b183e1cb0887a5701ae73b51"
+  },
+  {
+    "path": "artifacts/page_cache/3M_2018_10K.json",
+    "bytes": 666377,
+    "sha256": "7c6b66cee8a3db44b90388c1ee0251fe7fea5cb760a4369ca1a5077f50930736"
+  },
+  {
+    "path": "artifacts/page_cache/3M_2019_10K.json",
+    "bytes": 737078,
+    "sha256": "c15f434e7c41fafce60b65cb908554db43a3823454880f8768bd89ca0ad983ad"
+  },
+  {
+    "path": "artifacts/page_cache/3M_2020_10K.json",
+    "bytes": 651187,
+    "sha256": "3245af362ded8b5af8649b6f7cb915f5ae0de986add9512bd86348f9f3c2b665"
+  },
+  {
+    "path": "artifacts/page_cache/3M_2021_10K.json",
+    "bytes": 639660,
+    "sha256": "e3177f59c46c60cb166c9e08617bf8fb1e4c515b6cc71025c6257926be9783ee"
+  },
+  {
+    "path": "artifacts/page_cache/3M_2022_10K.json",
+    "bytes": 993604,
+    "sha256": "41355117b931ffeb1ef992210e8b1a89b2aeb252110fc2fbd46cf2c292bbacfc"
+  },
+  {
+    "path": "artifacts/page_cache/3M_2023Q2_10Q.json",
+    "bytes": 371465,
+    "sha256": "bbeae4d123200557ca0e6150104edc32ecc27f2592f6a3a34ce63c68a4a73ce8"
+  },
+  {
+    "path": "artifacts/page_cache/ACTIVISIONBLIZZARD_2015_10K.json",
+    "bytes": 638067,
+    "sha256": "bf601043ffa90adc15718b677ba5ecde0809cb9222a3bc972e732c8790a2a5d5"
+  },
+  {
+    "path": "artifacts/page_cache/ACTIVISIONBLIZZARD_2016_10K.json",
+    "bytes": 935193,
+    "sha256": "df6aff7656f5465dcba1823df64c4433071ea8a9dcd8d6e58c8a45bd996b3de3"
+  },
+  {
+    "path": "artifacts/page_cache/ACTIVISIONBLIZZARD_2017_10K.json",
+    "bytes": 513515,
+    "sha256": "62cd04f6ee78b0bc1fa26edfb385093a1f02419e7f27f838972ead7ee86c7a43"
+  },
+  {
+    "path": "artifacts/page_cache/ACTIVISIONBLIZZARD_2018_10K.json",
+    "bytes": 884367,
+    "sha256": "fd57d17ad1e4de66beb71d127bc1b07e3f0a05eab23e107696e480549c7a7980"
+  },
+  {
+    "path": "artifacts/page_cache/ACTIVISIONBLIZZARD_2019_10K.json",
+    "bytes": 672789,
+    "sha256": "9bc8d711e17fe2b0fa833cf3e4fca477855dff038699f3405d8dce855ce0b3f3"
+  },
+  {
+    "path": "artifacts/page_cache/ACTIVISIONBLIZZARD_2020_10K.json",
+    "bytes": 508390,
+    "sha256": "74ee09372075bb7eabc50a9688e86b10adf4a20680addac8ef02a546aa3feef8"
+  },
+  {
+    "path": "artifacts/page_cache/ACTIVISIONBLIZZARD_2021_10K.json",
+    "bytes": 1061098,
+    "sha256": "1112103bcd1f875cbc8011a43883582ecfe8a7cd13829d50c312afeaa8804fd2"
+  },
+  {
+    "path": "artifacts/page_cache/ACTIVISIONBLIZZARD_2022_10K.json",
+    "bytes": 950475,
+    "sha256": "4ed6a8f190cde02bceb71c2d3f60b46203c7d8aac07f46472b5fbc010186bfdc"
+  },
+  {
+    "path": "artifacts/page_cache/ACTIVSIONBLIZZARD_2023Q2_10Q.json",
+    "bytes": 226632,
+    "sha256": "98f6f4628a5b060f267987711a26eff6490fb95a03bf80955b5fc20ea17c53d0"
+  },
+  {
+    "path": "artifacts/page_cache/ADOBE_2015_10K.json",
+    "bytes": 502991,
+    "sha256": "23e2790065cf4b32fa5baf057df6980eaedc1e5bd3b4ab849181258d74d58931"
+  },
+  {
+    "path": "artifacts/page_cache/ADOBE_2016_10K.json",
+    "bytes": 440864,
+    "sha256": "8d352ac48afab01d9196ad59a7114bb84c4ddd3473e86073ea928aefb1b920fe"
+  },
+  {
+    "path": "artifacts/page_cache/ADOBE_2017_10K.json",
+    "bytes": 426544,
+    "sha256": "759d84349653f5f735c8dbe43fad47114e9e9ee83e39595be35c12bc26cae8ac"
+  },
+  {
+    "path": "artifacts/page_cache/ADOBE_2018_10K.json",
+    "bytes": 445131,
+    "sha256": "ab91353dfc61bb1614f5d6ac86da6e6489cb5717239392a8c4f2020bc8559f4f"
+  },
+  {
+    "path": "artifacts/page_cache/ADOBE_2019_10K.json",
+    "bytes": 460258,
+    "sha256": "3d9d668498dec3c29dc46ebaa27e0138acbac658d24bd66018bef2a722e76213"
+  },
+  {
+    "path": "artifacts/page_cache/ADOBE_2020_10K.json",
+    "bytes": 475635,
+    "sha256": "2b86b5748c56bee1482fe6afc31319548f6b5fb2dae4c3dc5b9f3ad155125a69"
+  },
+  {
+    "path": "artifacts/page_cache/ADOBE_2021_10K.json",
+    "bytes": 404261,
+    "sha256": "b7584e8b3485c3e6236c493b18cfdd42b546c5a6c12b4e8bebeacba9c3e7dfc7"
+  },
+  {
+    "path": "artifacts/page_cache/ADOBE_2022Q2_10Q.json",
+    "bytes": 207105,
+    "sha256": "9c9af52c4ecefba36f36eeddac8f65cfcc85e5b941c55d032ab38ec5a8bac9a7"
+  },
+  {
+    "path": "artifacts/page_cache/ADOBE_2022_10K.json",
+    "bytes": 395900,
+    "sha256": "2761e794dc4c84bb14842e86fe00a24516456f5355190d186e51db47d8b058b3"
+  },
+  {
+    "path": "artifacts/page_cache/AES_2015_10K.json",
+    "bytes": 1057050,
+    "sha256": "2ee642109b29710d846890c6106b84b9d4bd21e659ab9b7be9d0dee65573bd5e"
+  },
+  {
+    "path": "artifacts/page_cache/AES_2016_10K.json",
+    "bytes": 1298086,
+    "sha256": "9154ccab94a86fde0b095147bbd0bd3fb07956a9aff92203147bb307ef199278"
+  },
+  {
+    "path": "artifacts/page_cache/AES_2017_10K.json",
+    "bytes": 786666,
+    "sha256": "d87896cf2d7320fdc5ad88e8fad0de33ea2e9030ba4caa80ba6e9a3787a68c85"
+  },
+  {
+    "path": "artifacts/page_cache/AES_2018_10K.json",
+    "bytes": 784348,
+    "sha256": "b92be1b5c93d543fae8987120c587c7c25b51f1331b051057f6785c30a91b615"
+  },
+  {
+    "path": "artifacts/page_cache/AES_2019_10K.json",
+    "bytes": 813204,
+    "sha256": "5ff2513ebbeaca109f5c0a23fd91bea17d39c56f333fc159e20d2f74b8fe8d4c"
+  },
+  {
+    "path": "artifacts/page_cache/AES_2020_10K.json",
+    "bytes": 844461,
+    "sha256": "bc8d68946c470b30863b56a0fcbd600b4bb3b3c63870507a3435562c32b89bd4"
+  },
+  {
+    "path": "artifacts/page_cache/AES_2021_10K.json",
+    "bytes": 1000612,
+    "sha256": "26bf7d8f409d0219764d3b132bed16e52e268e88df2bc00c04ebabec10148264"
+  },
+  {
+    "path": "artifacts/page_cache/AES_2022_10K.json",
+    "bytes": 966426,
+    "sha256": "3872d44a25657ae5b09c0453e2d1914bf22acb39549dc1e0d3665824ce80e6d8"
+  },
+  {
+    "path": "artifacts/page_cache/AMAZON_2015_10K.json",
+    "bytes": 298841,
+    "sha256": "f452c6e554c3e612530ae1b098baa7a689711036bea50fed877c2a0c4439cad1"
+  },
+  {
+    "path": "artifacts/page_cache/AMAZON_2016_10K.json",
+    "bytes": 298921,
+    "sha256": "23037498ae0c3fb6b68665b1a6b996bbf02ff2fe86c0f05923b8bb37c3aa24ee"
+  },
+  {
+    "path": "artifacts/page_cache/AMAZON_2017_10K.json",
+    "bytes": 311277,
+    "sha256": "760508d5c54c46c7b3879d96bcc50fafa455d6b60feb67666e806b38257868b0"
+  },
+  {
+    "path": "artifacts/page_cache/AMAZON_2018_10K.json",
+    "bytes": 322929,
+    "sha256": "fb788cb6883fb4c8b572d52bf31ea2a3ef84f6803f8a7a9ac3f0122aa19d46ad"
+  },
+  {
+    "path": "artifacts/page_cache/AMAZON_2019_10K.json",
+    "bytes": 297885,
+    "sha256": "bccd35a66e6c537c7720ac0642119255cbb28108aa5d681af0ee81ccaf971ffc"
+  },
+  {
+    "path": "artifacts/page_cache/AMAZON_2020_10K.json",
+    "bytes": 281013,
+    "sha256": "4dbf3f01735bf48f0f33396eb46be3d28264e9f85bd13ee00173bcb6357d41ac"
+  },
+  {
+    "path": "artifacts/page_cache/AMAZON_2021_10K.json",
+    "bytes": 664248,
+    "sha256": "9355bf27554dfbfff68ace6b35a481bcefd93f4a8e3a0c47d91b55854665abf7"
+  },
+  {
+    "path": "artifacts/page_cache/AMAZON_2022_10K.json",
+    "bytes": 296574,
+    "sha256": "79bc51ef246772eef6ce560a4c0b27847d4cac92682f9abbdd1feaf08cb6884a"
+  },
+  {
+    "path": "artifacts/page_cache/AMCOR_2019_10K.json",
+    "bytes": 360453,
+    "sha256": "92c9155a5da5815945f051373b1a618b77f5c4685e1e0fb54038e491a766e3aa"
+  },
+  {
+    "path": "artifacts/page_cache/AMCOR_2020_10K.json",
+    "bytes": 593056,
+    "sha256": "ad1ec25149a47ac8c656f207eca260957f0abaa05bf7d09f21ae71dd596bdbd3"
+  },
+  {
+    "path": "artifacts/page_cache/AMCOR_2021_10K.json",
+    "bytes": 521165,
+    "sha256": "f99822202cd3ebcbcdb053d1be7bdbb9378f31daa8cd625b5f22a4d0ce999bf8"
+  },
+  {
+    "path": "artifacts/page_cache/AMCOR_2022_10K.json",
+    "bytes": 485681,
+    "sha256": "347d402191f29c144c1c5b0337ed78728446d23c3bebcb78abc527921bd8c2e9"
+  },
+  {
+    "path": "artifacts/page_cache/AMCOR_2022_8K_2022-04-26.json",
+    "bytes": 887398,
+    "sha256": "fe3dccb7ae9b760812a5e3b2cb07df9df5b90ece8a503a471178d0198b65e614"
+  },
+  {
+    "path": "artifacts/page_cache/AMCOR_2022_8K_2022-07-01.json",
+    "bytes": 25925,
+    "sha256": "c4b572be62372fde44ae05594e6bb587902c2ccaaed261ca68c1f933a8041295"
+  },
+  {
+    "path": "artifacts/page_cache/AMCOR_2022_8K_dated-2022-04-26.json",
+    "bytes": 888886,
+    "sha256": "32b6d691d1a1ccd8f61b5e9b18878e3733ec941f7c54b5911a49c1954e7b911f"
+  },
+  {
+    "path": "artifacts/page_cache/AMCOR_2022_8K_dated-2022-07-01.json",
+    "bytes": 25979,
+    "sha256": "92784ba5e97eb1684679f34977406295ee90693a9b4245d0a05399b56dce616e"
+  },
+  {
+    "path": "artifacts/page_cache/AMCOR_2023Q2_10Q.json",
+    "bytes": 134982,
+    "sha256": "d9954bfcd6782337ccd9372361618c362b66d45cafd9bc87846f821f2b906786"
+  },
+  {
+    "path": "artifacts/page_cache/AMCOR_2023Q4_EARNINGS.json",
+    "bytes": 46238,
+    "sha256": "dc93728096fff945f629ddc1c7dbce2e24f5ba1d8f707478b76183e338652aea"
+  },
+  {
+    "path": "artifacts/page_cache/AMCOR_2023_10K.json",
+    "bytes": 517153,
+    "sha256": "d445ccffa40ad397eb02d3b483744206b92687cadc08654d229a60f2ca3cb121"
+  },
+  {
+    "path": "artifacts/page_cache/AMD_2015_10K.json",
+    "bytes": 799029,
+    "sha256": "0075d1b8f459776be6eda0810af1b747904d7069a24e3c89dda519504ef70198"
+  },
+  {
+    "path": "artifacts/page_cache/AMD_2016_10K.json",
+    "bytes": 851515,
+    "sha256": "bf81dd907af94c223f7a9701ee0702cdcc6fe8dac72a253075243932ef17aa2a"
+  },
+  {
+    "path": "artifacts/page_cache/AMD_2017_10K.json",
+    "bytes": 951815,
+    "sha256": "b7c68021a9563bef169f11f6a32d26b1d079f3733d5518d746b1f2e5efdce7a7"
+  },
+  {
+    "path": "artifacts/page_cache/AMD_2018_10K.json",
+    "bytes": 628496,
+    "sha256": "be376030f3aaf2ee737fef2675e6cd76f2550e723dd6e422b4cea93c9886d892"
+  },
+  {
+    "path": "artifacts/page_cache/AMD_2019_10K.json",
+    "bytes": 412156,
+    "sha256": "7f01efde14e67d49c729a92385439fbbafb57d30cd9676e30a9778bd1da038cc"
+  },
+  {
+    "path": "artifacts/page_cache/AMD_2020_10K.json",
+    "bytes": 536854,
+    "sha256": "ddada72d1f99cadd2da43a8629a4877e5a88433219c3e2f987030e7e7990c7fa"
+  },
+  {
+    "path": "artifacts/page_cache/AMD_2021_10K.json",
+    "bytes": 403142,
+    "sha256": "515ad4b2b099a515a8910e46490a88cb76108a8fc883b2c6cf1fcd3fadfa67e7"
+  },
+  {
+    "path": "artifacts/page_cache/AMD_2022_10K.json",
+    "bytes": 436295,
+    "sha256": "05ef7c1eea298b8bb7c0c0c655a1789a55368165d9d3f0bae8509dd1364851ce"
+  },
+  {
+    "path": "artifacts/page_cache/AMD_2022_annualreport.json",
+    "bytes": 452572,
+    "sha256": "4b77ef33c748e29091273c29633f15bcad9725179008ebe870da467ea1bbf92c"
+  },
+  {
+    "path": "artifacts/page_cache/AMERICANEXPRESS_2022_10K.json",
+    "bytes": 875411,
+    "sha256": "e5572fef6488314ba407f12f005448902903e242252a3fb1fe217501e19f3011"
+  },
+  {
+    "path": "artifacts/page_cache/AMERICANWATERWORKS_2015_10K.json",
+    "bytes": 992696,
+    "sha256": "9cee5989ee5aa6e97a4f798a31faed0997af7d1a566e7a992b33e745ef3be692"
+  },
+  {
+    "path": "artifacts/page_cache/AMERICANWATERWORKS_2016_10K.json",
+    "bytes": 649554,
+    "sha256": "31a59c1fe6cb705446af291a092965f9e4191afab150a95a845af52e0c9eda58"
+  },
+  {
+    "path": "artifacts/page_cache/AMERICANWATERWORKS_2017_10K.json",
+    "bytes": 617114,
+    "sha256": "c1793535f984f8a5df6b5aa4ea6de9b9f6565fbf2074c2e0d4c5b4594377299d"
+  },
+  {
+    "path": "artifacts/page_cache/AMERICANWATERWORKS_2018_10K.json",
+    "bytes": 874413,
+    "sha256": "01f27e20df845aead0db8ca6e4db6735af38a085f15c26d7afe467a5e1f98fdd"
+  },
+  {
+    "path": "artifacts/page_cache/AMERICANWATERWORKS_2019_10K.json",
+    "bytes": 1061927,
+    "sha256": "59aea6bf70b676b5776e6030947f254593de858e3a55b1dc4186369293a1989f"
+  },
+  {
+    "path": "artifacts/page_cache/AMERICANWATERWORKS_2020_10K.json",
+    "bytes": 650689,
+    "sha256": "445f71d7f717e7fc536966b0cfe929ef95b68661d258214e4a4d4513cc62e930"
+  },
+  {
+    "path": "artifacts/page_cache/AMERICANWATERWORKS_2021_10K.json",
+    "bytes": 712372,
+    "sha256": "bc235fed4c2aa89241535fddbfb76af1aa5e9ebdffa25a661f1dcf0879b7272b"
+  },
+  {
+    "path": "artifacts/page_cache/AMERICANWATERWORKS_2022_10K.json",
+    "bytes": 1082080,
+    "sha256": "836675713218f8f7326e0bb3544489d431909ba74d9f79dc36a174ab02bf16a0"
+  },
+  {
+    "path": "artifacts/page_cache/AMERICANWATERWORKS_2023Q2_10Q.json",
+    "bytes": 233838,
+    "sha256": "466595661101c788b9cbb47ac82f8f7084b38fab4ade0cd5d5ee41c0a68fa0a9"
+  },
+  {
+    "path": "artifacts/page_cache/APPLE_2015_10K.json",
+    "bytes": 333196,
+    "sha256": "28dc4f8712789a5b267f9a23ec33296846bbdab3d352d45e3d051e0fce0c1dd0"
+  },
+  {
+    "path": "artifacts/page_cache/APPLE_2016_10K.json",
+    "bytes": 391768,
+    "sha256": "70c602dcedd20704756dd7570d4a617f98d6abba8cc82368aee75072fb5e9e67"
+  },
+  {
+    "path": "artifacts/page_cache/APPLE_2017_10K.json",
+    "bytes": 472031,
+    "sha256": "0636f4963a132cbc3b831830efa752ad67828d4512275ebe37f3101c48de3167"
+  },
+  {
+    "path": "artifacts/page_cache/APPLE_2018_10K.json",
+    "bytes": 381245,
+    "sha256": "bfb373178e172ad8a9906ae95e28147959c022874c356382d92b09b8a2b53096"
+  },
+  {
+    "path": "artifacts/page_cache/APPLE_2019_10K.json",
+    "bytes": 383243,
+    "sha256": "d952d5cf48d71509342b5580c9927589d8cdc3cf1d4d4e8a6aef77b274af094d"
+  },
+  {
+    "path": "artifacts/page_cache/APPLE_2020_10K.json",
+    "bytes": 391113,
+    "sha256": "37017dd1463d3f7c15061daab00bfe94362cbb6c9fdbd48a15130d74936caae7"
+  },
+  {
+    "path": "artifacts/page_cache/APPLE_2021_10K.json",
+    "bytes": 308166,
+    "sha256": "cf7a4a9715f17f636c9c233063efb36b50282d78d2849795ff9e113c73d44cb7"
+  },
+  {
+    "path": "artifacts/page_cache/APPLE_2022_10K.json",
+    "bytes": 305735,
+    "sha256": "2898b527c2839004d9d368394febb8382f354d3d6902fbce50d03c26822b36e8"
+  },
+  {
+    "path": "artifacts/page_cache/APPLE_2023Q3_10Q.json",
+    "bytes": 74927,
+    "sha256": "a24a5f981835915f3bf95073d94b20af7e487410508c6a1c863ce7ee9d7dcb04"
+  },
+  {
+    "path": "artifacts/page_cache/BESTBUY_2015_10K.json",
+    "bytes": 490184,
+    "sha256": "53d6f2f4f5af734bfa8b2c8b6967926da2dc4bb77ebb5a381cdcd78a3b75a9ae"
+  },
+  {
+    "path": "artifacts/page_cache/BESTBUY_2016_10K.json",
+    "bytes": 439599,
+    "sha256": "a45d26d919d930a46f0723e7566ff59e4d2a849dd2f2f6c23177bb369b3f676a"
+  },
+  {
+    "path": "artifacts/page_cache/BESTBUY_2017_10K.json",
+    "bytes": 424938,
+    "sha256": "3a074385e098b1cecd617fa18331b6c5db8a13ebc3caa15aa98ccdde3e5d8ad5"
+  },
+  {
+    "path": "artifacts/page_cache/BESTBUY_2018_10K.json",
+    "bytes": 433878,
+    "sha256": "3d6d930aeb00c1ca065c5bd1d4c29a31f4e607a72e710d6b62448942ebd14483"
+  },
+  {
+    "path": "artifacts/page_cache/BESTBUY_2019_10K.json",
+    "bytes": 430376,
+    "sha256": "11dd7703c629bbdc5a400a5b071cb559f054868b1762712f095af27d7506321a"
+  },
+  {
+    "path": "artifacts/page_cache/BESTBUY_2020_10K.json",
+    "bytes": 316054,
+    "sha256": "9ee201182361cf0d258a41871859662c7cb0be8195055d21581f2d9d05f4a9d1"
+  },
+  {
+    "path": "artifacts/page_cache/BESTBUY_2021_10K.json",
+    "bytes": 430426,
+    "sha256": "dffa3201774cbbac8a663ca91cfe2a02cdbd9e7d767ed007675aaab51a1ae14e"
+  },
+  {
+    "path": "artifacts/page_cache/BESTBUY_2022_10K.json",
+    "bytes": 451079,
+    "sha256": "dfe68202097002102fb84c18b92f2ba14ba9994c1732cbdc27b1207dbe18c061"
+  },
+  {
+    "path": "artifacts/page_cache/BESTBUY_2023Q4_EARNINGS.json",
+    "bytes": 35202,
+    "sha256": "233b25395b4778a87d9b82cd2aff6dff69c57b560798b060e4c8ddaccb669f88"
+  },
+  {
+    "path": "artifacts/page_cache/BESTBUY_2023_10K.json",
+    "bytes": 312357,
+    "sha256": "978d0380ed82bc329390c15c0cec81388ab4372c94f2cc1a6653b5219d43c96b"
+  },
+  {
+    "path": "artifacts/page_cache/BESTBUY_2023_8K_dated-2023-04-12.json",
+    "bytes": 428541,
+    "sha256": "55c920a5f024181acfe8cd0afc6a84df1e4131d5a79b4c3e28c1ae58419a9677"
+  },
+  {
+    "path": "artifacts/page_cache/BESTBUY_2023_8K_dated-2023-04-24.json",
+    "bytes": 4393,
+    "sha256": "ff9933fb64aee4b6931bbf693f632108831fbbcd5ce36102ea0499efbfab502a"
+  },
+  {
+    "path": "artifacts/page_cache/BESTBUY_2024Q2_10Q.json",
+    "bytes": 103673,
+    "sha256": "aa89077f079e8cd2fbf323a107b59e19005cc25b9a45e53f39df6173e036b56a"
+  },
+  {
+    "path": "artifacts/page_cache/BESTBUY_2024Q2_EARNINGS.json",
+    "bytes": 32954,
+    "sha256": "f7acd49b3e7950729cabc58f66fa68f08888e96065154991af75a48e3f717c0d"
+  },
+  {
+    "path": "artifacts/page_cache/BLOCK_2015_10K.json",
+    "bytes": 555972,
+    "sha256": "57fd7102f7832b455e8b2aceb003965e537f92630231968153ca61a3650fc0fc"
+  },
+  {
+    "path": "artifacts/page_cache/BLOCK_2016_10K.json",
+    "bytes": 469782,
+    "sha256": "65b48877cd749d8f3c0001478a418b8be2266fe19c8299bcefc865354e4df67b"
+  },
+  {
+    "path": "artifacts/page_cache/BLOCK_2017_10K.json",
+    "bytes": 574059,
+    "sha256": "a18b8522d42ba09bf5aadfa11473a6b59e65e0c0b102c7275481c454cd51b67c"
+  },
+  {
+    "path": "artifacts/page_cache/BLOCK_2018_10K.json",
+    "bytes": 566639,
+    "sha256": "e66eeda9f6186a34f2be92052fbc1cc4f5a4f4127802a9f347cdb68f4f20d0c6"
+  },
+  {
+    "path": "artifacts/page_cache/BLOCK_2019_10K.json",
+    "bytes": 554928,
+    "sha256": "5091c5382f3394655248af2074a3ee668eee032dc1fb97a9eea768a0a5813143"
+  },
+  {
+    "path": "artifacts/page_cache/BLOCK_2020_10K.json",
+    "bytes": 651959,
+    "sha256": "b51ec773a6badefc3021803e8eed089e617a12591affd650a6e4c6d02eedb659"
+  },
+  {
+    "path": "artifacts/page_cache/BLOCK_2021_10K.json",
+    "bytes": 1732461,
+    "sha256": "dd7562ba24ca56f1feace497edbe9a532935955145da0266bce4f1d360440489"
+  },
+  {
+    "path": "artifacts/page_cache/BLOCK_2022_10K.json",
+    "bytes": 701458,
+    "sha256": "aadb8ccaec73975d547d2bd9a8f8da202a60601a14fe8ab9fb16e304575793ae"
+  },
+  {
+    "path": "artifacts/page_cache/BLOCK_2022_8K_dated-2022-01-28.json",
+    "bytes": 403420,
+    "sha256": "ecd84e44252c0e2b00aa40215323cbdb3d1d7e7b20db8eb5744efbfecc3b2e02"
+  },
+  {
+    "path": "artifacts/page_cache/BOEING_2015_10K.json",
+    "bytes": 540330,
+    "sha256": "0693c5f837c391e4b5047bccf7506c0e22879ebe129ded3a2d35642ff8011d0f"
+  },
+  {
+    "path": "artifacts/page_cache/BOEING_2016_10K.json",
+    "bytes": 638597,
+    "sha256": "e0eb0a37b703c27eac54727a4f09c517b80acad40f983e503bf2ff33e2b83143"
+  },
+  {
+    "path": "artifacts/page_cache/BOEING_2017_10K.json",
+    "bytes": 388421,
+    "sha256": "632a20622520af4f529c35ec93fa112ad05aaaed61680475111717e602482165"
+  },
+  {
+    "path": "artifacts/page_cache/BOEING_2018_10K.json",
+    "bytes": 410616,
+    "sha256": "8914a05823233803a990a5b4d59ef6adee411841838f122f7b38ea519c96cc96"
+  },
+  {
+    "path": "artifacts/page_cache/BOEING_2019_10K.json",
+    "bytes": 438893,
+    "sha256": "b5d5d87b3129b6938395fd21a9bc3b5ad223860b7f67f9f8f17f86298ab36442"
+  },
+  {
+    "path": "artifacts/page_cache/BOEING_2020_10K.json",
+    "bytes": 499402,
+    "sha256": "fac5919cefe7271dae3922f92d1ca65ad7b98b4d0065e7086195d0a229bc613e"
+  },
+  {
+    "path": "artifacts/page_cache/BOEING_2021_10K.json",
+    "bytes": 647562,
+    "sha256": "063d637bd4b4ef8d561aadc3863450fc6387f7564855a35db578eb2b80d7917c"
+  },
+  {
+    "path": "artifacts/page_cache/BOEING_2022_10K.json",
+    "bytes": 545749,
+    "sha256": "97a69fc050a3644e8227cd6117b803b3edf1c17b06401984acf8c6419e1d604b"
+  },
+  {
+    "path": "artifacts/page_cache/BOSTONPROPERTIES_2015_10K.json",
+    "bytes": 818381,
+    "sha256": "b26099ad49fc7ab96077704b4205eb6cb9c09da18d0a672fdbba8263a01197c8"
+  },
+  {
+    "path": "artifacts/page_cache/COCACOLA_2015_10K.json",
+    "bytes": 779802,
+    "sha256": "0ed27274e50dafa15c1a71c6db0f447102308f0ccd2a1287296097af5c6e06d9"
+  },
+  {
+    "path": "artifacts/page_cache/COCACOLA_2016_10K.json",
+    "bytes": 753187,
+    "sha256": "1a56473a95dd290e7c3d907b3ca47c1c9a6a647835902f6b865dcbbc32af0eb9"
+  },
+  {
+    "path": "artifacts/page_cache/COCACOLA_2017_10K.json",
+    "bytes": 739888,
+    "sha256": "aa7dee546004f1df07e1d08aa4f3984755c755e29644d64b8634be4b86b0cdf4"
+  },
+  {
+    "path": "artifacts/page_cache/COCACOLA_2018_10K.json",
+    "bytes": 750206,
+    "sha256": "04be7da2e1505844a82a83766e61a56070172a1eb1a99e03eafa0f86c4fa10d5"
+  },
+  {
+    "path": "artifacts/page_cache/COCACOLA_2019_10K.json",
+    "bytes": 796259,
+    "sha256": "e1083dee60923d5aa23c313fe5ed953807f207b9299b4d7ff1df03904fedc5c9"
+  },
+  {
+    "path": "artifacts/page_cache/COCACOLA_2020_10K.json",
+    "bytes": 735590,
+    "sha256": "20c3d872394b195d3aa7cebdb58f581d68b38d2d021450452bbac0c8b4913e75"
+  },
+  {
+    "path": "artifacts/page_cache/COCACOLA_2021_10K.json",
+    "bytes": 695481,
+    "sha256": "542be9947c1a09a1dcdd21c4e6f3e03c38bad12ce763d24af5d5f0bff1bc14c5"
+  },
+  {
+    "path": "artifacts/page_cache/COCACOLA_2022_10K.json",
+    "bytes": 672712,
+    "sha256": "c479b4c3ae644c947e0d66fc9f99b0e9fb687ade3b44b51ef608b8bebe4a4fc5"
+  },
+  {
+    "path": "artifacts/page_cache/CORNING_2015_10K.json",
+    "bytes": 875771,
+    "sha256": "bafb71470574d2052f2affc06a1e046befa30ba94d489cca7dcf5dbe89526810"
+  },
+  {
+    "path": "artifacts/page_cache/CORNING_2016_10K.json",
+    "bytes": 529618,
+    "sha256": "d459fd0fb37c60e418b2bddbff637d39b391e36d4d536ab4078fcf451b00438e"
+  },
+  {
+    "path": "artifacts/page_cache/CORNING_2017_10K.json",
+    "bytes": 502327,
+    "sha256": "a191ef5aaca085256d0e173804c1e7257f731359c51614f239185d1f65498c4b"
+  },
+  {
+    "path": "artifacts/page_cache/CORNING_2018_10K.json",
+    "bytes": 404051,
+    "sha256": "dcc68aca6378eab87097a7dd637f166f1e3aa6f1091cb690c7c5bb09a6b8b96d"
+  },
+  {
+    "path": "artifacts/page_cache/CORNING_2019_10K.json",
+    "bytes": 429687,
+    "sha256": "c5a2bc5d2eaed4713fbcbfb61eb088bf4040903f4506e9578c5b7972dcf29119"
+  },
+  {
+    "path": "artifacts/page_cache/CORNING_2020_10K.json",
+    "bytes": 416135,
+    "sha256": "9e27f25733dac9acffc05cc0b9628d022fae6b162cef8cf276f222cd257a34ba"
+  },
+  {
+    "path": "artifacts/page_cache/CORNING_2021_10K.json",
+    "bytes": 409299,
+    "sha256": "3020f223632ed15c58e212149f2243da0ea1955c0f01feb886a85ed5e0a1dbf9"
+  },
+  {
+    "path": "artifacts/page_cache/CORNING_2022_10K.json",
+    "bytes": 478940,
+    "sha256": "bfb53519897ab615d7ce8e5d0de8eb2471de51dbc3f734569ac808019cf31eb4"
+  },
+  {
+    "path": "artifacts/page_cache/CORNING_2023Q2_10Q.json",
+    "bytes": 117777,
+    "sha256": "30353632805ea78ce305fd4f4e2965bcb57a50327b5b4c28222328449202428e"
+  },
+  {
+    "path": "artifacts/page_cache/COSTCO_2015_10K.json",
+    "bytes": 263100,
+    "sha256": "a1a29328f5004a9d606f60dea854e25d5a0c4082223813f9b269b0998587da1a"
+  },
+  {
+    "path": "artifacts/page_cache/COSTCO_2016_10K.json",
+    "bytes": 233215,
+    "sha256": "5a40e495f1deeb1dc89636c57b588b11c632bb228856de546c2d9d7213794334"
+  },
+  {
+    "path": "artifacts/page_cache/COSTCO_2017_10K.json",
+    "bytes": 226116,
+    "sha256": "3bcc0a609ba0be50a948f936707018b78eac466d15da7dc5d79bce5a4b862c13"
+  },
+  {
+    "path": "artifacts/page_cache/COSTCO_2018_10K.json",
+    "bytes": 214778,
+    "sha256": "2a4498009c29c23598865cf8ea5ed80c4d432716847f954284ddf34a981cbf54"
+  },
+  {
+    "path": "artifacts/page_cache/COSTCO_2019_10K.json",
+    "bytes": 219801,
+    "sha256": "3b871ee993d180e5444403855073185b7a7004ec285bb73ca29f7933e136cbbf"
+  },
+  {
+    "path": "artifacts/page_cache/COSTCO_2020_10K.json",
+    "bytes": 236920,
+    "sha256": "0572898ec061b43a5a646d934491dedf608686c48cc04286250fe5815e2155c1"
+  },
+  {
+    "path": "artifacts/page_cache/COSTCO_2021_10K.json",
+    "bytes": 222203,
+    "sha256": "730e4e4e4eeb7a6d81508a6655aeaaa565569710c2ca8e3a295584e0ea4e0b09"
+  },
+  {
+    "path": "artifacts/page_cache/COSTCO_2022_10K.json",
+    "bytes": 237616,
+    "sha256": "c89a46a2a2599f914d5e1d20285087e54ad7c6092c0fc237e8207ad3a21f73aa"
+  },
+  {
+    "path": "artifacts/page_cache/COSTCO_2023Q1_EARNINGS.json",
+    "bytes": 6930,
+    "sha256": "c94c093745cfb737325f8e645fa935e5ab1ec5d619f90b640f9fe1a99aed5d2b"
+  },
+  {
+    "path": "artifacts/page_cache/COSTCO_2023Q3_EARNINGS.json",
+    "bytes": 7347,
+    "sha256": "257c850a5e83d5a863c87ea1b390801ffc48a4944e939ec51d581967a48eef70"
+  },
+  {
+    "path": "artifacts/page_cache/COSTCO_2023_8K_dated-2023-01-19.json",
+    "bytes": 6325,
+    "sha256": "55c6f87e220b8af4e78b106d5149415230c9504d8831d35bb7a43734abcef05a"
+  },
+  {
+    "path": "artifacts/page_cache/COSTCO_2023_8K_dated-2023-08-09.json",
+    "bytes": 115662,
+    "sha256": "b21c04728a214ca4a05fde254ad0b26ccd738142825fa617b66417b1cadad54d"
+  },
+  {
+    "path": "artifacts/page_cache/COSTCO_2023_8K_dated-2023-08-16.json",
+    "bytes": 4618,
+    "sha256": "67775925545dea67d510ad2b9620bee583a5507c56b7c909ab5714804f531534"
+  },
+  {
+    "path": "artifacts/page_cache/CVSHEALTH_2015_10K.json",
+    "bytes": 697837,
+    "sha256": "66eeffa650fe7894335f9698d56e3c9de113c0672628b627d8bc0017a49a9900"
+  },
+  {
+    "path": "artifacts/page_cache/CVSHEALTH_2016_10K.json",
+    "bytes": 928025,
+    "sha256": "3950ec4f9445609e99f41d0f444a7d376b80a0e41bdc45d164d412b37d64d911"
+  },
+  {
+    "path": "artifacts/page_cache/CVSHEALTH_2017_10K.json",
+    "bytes": 531049,
+    "sha256": "72d25202de164cd47b2ec7c78656c476a3943aa07f9efe43128c5a6a9af58267"
+  },
+  {
+    "path": "artifacts/page_cache/CVSHEALTH_2018_10K.json",
+    "bytes": 1434157,
+    "sha256": "82c6b34e7c6ce8504c90c1433b8776e81555330a6f432fcd1b4c9ae4428e29c9"
+  },
+  {
+    "path": "artifacts/page_cache/CVSHEALTH_2019_10K.json",
+    "bytes": 1061554,
+    "sha256": "2477b5827b243eb21fe0c0816803c4889cdcee301fa5fcb98e914ed9443882e8"
+  },
+  {
+    "path": "artifacts/page_cache/CVSHEALTH_2020_10K.json",
+    "bytes": 906361,
+    "sha256": "b0246e7fd7b80bc95eef2805928060126ed85914309840507761e52da9c58259"
+  },
+  {
+    "path": "artifacts/page_cache/CVSHEALTH_2021_10K.json",
+    "bytes": 977846,
+    "sha256": "dba2a200f4ce87b2401da3cbeaea4504a9c0f903d86a8008f99457433b9cb6b2"
+  },
+  {
+    "path": "artifacts/page_cache/CVSHEALTH_2022_10K.json",
+    "bytes": 860592,
+    "sha256": "d2f8500a4bb9326f73ab35ae82822000a6fbee84b72de319b446f05ee5554b3c"
+  },
+  {
+    "path": "artifacts/page_cache/EBAY_2015_10K.json",
+    "bytes": 389693,
+    "sha256": "55026b2ac47053deb5cb15177f80238e6c9791c871c757a9cbbada152857dcfe"
+  },
+  {
+    "path": "artifacts/page_cache/EBAY_2016_10K.json",
+    "bytes": 379077,
+    "sha256": "c9e1bed6867184463abef325fba2adb55de9f14de7b3379a8e1236c65a48f0ba"
+  },
+  {
+    "path": "artifacts/page_cache/EBAY_2017_10K.json",
+    "bytes": 371230,
+    "sha256": "941d1ba3084698fe6844a614f7c4eccf867891bdbdc9a502b335d5b0599c4c14"
+  },
+  {
+    "path": "artifacts/page_cache/EBAY_2018_10K.json",
+    "bytes": 647675,
+    "sha256": "f1149ad517460bacb4b7f4eeacdef00a98cb5ccb6c462c03ca4643bc35099cb4"
+  },
+  {
+    "path": "artifacts/page_cache/EBAY_2019_10K.json",
+    "bytes": 499360,
+    "sha256": "b43665ec8cd9c7ec129ebcbf8cc07535ab8fe4902746633cf29ada5b80bdc0da"
+  },
+  {
+    "path": "artifacts/page_cache/EBAY_2020_10K.json",
+    "bytes": 413867,
+    "sha256": "ffddd19c85af814bb3d9375938cf35d145358e6deb1370b167dd6cabbc8be688"
+  },
+  {
+    "path": "artifacts/page_cache/EBAY_2021_10K.json",
+    "bytes": 481296,
+    "sha256": "422f6e0f5c00a6fd3b553e19959e7b847408b54370785075379312ffc9ecc2e8"
+  },
+  {
+    "path": "artifacts/page_cache/EBAY_2022_10K.json",
+    "bytes": 428799,
+    "sha256": "711c42543b8cb32d3138123186cd4ef557ed71e1347ee4288ab42b849ead0381"
+  },
+  {
+    "path": "artifacts/page_cache/EBAY_2023Q1_8K.json",
+    "bytes": 5471,
+    "sha256": "5d6401211034f58bcedea2b5cb68b3e28aa6b8de9e7345f11c12e88641b82721"
+  },
+  {
+    "path": "artifacts/page_cache/EBAY_2023Q1_EARNINGS.json",
+    "bytes": 36309,
+    "sha256": "7419a6b85d1cb0f6e7b4dcf37d6431285c24a30794ecbbd15512b6dc9127f958"
+  },
+  {
+    "path": "artifacts/page_cache/EBAY_2023Q2_10Q.json",
+    "bytes": 547716,
+    "sha256": "b849183bac94c56ab72eab8d4b33c809e3e66cbb16399cb6bc22ab884a264a63"
+  },
+  {
+    "path": "artifacts/page_cache/EBAY_2023Q2_8K.json",
+    "bytes": 3953,
+    "sha256": "28f36590fe14a2e391185c4f7dc5a10966fdcdc9b239508a020157e9a51f8557"
+  },
+  {
+    "path": "artifacts/page_cache/EBAY_2023Q2_EARNINGS.json",
+    "bytes": 36830,
+    "sha256": "c1a4c9e5e4dd12d0899af6f3d338a6c76748a4909fa963db145962e205af8088"
+  },
+  {
+    "path": "artifacts/page_cache/FEDEX_2023_10K.json",
+    "bytes": 762317,
+    "sha256": "d99d758b95366842eec10c25396271b3d27b3ad42f3ba00913f56dfa420a19b8"
+  },
+  {
+    "path": "artifacts/page_cache/FEDEX_2023_annualreport.json",
+    "bytes": 531091,
+    "sha256": "d6c120033bd7b7f1db3b22e4eb3b48d48371afd336c11284840b993e92d5d272"
+  },
+  {
+    "path": "artifacts/page_cache/FOOTLOCKER_2022_10K.json",
+    "bytes": 391660,
+    "sha256": "002b2737c506a2955f161183d30931fc79ae307b75859316e670a9306e7f67bc"
+  },
+  {
+    "path": "artifacts/page_cache/FOOTLOCKER_2022_10Q.json",
+    "bytes": 110117,
+    "sha256": "760b761f70bef81bb0975ffaf38c533715ed0bdfcfd2d781434ce9e49a430e68"
+  },
+  {
+    "path": "artifacts/page_cache/FOOTLOCKER_2022_8K_dated-2022-05-20.json",
+    "bytes": 6689,
+    "sha256": "dab5dd57798fd5eab93ebde1a3afe7fc65aee343a17d51bc993592e361c9b087"
+  },
+  {
+    "path": "artifacts/page_cache/FOOTLOCKER_2022_8K_dated_2022-08-19.json",
+    "bytes": 84544,
+    "sha256": "2424fd275395760715295e6839fbdfc6b3e62db81c253b1eb2c80755651da573"
+  },
+  {
+    "path": "artifacts/page_cache/FOOTLOCKER_2022_8K_dated_2023-02-21.json",
+    "bytes": 4959,
+    "sha256": "edac0033cd99c3b6618cf17639e655f769ba75b7dc2a23f5ab7d96b7026a8e05"
+  },
+  {
+    "path": "artifacts/page_cache/FOOTLOCKER_2023Q3_10Q.json",
+    "bytes": 110119,
+    "sha256": "e509130ec76053e6b760dfd0fd153dd4b0d51e76b8d4e69b5089f424b9fa87a9"
+  },
+  {
+    "path": "artifacts/page_cache/FOOTLOCKER_2023_10K.json",
+    "bytes": 330482,
+    "sha256": "22947bda5630aaf8a59b19ef9b34d0aa164fe5693ed4af61869dd22afac1d7c6"
+  },
+  {
+    "path": "artifacts/page_cache/FOOTLOCKER_2023_annualreport.json",
+    "bytes": 312042,
+    "sha256": "07a938762141d51fa4034b1edf52159b88fbedcd9be694aacd7df7e4744bcb8e"
+  },
+  {
+    "path": "artifacts/page_cache/GENERALMILLS_2015_10K.json",
+    "bytes": 409108,
+    "sha256": "0ca72bcbfbfe8fe91483cf318c00799624ea63866e5ed03f7227cd783a59d77f"
+  },
+  {
+    "path": "artifacts/page_cache/GENERALMILLS_2016_10K.json",
+    "bytes": 357936,
+    "sha256": "08ea0a87353c10d50eac9d2388e7b8231ee5c940cce9e341bb2535e1a317f89a"
+  },
+  {
+    "path": "artifacts/page_cache/GENERALMILLS_2017_10K.json",
+    "bytes": 380333,
+    "sha256": "f11e48eb3d95f4d4bf44f4c3ce3d56bc26d5b7c69412705f8111d766d514ae46"
+  },
+  {
+    "path": "artifacts/page_cache/GENERALMILLS_2018_10K.json",
+    "bytes": 630318,
+    "sha256": "20216b1487e97a66e69426d124e427254834dd1b721e866b7fb961747b22c980"
+  },
+  {
+    "path": "artifacts/page_cache/GENERALMILLS_2019_10K.json",
+    "bytes": 429601,
+    "sha256": "d64558455db9ea48f1387d6da65fe4a22ce8bf38e8629a60397924e1a3ef586f"
+  },
+  {
+    "path": "artifacts/page_cache/GENERALMILLS_2020_10K.json",
+    "bytes": 429694,
+    "sha256": "a01d114321743a6246b649695380d068d2690b695f8d6984e5e5fbfb6bbff6f8"
+  },
+  {
+    "path": "artifacts/page_cache/GENERALMILLS_2021_10K.json",
+    "bytes": 413108,
+    "sha256": "767cd30993bc0b5ae672c4e4b0fdee33a38ba89d09685edbc797985a36c40df7"
+  },
+  {
+    "path": "artifacts/page_cache/GENERALMILLS_2022_10K.json",
+    "bytes": 402893,
+    "sha256": "a4f73b4a4b47010fa8171e6bf72e8b3442e45ee6e2e0a225637f376abed4b0f2"
+  },
+  {
+    "path": "artifacts/page_cache/GENERALMILLS_2023_10K.json",
+    "bytes": 793798,
+    "sha256": "71f8d833fb1693bd4287777dc3c4236a540feaf256dc0eded45f3558f0050668"
+  },
+  {
+    "path": "artifacts/page_cache/GENERALMILLS_2023_annualreport.json",
+    "bytes": 314984,
+    "sha256": "0abf1e40d36ecbc8e777c2cb8fdb523b61b10256cdc170a733e16767b40dc634"
+  },
+  {
+    "path": "artifacts/page_cache/INTEL_2015_10K.json",
+    "bytes": 469336,
+    "sha256": "23215e772bfb9f7cd6fcd6d282e470420757ea9c7652bee3afda8671894572df"
+  },
+  {
+    "path": "artifacts/page_cache/INTEL_2016_10K.json",
+    "bytes": 471530,
+    "sha256": "01ec8a4b3ea52c7b166842dd488f0eda5fb4986b6532dcac8a67cf261e0115d0"
+  },
+  {
+    "path": "artifacts/page_cache/INTEL_2017_10K.json",
+    "bytes": 529965,
+    "sha256": "5dcd1ba78d0409e9869fbf8dc221385fc2f3b3b59f444abfa55bf4c90ea4d471"
+  },
+  {
+    "path": "artifacts/page_cache/INTEL_2018_10K.json",
+    "bytes": 459574,
+    "sha256": "00be4dc45a8231d16c579790d246e43072e76720cef246680025bbbc5c232ae8"
+  },
+  {
+    "path": "artifacts/page_cache/INTEL_2019_10K.json",
+    "bytes": 424753,
+    "sha256": "adcef757226bc193258b63de75d89d6f6777f460f0099daa8aabee44c6b84c92"
+  },
+  {
+    "path": "artifacts/page_cache/INTEL_2020_10K.json",
+    "bytes": 446610,
+    "sha256": "13c3b394fc0310dfd05151e149f1d19fdbdf7015495438a817f0f01e6c7a99dd"
+  },
+  {
+    "path": "artifacts/page_cache/INTEL_2021_10K.json",
+    "bytes": 454362,
+    "sha256": "1bb06e815b0caa8bec3bd9153ae87cd47d61757547b4ee2f871004cc51fa46d8"
+  },
+  {
+    "path": "artifacts/page_cache/INTEL_2022Q4_EARNINGS.json",
+    "bytes": 52012,
+    "sha256": "4091c5cf796466178f9ec1dd6c108897bdb59cfee18396a237bb8ee57118910b"
+  },
+  {
+    "path": "artifacts/page_cache/INTEL_2022_10K.json",
+    "bytes": 487554,
+    "sha256": "a79fa4778b020da56582e7ef059d1b4cb7b5acc5ac8ea278ae3838c4d7082a98"
+  },
+  {
+    "path": "artifacts/page_cache/INTEL_2023Q1_EARNINGS.json",
+    "bytes": 36526,
+    "sha256": "935843f66331ee2b25ac33df1f06cb32417fc8cdb1c43b6ea71d85c79d205832"
+  },
+  {
+    "path": "artifacts/page_cache/INTEL_2023_8K_dated-2022-11-22.json",
+    "bytes": 264416,
+    "sha256": "41335376f39b5838ad1af07885508d2eb51bb4969f26ddb6fa4c425694ad6547"
+  },
+  {
+    "path": "artifacts/page_cache/INTEL_2023_8K_dated-2023-02-10.json",
+    "bytes": 145,
+    "sha256": "2e7a76a0af529d09dcba0951a5dcb6ae43b8fdf2052ce81be00ecdee595e7308"
+  },
+  {
+    "path": "artifacts/page_cache/INTEL_2023_8K_dated-2023-08-16.json",
+    "bytes": 145,
+    "sha256": "4410ae07b5874b255e8b07d6009bfed7aa683ecf49f89634e7257c485c9b3a4f"
+  },
+  {
+    "path": "artifacts/page_cache/JOHNSON_JOHNSON_2015_10K.json",
+    "bytes": 381059,
+    "sha256": "99b2a582cf681ac309589cdaf56a9c96c6ff4ceeecbd474aec6d96f61b4da07d"
+  },
+  {
+    "path": "artifacts/page_cache/JOHNSON_JOHNSON_2016_10K.json",
+    "bytes": 395669,
+    "sha256": "2a20f8747385336aac1695ebdcb732f548980bd86162b0ba247571fe3d9964b6"
+  },
+  {
+    "path": "artifacts/page_cache/JOHNSON_JOHNSON_2017_10K.json",
+    "bytes": 396790,
+    "sha256": "0a494206d295e8f85c44e8c649fabd95e7f31f1a4561b2af1da10d08d9418613"
+  },
+  {
+    "path": "artifacts/page_cache/JOHNSON_JOHNSON_2018_10K.json",
+    "bytes": 431951,
+    "sha256": "389d6b8bd2590764a62e684a9ae7e40bb4aed4fa552159dd22f0fdf88bd0261d"
+  },
+  {
+    "path": "artifacts/page_cache/JOHNSON_JOHNSON_2019_10K.json",
+    "bytes": 472556,
+    "sha256": "7876c060442a83b51080628a04fdba2db15f8823e334da69314f0ef5bd67912e"
+  },
+  {
+    "path": "artifacts/page_cache/JOHNSON_JOHNSON_2020_10K.json",
+    "bytes": 504432,
+    "sha256": "d8521a8463af999c65f2622e96fc4b25e8d1ae522d39c8098ed33a068e65a868"
+  },
+  {
+    "path": "artifacts/page_cache/JOHNSON_JOHNSON_2021_10K.json",
+    "bytes": 482318,
+    "sha256": "55afdbb19173dcc067614833c11aaf645b2e4a5adec9b5679edd0e691447e786"
+  },
+  {
+    "path": "artifacts/page_cache/JOHNSON_JOHNSON_2022Q4_EARNINGS.json",
+    "bytes": 46761,
+    "sha256": "2a2f84f17f1f75b990eed08eb5bce2ce9a634a20f9259a3c2764fc9c4837b615"
+  },
+  {
+    "path": "artifacts/page_cache/JOHNSON_JOHNSON_2022_10K.json",
+    "bytes": 520057,
+    "sha256": "74b63c42dc4313b5b3d5b5eb6fbc1f23d05aaf1a515c78c42d47ea1f30108681"
+  },
+  {
+    "path": "artifacts/page_cache/JOHNSON_JOHNSON_2023Q1_EARNINGS.json",
+    "bytes": 35924,
+    "sha256": "805be1ddc241496870a39b4ee203c49a79c131339f1a5c46a4f352e74fcdf43b"
+  },
+  {
+    "path": "artifacts/page_cache/JOHNSON_JOHNSON_2023Q2_EARNINGS.json",
+    "bytes": 45467,
+    "sha256": "4e8fea098b2ed37f55c7d71ed2d5c50d094e26e86a5f5459538cfa9d6a54b9ae"
+  },
+  {
+    "path": "artifacts/page_cache/JOHNSON_JOHNSON_2023_8K_dated-2023-08-23.json",
+    "bytes": 3238,
+    "sha256": "c010df531ea1453eb1a964e123080e2e857c8c4f7c770c2357a5e780448c4ffb"
+  },
+  {
+    "path": "artifacts/page_cache/JOHNSON_JOHNSON_2023_8K_dated-2023-08-30.json",
+    "bytes": 56178,
+    "sha256": "6c17f9a3aca0a46db7c58b729927f9c7b0deb3938a82996ddff89b705d8c48dd"
+  },
+  {
+    "path": "artifacts/page_cache/JPMORGAN_2021Q1_10Q.json",
+    "bytes": 592095,
+    "sha256": "a596dfeeba378d4f4b5a7b6ecb07e0a654f3b507b3be291de24ff5edb809694d"
+  },
+  {
+    "path": "artifacts/page_cache/JPMORGAN_2021Q2_10Q.json",
+    "bytes": 649838,
+    "sha256": "2653861a3d41d186bdb9c41c850b876aacc1fe0fb44bb35161878e08725fe611"
+  },
+  {
+    "path": "artifacts/page_cache/JPMORGAN_2021Q3_10Q.json",
+    "bytes": 662027,
+    "sha256": "7ed3a302b17769ff23a4893feeca3365c32e15370cbda37944bc23783c8c2483"
+  },
+  {
+    "path": "artifacts/page_cache/JPMORGAN_2021_10K.json",
+    "bytes": 1564927,
+    "sha256": "206044bc32c7445809560a61110eb28a7d2653e45f6f530b704a9646d8f69d71"
+  },
+  {
+    "path": "artifacts/page_cache/JPMORGAN_2022Q1_10Q.json",
+    "bytes": 571641,
+    "sha256": "3919b16b66de11f61421ad866fd2ebb8caac9c9b37050e8e51a7d0cecdad70ce"
+  },
+  {
+    "path": "artifacts/page_cache/JPMORGAN_2022Q2_10Q.json",
+    "bytes": 629510,
+    "sha256": "ae7fbdaa58fd2bc137b1753c14a4cf4ce9234ce14c1137b057001a68d6793b90"
+  },
+  {
+    "path": "artifacts/page_cache/JPMORGAN_2022Q3_10Q.json",
+    "bytes": 646283,
+    "sha256": "9e2c4a4850738e3755d76c28e8cc5da10cec14ce731fc07c134e1a39d5031f17"
+  },
+  {
+    "path": "artifacts/page_cache/JPMORGAN_2022_10K.json",
+    "bytes": 1535605,
+    "sha256": "1e727266dfe73b9f8cd486b3b6da9b53ca8b41c9ad1342fd334ac2f7ebd3fe83"
+  },
+  {
+    "path": "artifacts/page_cache/JPMORGAN_2023Q1_10Q.json",
+    "bytes": 584867,
+    "sha256": "267fd7cec76840ef8ff9481f0a9ef02d2b1984c4cd6aa5aeea898c38b056bb9f"
+  },
+  {
+    "path": "artifacts/page_cache/JPMORGAN_2023Q2_10Q.json",
+    "bytes": 720124,
+    "sha256": "48e0f8533cf307523318e2e98c7eaf30ebd725faa2b2a4cbf9e8ef17be065f29"
+  },
+  {
+    "path": "artifacts/page_cache/KRAFTHEINZ_2015_10K.json",
+    "bytes": 466212,
+    "sha256": "05760b9884ec987b6ccbee90d31c5ff2b78d259df9e874f95100189a7555b2f1"
+  },
+  {
+    "path": "artifacts/page_cache/KRAFTHEINZ_2016_10K.json",
+    "bytes": 509973,
+    "sha256": "33d8a23c6e5136a42892fc8b4817d9eef3d9287151bdd130f1dc9e0c1f3f71cd"
+  },
+  {
+    "path": "artifacts/page_cache/KRAFTHEINZ_2017_10K.json",
+    "bytes": 573095,
+    "sha256": "4a91f378a5932276b62a475ba588af8ded728f4aebce8ee1eee1aa81bd3a2826"
+  },
+  {
+    "path": "artifacts/page_cache/KRAFTHEINZ_2018_10K.json",
+    "bytes": 1398621,
+    "sha256": "bacf72a6b742c28373d7f69a354f3dfdb169ca3eaee7f44101fe133da94c1aa2"
+  },
+  {
+    "path": "artifacts/page_cache/KRAFTHEINZ_2019_10K.json",
+    "bytes": 546721,
+    "sha256": "f32d2d6786df5fb0e04c7f57b2ca7ee8eaf7492d06e7ecf406c94ef6e9816cbf"
+  },
+  {
+    "path": "artifacts/page_cache/KRAFTHEINZ_2020_10K.json",
+    "bytes": 529782,
+    "sha256": "755d764409077d7c979f81c857686bbbb0bf25502e81e2819920f7300da34452"
+  },
+  {
+    "path": "artifacts/page_cache/KRAFTHEINZ_2021_10K.json",
+    "bytes": 522737,
+    "sha256": "95020e74ed45052e4384ec540f620e94a9735a3fc6a37b496c6a9f1d233fc3b3"
+  },
+  {
+    "path": "artifacts/page_cache/KRAFTHEINZ_2022_10K.json",
+    "bytes": 1020911,
+    "sha256": "2a2274c5a4fe62e1b36a63dd7d1d7150404097f407abb12caae1e87d7bdbe848"
+  },
+  {
+    "path": "artifacts/page_cache/LOCKHEEDMARTIN_2015_10K.json",
+    "bytes": 574146,
+    "sha256": "40f09511fd7ca7c55a6290f720c164044fd7239485f7a9dc49ac72afdb415cde"
+  },
+  {
+    "path": "artifacts/page_cache/LOCKHEEDMARTIN_2016_10K.json",
+    "bytes": 895153,
+    "sha256": "0362b5d953b03e1870b5aef941f7aaf947d05bef1b5b8ab9d6f7c8f6e026f373"
+  },
+  {
+    "path": "artifacts/page_cache/LOCKHEEDMARTIN_2017_10K.json",
+    "bytes": 839169,
+    "sha256": "ee37ecbf2903229a7c02e9948ff4afbdb61936ce0189f81253cb128826a8c59e"
+  },
+  {
+    "path": "artifacts/page_cache/LOCKHEEDMARTIN_2018_10K.json",
+    "bytes": 754944,
+    "sha256": "8b7ec01d122ba193324e18c0fcc667c8f52021c330748e039124de071a895f3d"
+  },
+  {
+    "path": "artifacts/page_cache/LOCKHEEDMARTIN_2019_10K.json",
+    "bytes": 650606,
+    "sha256": "c0528e00424dc094aa99ce77dd72324629f0af4f660391e1fdcde2a3f1254a5c"
+  },
+  {
+    "path": "artifacts/page_cache/LOCKHEEDMARTIN_2020_10K.json",
+    "bytes": 525152,
+    "sha256": "8ae66a4b2f2b504f1ef0c488168be14878e8fd20409231d143f31bd6056daab7"
+  },
+  {
+    "path": "artifacts/page_cache/LOCKHEEDMARTIN_2021_10K.json",
+    "bytes": 537190,
+    "sha256": "948f899b0b9caeb2b096156eff38e72fca77c3bf850ecec08bcda79aabda6197"
+  },
+  {
+    "path": "artifacts/page_cache/LOCKHEEDMARTIN_2022Q2_10Q.json",
+    "bytes": 198557,
+    "sha256": "726011bb974d2c26c7acb719e0c9739fab206f8f07cfb6dd555748544a57fe6b"
+  },
+  {
+    "path": "artifacts/page_cache/LOCKHEEDMARTIN_2022_10K.json",
+    "bytes": 515957,
+    "sha256": "6ad6523de4313ec69555b4c4582fe3807c48238424077f5d0f90e1603b99b869"
+  },
+  {
+    "path": "artifacts/page_cache/LOCKHEEDMARTIN_2023Q1_10Q.json",
+    "bytes": 41196,
+    "sha256": "7a4461bed1f9cfd642e997377cdac6bedf7d5d4d237ca92c9b8808e1c5e64d3e"
+  },
+  {
+    "path": "artifacts/page_cache/LOCKHEEDMARTIN_2023Q2_10Q.json",
+    "bytes": 44591,
+    "sha256": "175e5685c139a4b4dd3fdfba527d496c8c2013a74efe14a7772c16d2e32dd9c3"
+  },
+  {
+    "path": "artifacts/page_cache/LOCKHEEDMARTIN_2023_8K_dated-2023-05-25.json",
+    "bytes": 193547,
+    "sha256": "cd2c1d20421aa3f6aadd4f03911412d72dcc7e2bdff91984535e5375bdfcf02f"
+  },
+  {
+    "path": "artifacts/page_cache/LOCKHEEDMARTIN_2023_8K_dated-2023-08-24.json",
+    "bytes": 8489,
+    "sha256": "2de2e6bf4b7cf5f88bd44221c40c55f517c055db6452a4fe9d9c4962e607c4e3"
+  },
+  {
+    "path": "artifacts/page_cache/MCDONALDS_2022Q4_EARNINGS.json",
+    "bytes": 59176,
+    "sha256": "4383c57a46c4a27f26885d2b61fc6ab7e8341b68c037093365cec88283921db9"
+  },
+  {
+    "path": "artifacts/page_cache/MCDONALDS_2022_10K.json",
+    "bytes": 359628,
+    "sha256": "ffac04731c2bdcf6ce9f8f731505cf013454dd04e76dad928bb66ad902e0a2e4"
+  },
+  {
+    "path": "artifacts/page_cache/MCDONALDS_2023Q1_EARNINGS.json",
+    "bytes": 11132,
+    "sha256": "322f260c6646a9cbc364303e1ad83990ad158bb85185dd2a775cccb985f40af4"
+  },
+  {
+    "path": "artifacts/page_cache/MCDONALDS_2023Q2_EARNINGS.json",
+    "bytes": 13550,
+    "sha256": "cbd481d4c28a2bcd7a466731c89a91115389529160a6ca6078b2142c1142288a"
+  },
+  {
+    "path": "artifacts/page_cache/MCDONALDS_8K_dated-2023-01-06.json",
+    "bytes": 10799,
+    "sha256": "3060447828deb5a100a9ca6313cc35f1c76d806f8d7d7cb466bb7ecd1de685d1"
+  },
+  {
+    "path": "artifacts/page_cache/MCDONALDS_8K_dated-2023-02-13.json",
+    "bytes": 6372,
+    "sha256": "f67b4aab34d5918afcbaae1c2e92f0da3ce8d1556da926881cc726753446d21c"
+  },
+  {
+    "path": "artifacts/page_cache/MCDONALDS_8K_dated-2023-08-14.json",
+    "bytes": 10517,
+    "sha256": "d643fb18f44973fe25b64283b4c226e3fd37aaedf3234ed7b661a7ffd960eb2a"
+  },
+  {
+    "path": "artifacts/page_cache/MGMRESORTS_2015_10K.json",
+    "bytes": 876299,
+    "sha256": "ace816a76db7054ad557150eac8612d266fac0361d1e760dd4bdfcb523cea5a8"
+  },
+  {
+    "path": "artifacts/page_cache/MGMRESORTS_2016_10K.json",
+    "bytes": 1123687,
+    "sha256": "07a5803c0bc5b5ace60d4929a719c972fd17daf082702cca564929dd43642122"
+  },
+  {
+    "path": "artifacts/page_cache/MGMRESORTS_2017_10K.json",
+    "bytes": 729573,
+    "sha256": "b343e0040bad36ce34bab0ce4fd8302880bc658b5024e0848e7d61aecb04f051"
+  },
+  {
+    "path": "artifacts/page_cache/MGMRESORTS_2018_10K.json",
+    "bytes": 672572,
+    "sha256": "a30cc1ae3e991745cd7aac8639e076a82c7ac9d30f745bed14ab56be19b6886a"
+  },
+  {
+    "path": "artifacts/page_cache/MGMRESORTS_2019_10K.json",
+    "bytes": 993593,
+    "sha256": "018c87552dfb7a6d85160cff2b5819de724f4e5d60314ebd41fd883d75fcc5fe"
+  },
+  {
+    "path": "artifacts/page_cache/MGMRESORTS_2020_10K.json",
+    "bytes": 581487,
+    "sha256": "4f94a490165751405cdbd4778fe69e0b149c98d92d98db3d20002ab76d7fa4eb"
+  },
+  {
+    "path": "artifacts/page_cache/MGMRESORTS_2021_10K.json",
+    "bytes": 803471,
+    "sha256": "5eb90a91c31ef15d3c51e99f134d8caf5448326ed28144ee7b880979bbc02f99"
+  },
+  {
+    "path": "artifacts/page_cache/MGMRESORTS_2022Q4_EARNINGS.json",
+    "bytes": 46766,
+    "sha256": "5ee237147686419145d96b5f8b9e128c8c9994e10c937b5fd59845f1b58168d8"
+  },
+  {
+    "path": "artifacts/page_cache/MGMRESORTS_2022_10K.json",
+    "bytes": 702432,
+    "sha256": "83ed6147a71391e71258516a3ae6ce7b9f94c0d4e4752dda3afa2ecc16f02bb7"
+  },
+  {
+    "path": "artifacts/page_cache/MGMRESORTS_2023Q2_10Q.json",
+    "bytes": 174381,
+    "sha256": "c27b35d4cc2419eba74c896e42def3598134286538779bbdd901195324adf805"
+  },
+  {
+    "path": "artifacts/page_cache/MGMRESORTS_2023_8K_dated-2023-03-01.json",
+    "bytes": 11593,
+    "sha256": "e23f0081478db9d8e7fd4253a59c9ad8ad2bc77a632cb24c3efe04083e81441b"
+  },
+  {
+    "path": "artifacts/page_cache/MGMRESORTS_2023_8K_dated-2023-09-12.json",
+    "bytes": 8680,
+    "sha256": "a68635cbd111501372235acd4f30d9059685dd4f576b1674b00af9c81c88f724"
+  },
+  {
+    "path": "artifacts/page_cache/MICROSOFT_2015_10K.json",
+    "bytes": 415217,
+    "sha256": "883e84f21f34ceb18b8fc38a1dde15ccf5ac61a8f15ec8257bc87036845922d4"
+  },
+  {
+    "path": "artifacts/page_cache/MICROSOFT_2016_10K.json",
+    "bytes": 396765,
+    "sha256": "fd4c09d09b68a81bf8552e37aadb29d0568b38f28a80a66cb3e956b73665a9c2"
+  },
+  {
+    "path": "artifacts/page_cache/MICROSOFT_2017_10K.json",
+    "bytes": 370187,
+    "sha256": "492457a3be093affbd151c2ab2065a8245c0569373df1a70212de1abc8bfc1a6"
+  },
+  {
+    "path": "artifacts/page_cache/MICROSOFT_2018_10K.json",
+    "bytes": 407036,
+    "sha256": "642358658e8fab4dcf6c10df6e86c31c1ae2ac9f0c28be1ca10634aa3baed810"
+  },
+  {
+    "path": "artifacts/page_cache/MICROSOFT_2019_10K.json",
+    "bytes": 463367,
+    "sha256": "a87177857767346fcb689eb092abc739997ecbf7f309cbbf8f721617f593dc39"
+  },
+  {
+    "path": "artifacts/page_cache/MICROSOFT_2020_10K.json",
+    "bytes": 347872,
+    "sha256": "c4692b5e3c38b250bedc319868581082b62e075cf5fd347b5815a741f6f94c16"
+  },
+  {
+    "path": "artifacts/page_cache/MICROSOFT_2021_10K.json",
+    "bytes": 352839,
+    "sha256": "a69932ba5f94d6b049fe2701fd7def5f2dc813277ae0c22d589fd1d1d586097e"
+  },
+  {
+    "path": "artifacts/page_cache/MICROSOFT_2022_10K.json",
+    "bytes": 352864,
+    "sha256": "f4e7ecd5f4bc8ace71b7e58781818fae32f87784306fed939dc92c0c1c59ef35"
+  },
+  {
+    "path": "artifacts/page_cache/MICROSOFT_2023_10K.json",
+    "bytes": 348527,
+    "sha256": "c471e670b6dffd0a93587957439f77593d70ab6aba5fc6a5912335730eaeabdf"
+  },
+  {
+    "path": "artifacts/page_cache/NETFLIX_2015_10K.json",
+    "bytes": 233250,
+    "sha256": "ca4d8769029bff7779a928bc355796e882cefbb42289f78703046dd5e23d8642"
+  },
+  {
+    "path": "artifacts/page_cache/NETFLIX_2016_10K.json",
+    "bytes": 224585,
+    "sha256": "67e4bbe95f2c31f091f83f09a16db2d5fa8d8debd4dae65ccf6ee3d7d7df3753"
+  },
+  {
+    "path": "artifacts/page_cache/NETFLIX_2017_10K.json",
+    "bytes": 236718,
+    "sha256": "fd70935d2217cf04a1fd44c7115617ec50b81bea089c40619ad9f165a1f8b49c"
+  },
+  {
+    "path": "artifacts/page_cache/NETFLIX_2018_10K.json",
+    "bytes": 244326,
+    "sha256": "44076007500ef29159d5bc0f1926c838277233432c751d5f820fc4afa90b930a"
+  },
+  {
+    "path": "artifacts/page_cache/NETFLIX_2019_10K.json",
+    "bytes": 235760,
+    "sha256": "4741234ef7f1b4594bd7a64fb748a6aa7250155b6d3940ad8a71dcfca314428e"
+  },
+  {
+    "path": "artifacts/page_cache/NETFLIX_2020_10K.json",
+    "bytes": 287292,
+    "sha256": "853bf60899ebb1f75c7f03f5c4fe9c4a835cd7ac2e94f2f6207682434aaf5ac2"
+  },
+  {
+    "path": "artifacts/page_cache/NETFLIX_2021_10K.json",
+    "bytes": 278394,
+    "sha256": "ef9af96ec5d93140f7774bda37e7f73398ec7bc2a631aa2b8f2b31b24494ce3f"
+  },
+  {
+    "path": "artifacts/page_cache/NETFLIX_2022_10K.json",
+    "bytes": 269709,
+    "sha256": "4a9847b1e3e84f9da4cf9e1daca94449e38667d409c72af4922e8dcdc19d1c3b"
+  },
+  {
+    "path": "artifacts/page_cache/NETFLIX_2023Q2_10Q.json",
+    "bytes": 107065,
+    "sha256": "75fa7ae6fd39c5ee917820893a9b59b56c753647e4bcd126f5b3d81572a31252"
+  },
+  {
+    "path": "artifacts/page_cache/NIKE_2015_10K.json",
+    "bytes": 698559,
+    "sha256": "213269c82f402764fea5bb20e88367a30097baee5a591b98e91276ea0e758cb0"
+  },
+  {
+    "path": "artifacts/page_cache/NIKE_2016_10K.json",
+    "bytes": 404295,
+    "sha256": "ee0b8052fa02c8f5e2de4ab1b4e3d45c0f386a5d79a8c594a9c74fb5bd0ea127"
+  },
+  {
+    "path": "artifacts/page_cache/NIKE_2017_10K.json",
+    "bytes": 401642,
+    "sha256": "c45b4d1e271fa64a4b49b5f9a1b0d85f82e57bf15a8a3122542bac71b2034b97"
+  },
+  {
+    "path": "artifacts/page_cache/NIKE_2018_10K.json",
+    "bytes": 394875,
+    "sha256": "e1f01f7a223043b0ee0162c220ac2da9394783554586c2b144bcf5d2171c07e8"
+  },
+  {
+    "path": "artifacts/page_cache/NIKE_2019_10K.json",
+    "bytes": 371403,
+    "sha256": "46a1f5a1cefb39a554e3a35dac51a5f02234995e3f79d0ba3fa699a82c711db3"
+  },
+  {
+    "path": "artifacts/page_cache/NIKE_2020_10K.json",
+    "bytes": 404456,
+    "sha256": "d64e46b3c74d36f0b7a595073cf604097ec4255a6e362b6aedd80b9fbcf5cd58"
+  },
+  {
+    "path": "artifacts/page_cache/NIKE_2021_10K.json",
+    "bytes": 402495,
+    "sha256": "179a9045386022ba9dd07305c05921b4607bdcb6e2c1208072a9dd2c0505c034"
+  },
+  {
+    "path": "artifacts/page_cache/NIKE_2022_10K.json",
+    "bytes": 403401,
+    "sha256": "3d5c627db840f42d11c9aafbd24afba8be65a554a32ed7b417d99c693cbc7c07"
+  },
+  {
+    "path": "artifacts/page_cache/NIKE_2023_10K.json",
+    "bytes": 371037,
+    "sha256": "fa670a7a5da63db9642ef601260e56a7efbc5f0624d46f0684a8d56b38bb44ea"
+  },
+  {
+    "path": "artifacts/page_cache/ORACLE_2015_10K.json",
+    "bytes": 603319,
+    "sha256": "fc4fb01bc6e6331f87d85654077e79ab85d96ed6f21af4b6b7c76b69f671e906"
+  },
+  {
+    "path": "artifacts/page_cache/ORACLE_2016_10K.json",
+    "bytes": 583671,
+    "sha256": "5bb9e04c18be20451767ac86d3907a9a7f4b0b6c5a9de9bc7738a168b0c173ea"
+  },
+  {
+    "path": "artifacts/page_cache/ORACLE_2017_10K.json",
+    "bytes": 541044,
+    "sha256": "18cc23e6645659d3f678b5f2742397daf6c6b1309ccbc22c4d134caa4d56d3e8"
+  },
+  {
+    "path": "artifacts/page_cache/ORACLE_2018_10K.json",
+    "bytes": 508497,
+    "sha256": "e571f76a568ae0691eba8eabd53e0678061e412147cf8515dc8942242afaadf1"
+  },
+  {
+    "path": "artifacts/page_cache/ORACLE_2019_10K.json",
+    "bytes": 530142,
+    "sha256": "df912a9f73c06305f8cfb007e2292e2fd031c084ee9f15012ae01f47bdda1a4a"
+  },
+  {
+    "path": "artifacts/page_cache/ORACLE_2020_10K.json",
+    "bytes": 456119,
+    "sha256": "a3eb952621ba63ba1f904e8ff1dcebf5a8b80f30d182a22da846729038dc3e58"
+  },
+  {
+    "path": "artifacts/page_cache/ORACLE_2021_10K.json",
+    "bytes": 444323,
+    "sha256": "fcbcbd3042141d36c2719adc05d679fb73ae5edd9b79f0c5bf429f6aa8829c86"
+  },
+  {
+    "path": "artifacts/page_cache/ORACLE_2022_10K.json",
+    "bytes": 470614,
+    "sha256": "624bfd4fb66a96b5e887318b07d0750362e783e26558a915bf022585161210f0"
+  },
+  {
+    "path": "artifacts/page_cache/ORACLE_2023_10K.json",
+    "bytes": 443143,
+    "sha256": "ad5776e17190c2b524605f19654af75690f988bebb755cb8271f18dbf903bb86"
+  },
+  {
+    "path": "artifacts/page_cache/PAYPAL_2022_10K.json",
+    "bytes": 483978,
+    "sha256": "442ac22c8ef66b735e6f3c69aef6cdad6886d8d6a54e8d4d69b1f37a89e030de"
+  },
+  {
+    "path": "artifacts/page_cache/PAYPAL_2023Q2_10Q.json",
+    "bytes": 261743,
+    "sha256": "24ea4bb74417e232ddcd2b170556b13a6e917b6a05bf1151276f9f86835edb70"
+  },
+  {
+    "path": "artifacts/page_cache/PEPSICO_2015_10K.json",
+    "bytes": 483483,
+    "sha256": "c4b513ae783a05da1a1c1f831c535110f81d5b9c3c2a9f475b4650c81978b3fb"
+  },
+  {
+    "path": "artifacts/page_cache/PEPSICO_2016_10K.json",
+    "bytes": 1177467,
+    "sha256": "66287a48984a505d31448302de72bc9127cc2b224f8df65bb01ba62cbb8a8aef"
+  },
+  {
+    "path": "artifacts/page_cache/PEPSICO_2017_10K.json",
+    "bytes": 1175510,
+    "sha256": "307893281fdb2afe5456bf061052431c4ab7e68b960b615f79a096a523ca9752"
+  },
+  {
+    "path": "artifacts/page_cache/PEPSICO_2018_10K.json",
+    "bytes": 1046715,
+    "sha256": "523972103e138c380dea8360b1acffe8417a47aec3237684755f80340f079c2c"
+  },
+  {
+    "path": "artifacts/page_cache/PEPSICO_2019_10K.json",
+    "bytes": 1437765,
+    "sha256": "d2fa8047c1f2253e5230298a2be811f80fb99083634f9a24e8af41e241261858"
+  },
+  {
+    "path": "artifacts/page_cache/PEPSICO_2020_10K.json",
+    "bytes": 1220342,
+    "sha256": "8a65c9360764eaa5ee808ba5213cf3cdf39044062019dad7d0b0e4f7866f045f"
+  },
+  {
+    "path": "artifacts/page_cache/PEPSICO_2021_10K.json",
+    "bytes": 1122023,
+    "sha256": "433e4ca11b363af9e03cd38f5e72b1d17ae62908edf504f087b4c4fdfc15adff"
+  },
+  {
+    "path": "artifacts/page_cache/PEPSICO_2022Q4_EARNINGS.json",
+    "bytes": 60349,
+    "sha256": "9212be1bae4957a124f7a83ff757aa231ecc0b3ddf8b90b1ee58db0640e944ef"
+  },
+  {
+    "path": "artifacts/page_cache/PEPSICO_2022_10K.json",
+    "bytes": 1180376,
+    "sha256": "e8d4a78d26ef5271b41232907edc333ec391d0a8afdcd976d921e7633f9b7448"
+  },
+  {
+    "path": "artifacts/page_cache/PEPSICO_2023Q1_EARNINGS.json",
+    "bytes": 35760,
+    "sha256": "a61c1d7049a819df00f79e0185cb17ef9bf318780be49734d6038141c9507e60"
+  },
+  {
+    "path": "artifacts/page_cache/PEPSICO_2023Q2_EARNINGS.json",
+    "bytes": 45683,
+    "sha256": "fd43de9278accffb9810ac95b5e4e226fe07ff5f432b7a4b873c16a16400eca0"
+  },
+  {
+    "path": "artifacts/page_cache/PEPSICO_2023_8K_dated-2023-05-05.json",
+    "bytes": 6308,
+    "sha256": "ddf8c92adaf9b58c5d235b303f84a3fc11d768919da08e0b93a103e238ce19cd"
+  },
+  {
+    "path": "artifacts/page_cache/PEPSICO_2023_8K_dated-2023-05-30.json",
+    "bytes": 530729,
+    "sha256": "91d0a4cdbb89747165b5892ec5dad16cc4e7e5864e8e869d7e392e8eb2671540"
+  },
+  {
+    "path": "artifacts/page_cache/PFIZER_2015_10K.json",
+    "bytes": 968359,
+    "sha256": "2288092ae96daa80d49b941251a26331fc3631105cbcbcf654812bc21e7aa052"
+  },
+  {
+    "path": "artifacts/page_cache/PFIZER_2016_10K.json",
+    "bytes": 994352,
+    "sha256": "e71133a8d23dc597425e2b70bd171a184329babd7d707ba9ef5b32bf7c99d115"
+  },
+  {
+    "path": "artifacts/page_cache/PFIZER_2017_10K.json",
+    "bytes": 1213663,
+    "sha256": "48267db84280f902a97e878d169520511bf7346bbacabab43a4ae90ee44b3cb0"
+  },
+  {
+    "path": "artifacts/page_cache/PFIZER_2018_10K.json",
+    "bytes": 1748968,
+    "sha256": "a7e97ac29ea9caaf2c3af32da3d220610c659ad7c1be55816039abc0b8aa1d21"
+  },
+  {
+    "path": "artifacts/page_cache/PFIZER_2019_10K.json",
+    "bytes": 1029846,
+    "sha256": "08a7ebaa18a25727a195fe8d6762f1cea6a328ce3e5247421fbf429edac2b0e1"
+  },
+  {
+    "path": "artifacts/page_cache/PFIZER_2020_10K.json",
+    "bytes": 772717,
+    "sha256": "25b9fc710c45b149bbd74b2ecc9fa2707d322974fede18eb8156cd06bfa13d07"
+  },
+  {
+    "path": "artifacts/page_cache/PFIZER_2021_10K.json",
+    "bytes": 695526,
+    "sha256": "e68bf1c5d737da3a3b9e01b969d278fe6894dc6c86ae531ea19c802d98336ccb"
+  },
+  {
+    "path": "artifacts/page_cache/PFIZER_2022_10K.json",
+    "bytes": 767649,
+    "sha256": "7475db4d0c75876941afffa9e7abde55337a4937014e3df63329f4161c52c90a"
+  },
+  {
+    "path": "artifacts/page_cache/PFIZER_2023Q2_EARNINGS.json",
+    "bytes": 109632,
+    "sha256": "b36f1597ea67d185d883c37331c9438618b602c672e0f5c9ecf0cb82f595aed4"
+  },
+  {
+    "path": "artifacts/page_cache/PG_E_2015_10K.json",
+    "bytes": 779423,
+    "sha256": "c61afc03b9418d1d9435084bc6e0922ac5984568212b855a58243c21518b86ec"
+  },
+  {
+    "path": "artifacts/page_cache/PG_E_2016_10K.json",
+    "bytes": 886200,
+    "sha256": "9955e71a1b9a4d07baf2988e5074211b1cdfa707e2c1b3367bbd685d2d684bcd"
+  },
+  {
+    "path": "artifacts/page_cache/PG_E_2017_10K.json",
+    "bytes": 868832,
+    "sha256": "4787e1c4719f9cd59e40fa7919b283826c17b7922ddfc91c915755677b395b39"
+  },
+  {
+    "path": "artifacts/page_cache/PG_E_2018_10K.json",
+    "bytes": 818244,
+    "sha256": "a9792493792570417a72ac5155e3570eba99273331c120838f26928d6e77199a"
+  },
+  {
+    "path": "artifacts/page_cache/PG_E_2019_10K.json",
+    "bytes": 1541957,
+    "sha256": "9b24fe8c6011c5689cff20a9d9cb58b000308973862a6d5b6ac33622e29b43d0"
+  },
+  {
+    "path": "artifacts/page_cache/PG_E_2020_10K.json",
+    "bytes": 1383617,
+    "sha256": "5dea61338962f213e9d7cfd1734a5004eecec1c432d8942c41387d4858d19240"
+  },
+  {
+    "path": "artifacts/page_cache/PG_E_2021_10K.json",
+    "bytes": 1812343,
+    "sha256": "957540fffd80a934dc372e1c156132007b547226923f99d31566fdab61928b33"
+  },
+  {
+    "path": "artifacts/page_cache/PG_E_2022_10K.json",
+    "bytes": 1253887,
+    "sha256": "1973d73bea0fa1c36276ac25bdf63a6a999c28c2125524fdaeb861c9c12c71ce"
+  },
+  {
+    "path": "artifacts/page_cache/PG_E_2023Q3_10Q.json",
+    "bytes": 1428835,
+    "sha256": "a80cdfe5b943af634248b48897c22284fdc5063ccb43fdd5bb5746b29a40c711"
+  },
+  {
+    "path": "artifacts/page_cache/PG_E_2023_EARNINGS-dated-2023-06-01.json",
+    "bytes": 266574,
+    "sha256": "0c4f8ee1eb51d236e840860395e35cb5e6098b407a4ce6f71c00754382b98acd"
+  },
+  {
+    "path": "artifacts/page_cache/PG_E_2023_EARNINGS-dated-2023-07-27.json",
+    "bytes": 24212,
+    "sha256": "7869c7a2945066bfad16fc617bb1fee9ed97f9d908745555cb59fa00e56f6cb5"
+  },
+  {
+    "path": "artifacts/page_cache/PG_E_2023_EARNINGS_dated-2023-05-04.json",
+    "bytes": 22958,
+    "sha256": "f159179c0838047b6d0dc3b9914884604e6bb8599f9da7eb4b56cbda4dc9822f"
+  },
+  {
+    "path": "artifacts/page_cache/PG_E_2023_EARNINGS_dated-2023-05-31.json",
+    "bytes": 9048,
+    "sha256": "bed0666d25a55188afa93c33cafeb91f9ae5726b300866fc7b7179e78b27c908"
+  },
+  {
+    "path": "artifacts/page_cache/Pfizer_2023Q2_10Q.json",
+    "bytes": 272148,
+    "sha256": "437e768b345399e075272e2e9b443dd2046a808c9e04594526f8fec9a189505c"
+  },
+  {
+    "path": "artifacts/page_cache/SALESFORCE_2021_8K_dated-2021-07-21.json",
+    "bytes": 36879,
+    "sha256": "4eb98d3a5281a34159fdd90c18c0890159264e8ef71ba1dc7e60db4ed979750b"
+  },
+  {
+    "path": "artifacts/page_cache/SALESFORCE_2021_8K_dated-2023-01-04.json",
+    "bytes": 10202,
+    "sha256": "b43f93520944e038190e8310caf213951729dd71740fb0fd8b68f6d494518520"
+  },
+  {
+    "path": "artifacts/page_cache/SALESFORCE_2023Q3_10Q.json",
+    "bytes": 305695,
+    "sha256": "82490e8f3809193a49baa1a4fe7bee9ea1d06dccb609353caed2d9835c05cfb9"
+  },
+  {
+    "path": "artifacts/page_cache/SALESFORCE_2023_10K.json",
+    "bytes": 522056,
+    "sha256": "af3934930ebb78e31f654909df5627c5e6ccd99f9c6b25288c2f73de630c4aa5"
+  },
+  {
+    "path": "artifacts/page_cache/SALESFORCE_2024Q1_EARNINGS.json",
+    "bytes": 39579,
+    "sha256": "39d011bc1ff35bd0d7301b76164a1f6901ad1a9c84e31b388550efcf1d971525"
+  },
+  {
+    "path": "artifacts/page_cache/SALESFORCE_2024Q2_EARNINGS.json",
+    "bytes": 41757,
+    "sha256": "3c1e4aa17b1a26fd6a91008a3ddcde4d02ae0b62ac00025afca29f28c4e2d106"
+  },
+  {
+    "path": "artifacts/page_cache/ULTABEAUTY_2023Q1_EARNINGS.json",
+    "bytes": 16447,
+    "sha256": "4656b6acc9c276ce922224d4e5edc45929861601a73a0dee1a29a8e16f4993f8"
+  },
+  {
+    "path": "artifacts/page_cache/ULTABEAUTY_2023Q2_EARNINGS.json",
+    "bytes": 19854,
+    "sha256": "012dc99997560df62216fe2d542e0089296c72e4207be908d79c77da8527b086"
+  },
+  {
+    "path": "artifacts/page_cache/ULTABEAUTY_2023Q4_EARNINGS.json",
+    "bytes": 19468,
+    "sha256": "a87a465ef68d589b5b8dbccfc8f750464d79028615a6ca2611465c081a679c5e"
+  },
+  {
+    "path": "artifacts/page_cache/ULTABEAUTY_2023_10K.json",
+    "bytes": 317909,
+    "sha256": "be5569a58891bdc4b50fc280315dcc28e1947c5e7ee079c820883f5079885c06"
+  },
+  {
+    "path": "artifacts/page_cache/ULTABEAUTY_2023_8K_dated-2023-06-07.json",
+    "bytes": 116246,
+    "sha256": "410b9534f681043388de231c2a6c7c7a07ed49dcb58307beb052f9c182398b4f"
+  },
+  {
+    "path": "artifacts/page_cache/ULTABEAUTY_2023_8K_dated-2023-09-18.json",
+    "bytes": 6231,
+    "sha256": "654712f6a4bcc28ee5cad1cc78044522958d3ec6af4592377d15ea08d91d2c89"
+  },
+  {
+    "path": "artifacts/page_cache/ULTABEAUTY_2024Q1_EARNINGS.json",
+    "bytes": 16447,
+    "sha256": "f6e10dbda940966f8625d5c0c0cf71bd5221e2710e721c2525a2eccf7cb64550"
+  },
+  {
+    "path": "artifacts/page_cache/ULTABEAUTY_2024Q2_EARNINGS.json",
+    "bytes": 19854,
+    "sha256": "9ff21f7443780ccf11f7806f40acd8351247bc80b06ebc25556903bc8621f4cf"
+  },
+  {
+    "path": "artifacts/page_cache/VERIZON_2015_10K.json",
+    "bytes": 480063,
+    "sha256": "ed3e104cf36ae4f0ea50d76d252050055be082994297198e9254cd5bf2669a1a"
+  },
+  {
+    "path": "artifacts/page_cache/VERIZON_2016_10K.json",
+    "bytes": 510676,
+    "sha256": "559a2d962a9ffb8499d9ea534c682e28441e6beccb6c6058c97299355943c6e9"
+  },
+  {
+    "path": "artifacts/page_cache/VERIZON_2017_10K.json",
+    "bytes": 665315,
+    "sha256": "f93142c83aa6971f7b7bb9dd82282933784a3010e1325248890fc66b93b4ed56"
+  },
+  {
+    "path": "artifacts/page_cache/VERIZON_2018_10K.json",
+    "bytes": 788133,
+    "sha256": "bebead89076e033537e85704f7170262fd16c620cd3f3ddc1bd55aa8a89c072e"
+  },
+  {
+    "path": "artifacts/page_cache/VERIZON_2019_10K.json",
+    "bytes": 556983,
+    "sha256": "1cb21274ff19873906253d0d8708f0a42f29b18f3e0b03fa2ddbd9d9a87c19a3"
+  },
+  {
+    "path": "artifacts/page_cache/VERIZON_2020_10K.json",
+    "bytes": 606705,
+    "sha256": "459a92e0b117eb7588341144f1adf6dddf071bb594ea5a569b2350578379a334"
+  },
+  {
+    "path": "artifacts/page_cache/VERIZON_2021_10K.json",
+    "bytes": 481800,
+    "sha256": "0454705d16a75cb8beb61d9f6ddf99d11254693aef803aeae0a791690e57ce89"
+  },
+  {
+    "path": "artifacts/page_cache/VERIZON_2022_10K.json",
+    "bytes": 481419,
+    "sha256": "f5370667ae4b4d061d7dc04ff87c11d335ad595328bcf593f94003239c0cdccf"
+  },
+  {
+    "path": "artifacts/page_cache/WALMART_2015_10K.json",
+    "bytes": 419126,
+    "sha256": "f15a0b57fb3539091d0886f0d574d7496c80be25f88faf13dbfde8c06efe6262"
+  },
+  {
+    "path": "artifacts/page_cache/WALMART_2016_10K.json",
+    "bytes": 811100,
+    "sha256": "0bcf037f4693f9bb273e7a4479512a932adfd706d3a198d059a7bbb6f506b17e"
+  },
+  {
+    "path": "artifacts/page_cache/WALMART_2017_10K.json",
+    "bytes": 639472,
+    "sha256": "2941f61b83c82161e1567d510cae6e7ae2256b177939b2bd0dd4a4b82bdadb73"
+  },
+  {
+    "path": "artifacts/page_cache/WALMART_2018_10K.json",
+    "bytes": 938876,
+    "sha256": "75179e200dbb4dc04dfffe7246881b5f955a83e7df5c69dc1b0f9116efd6b5b2"
+  },
+  {
+    "path": "artifacts/page_cache/WALMART_2019_10K.json",
+    "bytes": 451127,
+    "sha256": "7e6cd46028ff621945e9f6496d2f18557c967b035051172950f40f6300e15758"
+  },
+  {
+    "path": "artifacts/page_cache/WALMART_2020_10K.json",
+    "bytes": 592519,
+    "sha256": "3e62637f90b2ea1d9897a0f89c43124059b615838691752f4adad1e4e668e038"
+  },
+  {
+    "path": "artifacts/page_cache/WALMART_2021_10K.json",
+    "bytes": 417172,
+    "sha256": "f2bcb264b6f9322ed104e7793a0d27ac6bd68622c3b0d7a499a121cb9b435b8e"
+  },
+  {
+    "path": "artifacts/page_cache/WALMART_2022_10K.json",
+    "bytes": 585055,
+    "sha256": "1130580b98d5a58f1ce06d1b3067de158c6920f605059e34c89d77a2ef470048"
+  },
+  {
+    "path": "artifacts/page_cache/WALMART_2023_10K.json",
+    "bytes": 708106,
+    "sha256": "e8d07e036dc187024d72fd1e0754446129c32af8eddc2553a9ce9f24ca88c884"
+  },
+  {
+    "path": "artifacts/page_cache/WALMART_2023_annualreport.json",
+    "bytes": 375546,
+    "sha256": "39cb3c86a090213a097db8ab8a74b080a1142200655ca8c64c6a2fa936334933"
+  },
+  {
+    "path": "artifacts/page_cache/WALMART_2024Q1_10Q.json",
+    "bytes": 158253,
+    "sha256": "040b400c4edc15a42240bbdc1dd6a1d388de1f5d8ca053cb250e767d94ad86b8"
+  },
+  {
+    "path": "harness/financebench_onpolicy_grpo.py",
+    "bytes": 30856,
+    "sha256": "7a4acf0dbd77c29b07a7940e3d8d18c2b0e94345b77c4cffa7cb2491b0a492cd"
+  },
+  {
+    "path": "/workspace/GRPO_PLAN.md",
+    "missing": true
+  }
+]

@@ -1,0 +1,235 @@
+{
+  "model": "/hf/models--Qwen--Qwen3.5-4B",
+  "ids": [
+    "financebench_id_01226"
+  ],
+  "ids_file": "",
+  "teacher_traces": "",
+  "teacher_tie_coef": 0.0,
+  "group_size": 2,
+  "seed": 12,
+  "temperature": 0.3,
+  "top_p": 0.95,
+  "max_turns": 2,
+  "max_new_tokens": 128,
+  "max_seq_length": 4096,
+  "lora_rank": 32,
+  "learning_rate": 1e-06,
+  "clip_epsilon": 0.2,
+  "max_grad_norm": 1.0,
+  "output_dir": "/workspace/results/grpo_runs/exact_reference_smoke_01226_g2",
+  "mlflow_uri": "",
+  "mlflow_experiment": "financebench-grpo",
+  "reference_kl": true,
+  "run_id": "20260927_051124_qwen4b_g2_s12",
+  "system_prompt": "You are a financial-filings retrieval agent.\n\nAnswer the user's question from the SEC filing corpus. Search before answering.\nStart with bm25_search, then use grep_document and read/read_table for bounded,\npage-aware evidence. Use calculate only for arithmetic. Do not invent values.\nWhen you have enough evidence, call finish(answer, evidence_document,\nevidence_page) exactly once. Put the complete answer, units, and conclusion in\nanswer. Do not stop after a search hit unless it resolves the question.\n",
+  "tool_schema": [
+    {
+      "type": "function",
+      "function": {
+        "name": "bm25_search",
+        "description": "Ranked keyword search over prose and tables.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "query_list": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "company": {
+              "type": "string"
+            },
+            "year": {
+              "type": "integer"
+            },
+            "filing_type": {
+              "type": "string"
+            },
+            "document_id": {
+              "type": "string"
+            },
+            "scope": {
+              "type": "string",
+              "enum": [
+                "prose",
+                "tables",
+                "both"
+              ]
+            },
+            "top_k": {
+              "type": "integer"
+            }
+          },
+          "required": [
+            "query_list"
+          ]
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "grep_document",
+        "description": "Search one filing for exact terms or regexes.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "document_id": {
+              "type": "string"
+            },
+            "patterns": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "page_start": {
+              "type": "integer"
+            },
+            "page_end": {
+              "type": "integer"
+            },
+            "context_lines": {
+              "type": "integer"
+            },
+            "grep_type": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "document_id",
+            "patterns"
+          ]
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "search_tables",
+        "description": "Search table-like filing pages.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "query_list": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "document_id": {
+              "type": "string"
+            },
+            "company": {
+              "type": "string"
+            },
+            "year": {
+              "type": "integer"
+            },
+            "top_k": {
+              "type": "integer"
+            }
+          },
+          "required": [
+            "query_list"
+          ]
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "read",
+        "description": "Read a bounded page or passage with provenance.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "document_id": {
+              "type": "string"
+            },
+            "page": {
+              "type": "integer"
+            },
+            "start": {
+              "type": "integer"
+            },
+            "end": {
+              "type": "integer"
+            },
+            "passage_id": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "document_id"
+          ]
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "read_table",
+        "description": "Read a table candidate and neighboring context.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "table_id": {
+              "type": "string"
+            },
+            "include_neighbors": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "table_id"
+          ]
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "calculate",
+        "description": "Evaluate safe basic arithmetic.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "expression": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "expression"
+          ]
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "finish",
+        "description": "Submit final answer and primary evidence provenance.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "answer": {
+              "type": "string"
+            },
+            "evidence_document": {
+              "type": "string"
+            },
+            "evidence_page": {
+              "type": "integer"
+            }
+          },
+          "required": [
+            "answer"
+          ]
+        }
+      }
+    }
+  ]
+}
