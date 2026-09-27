@@ -196,7 +196,10 @@ def run_tinker(index: hb.StructuredIndex, row: dict[str, Any], model: str, proje
         name, args = parsed
         messages.append({"role": "assistant", "content": text})
         started = time.time()
-        result = execute_local(index, name, args)
+        try:
+            result = execute_local(index, name, args)
+        except Exception as exc:
+            result = json.dumps({"error": f"tool execution failed: {type(exc).__name__}: {exc}"}, ensure_ascii=False)
         calls.append({"turn": turn, "name": name, "arguments": args, "latency_s": time.time() - started})
         messages.append({"role": "tool", "content": result})
     return {"backend": "tinker", "model": model, "answer_text": final, "tool_calls": calls, "messages": messages}
