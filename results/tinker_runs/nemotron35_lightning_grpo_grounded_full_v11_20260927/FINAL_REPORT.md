@@ -35,3 +35,7 @@ Paired against the same question IDs, training improved 7 cases, regressed 5, an
 ## Conclusion
 
 The full Tinker GRPO run is complete, reproducible, and the final checkpoint is usable. It produced a modest but positive held-out gain under the corrected protocol; this is a successful feasibility run, not evidence that the training recipe is solved. The five regressions and the remaining 23 zero-reward cases should be addressed before scaling the run or treating the checkpoint as a production model.
+
+## Independent Opus verification
+
+Claude Opus 4.6, called through NVIDIA Inference Hub, independently recomputed the aggregates and returned `PASS_WITH_CAVEATS`. It confirmed the arithmetic, checkpoint/trajectory counts, stable KL range, and lack of silent truncation. It also noted that 7 improvements versus 5 regressions is not statistically significant (two-sided paired sign test approximately `p=0.39`) and that 23/42 held-out cases still receive zero reward. Full audit: `results/reward_audits/opus_grpo_verification_20260927.md`.
