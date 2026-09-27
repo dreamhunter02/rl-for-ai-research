@@ -30,6 +30,7 @@ from unsloth import FastLanguageModel
 import sys
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import financebench_harness as hb
+from process_guidance import guardrail_for, process_components, teacher_phase_signal
 
 if Path("/workspace/split.json").exists():
     hb.BASE = Path("/workspace")
@@ -214,6 +215,7 @@ def rollout_one(model: torch.nn.Module, tokenizer: Any, index: hb.StructuredInde
     action_records: list[dict[str, Any]] = []
     tool_calls: list[dict[str, Any]] = []
     finish_metadata: dict[str, Any] = {}
+    guardrail_events: list[dict[str, Any]] = []
     answer = ""
     termination = "max_turns"
     started = time.time()
@@ -235,12 +237,13 @@ def rollout_one(model: torch.nn.Module, tokenizer: Any, index: hb.StructuredInde
         if not calls:
             answer = action_text.strip()
             trace.append({"role": "assistant", "content": answer, "token_ids": action_ids.tolist()})
-            action_records.append({"turn": turn, "text": action_text, "token_ids": action_ids.tolist(), "action_mask":[1]*int(action_ids.numel()), "prompt_token_ids": prompt_ids[0].detach().cpu().tolist(), "old_logprobs": [], "sampling_logprobs": generation_logprobs, "tool_calls": []})
+            action_records.append({"turn": turn, "text": action_text, "token_ids": action_ids.tolist(), "action_mask":[1]*int(action_ids.numel()), "prompt_token_ids": prompt_ids[0].detach().cpu().tolist(), "old_logprobs": [], "sampling_logprobs": generation_logprobs, "tool_calls": [], "guardrails": []})
             termination = "assistant"
             break
         assistant_calls=[]
         openai_calls=[]
         tool_items=[]
+        action_guardrails=[]
         for idx, call in enumerate(calls):
             call_id=f"local-{seed}-{turn}-{idx}"
             args=call["arguments"]
@@ -255,20 +258,31 @@ def rollout_one(model: torch.nn.Module, tokenizer: Any, index: hb.StructuredInde
             messages.append({"role":"tool","tool_call_id":call_record["call_id"],"content":observation})
             tool_items.append({"role":"tool","call_id":call_record["call_id"],"content":observation,"observation_chars":len(raw_observation),"observation_truncated":len(raw_observation)>len(observation)})
             trace.append({"role":"tool","call_id":call_record["call_id"],"content":observation,"observation_chars":len(raw_observation),"observation_truncated":len(raw_observation)>len(observation)})
+            guardrail=guardrail_for(tool_calls)
+            if guardrail:
+                guardrail_id=f"guardrail-{seed}-{turn}-{len(guardrail_events)}"
+                event={"turn":turn,"call_id":guardrail_id,"message":guardrail}
+                guardrail_events.append(event)
+                action_guardrails.append(event)
+                guardrail_content=json.dumps({"guardrail":True,"message":guardrail})
+                messages.append({"role":"tool","tool_call_id":guardrail_id,"content":guardrail_content})
+                tool_items.append({"role":"tool","call_id":guardrail_id,"content":guardrail_content,"guardrail":True})
+                trace.append({"role":"tool","call_id":guardrail_id,"content":guardrail_content,"guardrail":True})
             if call_record["name"]=="finish":
                 finish_args=call_record["arguments"]
                 answer=str(finish_args.get("answer","")).strip()
                 raw_page=finish_args.get("evidence_page",-1)
                 finish_metadata={"evidence_document":str(finish_args.get("evidence_document","")),"evidence_page":int(raw_page) if str(raw_page).lstrip("-").isdigit() else -1}
         trace.insert(len(trace)-len(tool_items),{"role":"assistant","tool_calls":assistant_calls,"token_ids":action_ids.tolist()})
-        action_records.append({"turn":turn,"text":action_text,"token_ids":action_ids.tolist(),"action_mask":[1]*int(action_ids.numel()),"prompt_token_ids":prompt_ids[0].detach().cpu().tolist(),"old_logprobs":[],"sampling_logprobs":generation_logprobs,"tool_calls":assistant_calls})
+        action_records.append({"turn":turn,"text":action_text,"token_ids":action_ids.tolist(),"action_mask":[1]*int(action_ids.numel()),"prompt_token_ids":prompt_ids[0].detach().cpu().tolist(),"old_logprobs":[],"sampling_logprobs":generation_logprobs,"tool_calls":assistant_calls,"guardrails":action_guardrails})
         if answer:
             termination="finish"
             break
     answer_reward, answer_parts = hb.score_answer(row["gold"], answer)
     evidence_reward, evidence_parts = hb.score_evidence(row["gold"], answer, trace)
+    process_parts=process_components(trace,row["question"],answer,len(guardrail_events))
     reward = hb.grounded_reward(answer_reward, evidence_reward)
-    return {"financebench_id":row["financebench_id"],"question":row["question"],"gold":row["gold"],"answer_text":answer,"trace":trace,"tool_calls":tool_calls,"termination_reason":termination,"finish_ok":float(termination=="finish"),"finish_metadata":finish_metadata,"answer_reward":answer_reward,"evidence_reward":evidence_reward,"reward":reward,"reward_parts":{**answer_parts,**evidence_parts},"seed":seed,"sampling":{"temperature":temperature,"top_p":top_p,"top_k":None,"max_new_tokens":max_new_tokens},"action_records":action_records,"wall_s":time.time()-started}
+    return {"financebench_id":row["financebench_id"],"question":row["question"],"gold":row["gold"],"answer_text":answer,"trace":trace,"tool_calls":tool_calls,"termination_reason":termination,"finish_ok":float(termination=="finish"),"finish_metadata":finish_metadata,"answer_reward":answer_reward,"evidence_reward":evidence_reward,"reward":reward,"process_reward":process_parts["process_quality"],"process_parts":process_parts,"guardrail_events":guardrail_events,"reward_parts":{**answer_parts,**evidence_parts,**process_parts},"seed":seed,"sampling":{"temperature":temperature,"top_p":top_p,"top_k":None,"max_new_tokens":max_new_tokens},"action_records":action_records,"wall_s":time.time()-started}
 
 
 def action_logprobs(model: torch.nn.Module, prompt_ids: list[int], action_ids: list[int], max_seq_length: int) -> torch.Tensor:
@@ -366,23 +380,35 @@ def log_mlflow_if_requested(out: Path, args: argparse.Namespace, metrics: dict[s
         return {"status":"error","error":repr(exc),"tracking_uri":args.mlflow_uri}
 
 
-def group_advantages(records: list[dict[str,Any]], teacher_by_id: dict[str,dict[str,Any]], coef: float) -> dict[int,float]:
+def teacher_process_signal(record: dict[str,Any], teacher: dict[str,Any] | None) -> float:
+    if not teacher:
+        return 0.0
+    return float(teacher_phase_signal(record.get("trace",[]), teacher.get("trace",[])))
+
+
+def group_advantages(records: list[dict[str,Any]], teacher_by_id: dict[str,dict[str,Any]], teacher_coef: float, process_coef: float) -> dict[int,float]:
     groups: dict[str,list[dict[str,Any]]]={}
     for r in records: groups.setdefault(r["financebench_id"],[]).append(r)
     advantages={}
     for fid,group in groups.items():
         primary=[float(r["reward"]) for r in group]
-        tie_signals=[teacher_signal(r,teacher_by_id.get(fid)) for r in group]
-        tie_applied=[0.0]*len(group)
-        if coef and max(primary)-min(primary)<=1e-8:
-            tie_applied=[coef*x for x in tie_signals]
-        final=[p+t for p,t in zip(primary,tie_applied)]
+        teacher_signals=[teacher_signal(r,teacher_by_id.get(fid)) for r in group]
+        phase_signals=[teacher_process_signal(r,teacher_by_id.get(fid)) for r in group]
+        process_signals=[float(r.get("process_reward",0.0)) for r in group]
+        teacher_applied=[0.0]*len(group)
+        process_applied=[0.0]*len(group)
+        if max(primary)-min(primary)<=1e-8:
+            teacher_applied=[teacher_coef*x for x in teacher_signals]
+            process_applied=[process_coef*x for x in process_signals]
+        final=[p+t+q for p,t,q in zip(primary,teacher_applied,process_applied)]
         mean=sum(final)/len(final)
         std=math.sqrt(sum((x-mean)**2 for x in final)/len(final))
         denom=std if std>1e-8 else 1.0
-        for r,value,tie,signal in zip(group,final,tie_applied,tie_signals):
+        for r,value,tie,proc,signal,phase in zip(group,final,teacher_applied,process_applied,teacher_signals,phase_signals):
             r["teacher_signal"]=signal
+            r["teacher_phase_signal"]=phase
             r["teacher_tiebreak_reward"]=tie
+            r["process_guidance_reward"]=proc
             r["final_reward"]=value
             r["group_mean"]=mean
             r["group_std"]=std
@@ -398,6 +424,7 @@ def main() -> None:
     ap.add_argument("--ids-file",default="")
     ap.add_argument("--teacher-traces",default="")
     ap.add_argument("--teacher-tie-coef",type=float,default=0.0)
+    ap.add_argument("--process-coef",type=float,default=0.0)
     ap.add_argument("--group-size",type=int,default=2)
     ap.add_argument("--seed",type=int,default=101)
     ap.add_argument("--temperature",type=float,default=0.3)
@@ -461,8 +488,8 @@ def main() -> None:
                         action["reference_kl_mean"]=sum(o-r for o,r in zip(old,ref))/max(1,len(ref))
                 records.append(record)
                 fh.write(json.dumps(record,ensure_ascii=False)+"\n");fh.flush()
-                print(json.dumps({"stage":"rollout","id":record["financebench_id"],"generation":generation,"reward":record["reward"],"answer_reward":record["answer_reward"],"evidence_reward":record["evidence_reward"],"termination":record["termination_reason"],"actions":len(record["action_records"]),"tools":len(record["tool_calls"])}),flush=True)
-    advantages=group_advantages(records,teacher_by_id,args.teacher_tie_coef)
+                print(json.dumps({"stage":"rollout","id":record["financebench_id"],"generation":generation,"reward":record["reward"],"answer_reward":record["answer_reward"],"evidence_reward":record["evidence_reward"],"process_reward":record["process_reward"],"guardrails":len(record["guardrail_events"]),"termination":record["termination_reason"],"actions":len(record["action_records"]),"tools":len(record["tool_calls"])}),flush=True)
+    advantages=group_advantages(records,teacher_by_id,args.teacher_tie_coef,args.process_coef)
     model.train()
     optimizer=torch.optim.AdamW((p for p in model.parameters() if p.requires_grad),lr=args.learning_rate)
     optimizer.zero_grad(set_to_none=True)
@@ -491,7 +518,7 @@ def main() -> None:
                 action["new_logprobs_after_update"]=[float(x) for x in post.detach().cpu()]
     (out/"rollouts.jsonl").write_text("".join(json.dumps(r,ensure_ascii=False)+"\n" for r in records))
     adapter=out/"adapter-step-1";model.save_pretrained(adapter);tokenizer.save_pretrained(adapter)
-    metrics={"stage":"exact_on_policy_optimizer_step_complete","run_id":run_id,"questions":args.ids,"records":len(records),"group_size":args.group_size,"groups_processed":len(records)//max(1,args.group_size),"optimizer_steps":1,"mean_reward":sum(r["reward"] for r in records)/max(1,len(records)),"mean_answer_reward":sum(r["answer_reward"] for r in records)/max(1,len(records)),"mean_evidence_reward":sum(r["evidence_reward"] for r in records)/max(1,len(records)),"zero_variance_groups":sum(1 for fid in set(r["financebench_id"] for r in records) if max(r2["reward"] for r2 in records if r2["financebench_id"]==fid)-min(r2["reward"] for r2 in records if r2["financebench_id"]==fid)<=1e-8),"loss_mean":sum(losses)/max(1,len(losses)),"grad_norm":float(grad_norm),"ratio_mean":sum(ratio_values)/max(1,len(ratio_values)),"ratio_min":min(ratio_values or [0]),"ratio_max":max(ratio_values or [0]),"clipped_fraction":clipped/max(1,total_tokens),"action_tokens":total_tokens,"teacher_tie_coef":args.teacher_tie_coef,"reference_kl_mean":sum(float(a.get("reference_kl_mean",0)) for r in records for a in r["action_records"])/max(1,sum(len(r["action_records"]) for r in records)),"peak_gpu_memory_bytes":torch.cuda.max_memory_allocated() if torch.cuda.is_available() else None,"learning_rate":args.learning_rate,"clip_epsilon":args.clip_epsilon,"adapter":str(adapter),"adapter_sha256":sha256(adapter/"adapter_model.safetensors") if (adapter/"adapter_model.safetensors").exists() else None}
+    metrics={"stage":"exact_on_policy_optimizer_step_complete","run_id":run_id,"questions":args.ids,"records":len(records),"group_size":args.group_size,"groups_processed":len(records)//max(1,args.group_size),"optimizer_steps":1,"mean_reward":sum(r["reward"] for r in records)/max(1,len(records)),"mean_answer_reward":sum(r["answer_reward"] for r in records)/max(1,len(records)),"mean_evidence_reward":sum(r["evidence_reward"] for r in records)/max(1,len(records)),"mean_process_reward":sum(r["process_reward"] for r in records)/max(1,len(records)),"mean_guardrails":sum(len(r["guardrail_events"]) for r in records)/max(1,len(records)),"teacher_tie_coef":args.teacher_tie_coef,"process_coef":args.process_coef,"zero_variance_groups":sum(1 for fid in set(r["financebench_id"] for r in records) if max(r2["reward"] for r2 in records if r2["financebench_id"]==fid)-min(r2["reward"] for r2 in records if r2["financebench_id"]==fid)<=1e-8),"loss_mean":sum(losses)/max(1,len(losses)),"grad_norm":float(grad_norm),"ratio_mean":sum(ratio_values)/max(1,len(ratio_values)),"ratio_min":min(ratio_values or [0]),"ratio_max":max(ratio_values or [0]),"clipped_fraction":clipped/max(1,total_tokens),"action_tokens":total_tokens,"teacher_tie_coef":args.teacher_tie_coef,"reference_kl_mean":sum(float(a.get("reference_kl_mean",0)) for r in records for a in r["action_records"])/max(1,sum(len(r["action_records"]) for r in records)),"peak_gpu_memory_bytes":torch.cuda.max_memory_allocated() if torch.cuda.is_available() else None,"learning_rate":args.learning_rate,"clip_epsilon":args.clip_epsilon,"adapter":str(adapter),"adapter_sha256":sha256(adapter/"adapter_model.safetensors") if (adapter/"adapter_model.safetensors").exists() else None}
     (out/"optimizer_metrics.jsonl").write_text(json.dumps(metrics,default=float)+"\n")
     (out/"summary.json").write_text(json.dumps(metrics,indent=2,default=float))
     tracking=log_mlflow_if_requested(out,args,metrics)

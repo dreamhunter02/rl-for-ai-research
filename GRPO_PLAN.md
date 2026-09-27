@@ -181,7 +181,7 @@ The canonical source is the versioned JSONL artifact, while MLflow is its querya
 
 `harness/financebench_onpolicy_grpo.py` now implements the Stage-0 local-policy bridge: Qwen3.5-4B generates each multi-turn action locally through the Unsloth model, the frozen FinanceBench tools execute observations, and the same model computes token-level old/new probabilities for a clipped group-relative update. It records action token IDs/masks, generation log-probabilities, reference-policy log-probabilities/KL, tool observations and truncation metadata, teacher tie-breaker fields, optimizer metrics, environment/corpus manifests, RNG state, and the saved adapter. If `--mlflow-uri` is supplied, MLflow receives metrics derived from those JSONL artifacts and the run artifacts themselves; otherwise `mlflow_status.json` records that tracking was not requested.
 
-The teacher tie-breaker defaults to `0.0`; this deliberately implements the plan's pure-GRPO first stage. To enable a later controlled ablation, provide the 91-trace JSONL with `--teacher-traces` and set a small `--teacher-tie-coef`, while keeping the primary reward tie condition enforced.
+The bridge now also has an auxiliary process-guidance path: `harness/process_guidance.py` detects repeated equivalent calls, repeated search-without-evidence patterns, missing calculator use for arithmetic questions, useful retrieval-to-evidence pivots, and weak phase-set agreement with a matched teacher trace. Guardrail observations are inserted into the same local-policy conversation and logged as interventions; `--process-coef` is zero by default and process guidance is applied only within primary-reward ties, so it cannot override answer/evidence correctness.
 
 Example inside the Unsloth training environment:
 
