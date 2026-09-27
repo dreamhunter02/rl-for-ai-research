@@ -1,0 +1,33 @@
+# Deterministic 30-question Stage-1 mechanics pilot.
+# Selected at evenly spaced positions from the 91 strict teacher-trace IDs.
+# This is a coverage spread, not a validated question-type stratification.
+financebench_id_00070
+financebench_id_00222
+financebench_id_00382
+financebench_id_00464
+financebench_id_00499
+financebench_id_00566
+financebench_id_00603
+financebench_id_00669
+financebench_id_00685
+financebench_id_00720
+financebench_id_00757
+financebench_id_00917
+financebench_id_00995
+financebench_id_01079
+financebench_id_01148
+financebench_id_01275
+financebench_id_01319
+financebench_id_01482
+financebench_id_01865
+financebench_id_01964
+financebench_id_02981
+financebench_id_03471
+financebench_id_03838
+financebench_id_04080
+financebench_id_04412
+financebench_id_04700
+financebench_id_06247
+financebench_id_06741
+financebench_id_07966
+financebench_id_10499

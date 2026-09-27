@@ -1,0 +1,17 @@
+# 15-question training-split monitoring set, held out from the 30-question pilot.
+# Keep this set fixed during the first optimizer-step and teacher-tie-breaker ablations.
+financebench_id_00206
+financebench_id_00407
+financebench_id_00540
+financebench_id_00606
+financebench_id_00702
+financebench_id_00822
+financebench_id_01077
+financebench_id_01226
+financebench_id_01346
+financebench_id_01936
+financebench_id_03029
+financebench_id_03882
+financebench_id_04481
+financebench_id_06655
+financebench_id_10136
