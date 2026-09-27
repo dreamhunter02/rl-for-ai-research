@@ -1,0 +1,6 @@
+# Five-question process-guided diagnostic before any 30-question pilot.
+financebench_id_00070
+financebench_id_00222
+financebench_id_00382
+financebench_id_00464
+financebench_id_00499
