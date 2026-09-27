@@ -78,6 +78,18 @@ When you have enough evidence, call finish(answer, evidence_document, evidence_p
 """
 
 
+OBS_CAP = 4000
+
+
+def _tool_result(payload: object) -> ToolResult:
+    """Bound every tool observation so one search cannot overflow context."""
+    raw = payload if isinstance(payload, str) else json.dumps(payload, ensure_ascii=False)
+    if len(raw) <= OBS_CAP:
+        return simple_tool_result(raw)
+    envelope = {"truncated": True, "original_chars": len(raw), "content": raw[: OBS_CAP - 96]}
+    return simple_tool_result(json.dumps(envelope, ensure_ascii=False))
+
+
 class Bm25Tool:
     """Structured retrieval tools backed by one deterministic corpus index."""
 
@@ -107,7 +119,7 @@ class Bm25Tool:
             out["prose_hits"] = self.index.search_prose(query_list, filters, top_k)
         if scope in ("tables", "table", "both"):
             out["table_hits"] = self.index.search_tables(query_list, filters, top_k)
-        return simple_tool_result(json.dumps(out, ensure_ascii=False))
+        return _tool_result(out)
 
     @tool
     async def grep_document(
@@ -120,7 +132,7 @@ class Bm25Tool:
         grep_type: Annotated[str, "Backend choice: text, pdfgrep, or rga."] = "text",
     ) -> ToolResult:
         result = self.index.grep_document(document_id, patterns, page_start, page_end, context_lines)
-        return simple_tool_result(json.dumps({"grep_type_requested": grep_type, "backend_used": "page_text", "matches": result}, ensure_ascii=False))
+        return _tool_result({"grep_type_requested": grep_type, "backend_used": "page_text", "matches": result})
 
     @tool
     async def search_tables(
@@ -133,7 +145,7 @@ class Bm25Tool:
     ) -> ToolResult:
         filters = {"document_id": document_id, "company": company, "year": year}
         hits = self.index.search_tables(query_list, filters, max(1, min(int(top_k), 8)))
-        return simple_tool_result(json.dumps({"queries": query_list, "table_hits": hits}, ensure_ascii=False))
+        return _tool_result({"queries": query_list, "table_hits": hits})
 
     @tool
     async def read(
@@ -144,7 +156,7 @@ class Bm25Tool:
         end: Annotated[int, "Character end; bounded by the harness."] = hb.MAX_READ,
         passage_id: Annotated[str, "Optional passage_id returned by search."] = "",
     ) -> ToolResult:
-        return simple_tool_result(json.dumps(self.index.read(document_id, page, start, end, passage_id), ensure_ascii=False))
+        return _tool_result(self.index.read(document_id, page, start, end, passage_id))
 
     @tool
     async def read_table(
@@ -152,7 +164,7 @@ class Bm25Tool:
         table_id: Annotated[str, "Exact table_id returned by search_tables."],
         include_neighbors: Annotated[bool, "Include nearby page context for headers and footnotes."] = True,
     ) -> ToolResult:
-        return simple_tool_result(json.dumps(self.index.read_table(table_id, include_neighbors), ensure_ascii=False))
+        return _tool_result(self.index.read_table(table_id, include_neighbors))
 
     @tool
     async def calculate(
@@ -161,9 +173,9 @@ class Bm25Tool:
     ) -> ToolResult:
         try:
             value = hb.calculate(expression)
-            return simple_tool_result(json.dumps({"expression": expression, "value": value}))
+            return _tool_result({"expression": expression, "value": value})
         except Exception as exc:
-            return simple_tool_result(json.dumps({"error": str(exc)}))
+            return _tool_result({"error": str(exc)})
 
 
     @tool
@@ -173,7 +185,7 @@ class Bm25Tool:
         evidence_document: Annotated[str, "Primary evidence document identifier, if known."] = "",
         evidence_page: Annotated[int, "Primary evidence page, or -1 when unknown."] = -1,
     ) -> ToolResult:
-        return simple_tool_result(json.dumps({"finish": True, "answer": answer, "evidence_document": evidence_document, "evidence_page": evidence_page}))
+        return _tool_result({"finish": True, "answer": answer, "evidence_document": evidence_document, "evidence_page": evidence_page})
 
 
 def _company_name(doc_name: str) -> str:
