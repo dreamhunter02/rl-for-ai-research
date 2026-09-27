@@ -84,7 +84,8 @@ async def main():
         "max_turns": max_turns,
         "seed": seed,
         "harness": "structured_sparse_agent_v2_grounded_reward",
-        "reward_contract": {"answer_primary": True, "evidence_grounding": True, "finish_bonus": False, "format_penalty": False},
+        "reward_contract": {"answer_primary": True, "evidence_grounding": True, "finish_bonus": False, "format_penalty": False, "finish_required": finance_env.RewardConfig.from_env().require_finish},
+        "reward_config": finance_env.RewardConfig.from_env().summary(),
         "timestamp": datetime.now().isoformat(),
     }
     os.makedirs(log_path, exist_ok=True)

@@ -56,6 +56,7 @@ class CoercingTool:
 import sys
 sys.path.insert(0, os.path.dirname(__file__))
 import financebench_harness as hb
+from reward_calculation import RewardConfig, answer_quality_with_judge, build_judge, reward_formula
 
 FINANCE_TASK_INSTRUCTIONS = """You are a financial-filings retrieval agent.
 
@@ -221,11 +222,23 @@ def _message_text(message: Message) -> str:
 
 
 class FinanceAnswerReward:
-    """Calibrated answer-quality reward; mechanics are logged separately."""
+    """Layered FinanceBench reward with finish gating and semantic fallback."""
 
-    def __init__(self, gold_answers: list[str], format_coef: float = 0.0):
+    def __init__(
+        self,
+        gold_answers: list[str],
+        question: str = "",
+        format_coef: float = 0.0,
+        judge=None,
+        reward_config: RewardConfig | None = None,
+        require_finish: bool = True,
+    ):
         self.gold_answers = gold_answers
+        self.question = question
         self.format_coef = format_coef
+        self.judge = judge
+        self.reward_config = reward_config or RewardConfig(require_finish=require_finish)
+        self.require_finish = require_finish
 
     @staticmethod
     def _finish_answer(history: list[Message]) -> str:
@@ -302,29 +315,103 @@ class FinanceAnswerReward:
                 trace.append({"role": role, "content": content})
         return trace
 
-    async def __call__(self, history: list[Message]) -> tuple[float, dict[str, float]]:
+    @staticmethod
+    def _empty_metrics(*, used_finish: float, answer_nonempty: float, finish_missing: float) -> dict[str, float | str]:
+        return {
+            "format": 0.0,
+            "correct": 0.0,
+            "quality": 0.0,
+            "answer_quality": 0.0,
+            "evidence_quality": 0.0,
+            "grounded_quality": 0.0,
+            "conclusion": 0.0,
+            "details": 0.0,
+            "strong_source": 0.0,
+            "used_finish": used_finish,
+            "finish_gate": 0.0 if finish_missing else 1.0,
+            "finish_missing": finish_missing,
+            "finish_penalty": finish_missing,
+            "answer_nonempty": answer_nonempty,
+            "judge_used": 0.0,
+            "judge_verdict": "not_used",
+            "judge_confidence": 0.0,
+            "judge_error": "",
+        }
+
+    async def __call__(self, history: list[Message]) -> tuple[float, dict[str, Any]]:
         submitted = self._finish_answer(history)
+        used_finish = 1.0 if submitted else 0.0
+        if self.require_finish and not submitted:
+            final = next((m for m in reversed(history) if m.get("role") == "assistant"), None)
+            nonempty = float(bool(_message_text(final).strip())) if final is not None else 0.0
+            return 0.0, self._empty_metrics(used_finish=used_finish, answer_nonempty=nonempty, finish_missing=1.0)
         if submitted:
             text = submitted
-            used_finish = 1.0
             formatted = 1.0
         else:
             final = next((m for m in reversed(history) if m.get("role") == "assistant"), None)
             text = _message_text(final) if final is not None else ""
-            used_finish = 0.0
             formatted = float(bool(re.search(r"^\s*Answer:\s*", text, re.I | re.M)))
         if not text.strip():
-            return 0.0, {"format": formatted, "correct": 0.0, "quality": 0.0, "answer_quality": 0.0, "evidence_quality": 0.0, "grounded_quality": 0.0, "conclusion": 0.0, "details": 0.0, "used_finish": used_finish, "answer_nonempty": 0.0}
-        scored = [hb.score_answer(gold, text) for gold in self.gold_answers]
-        quality, parts = max(scored, key=lambda item: item[0], default=(0.0, {}))
+            return 0.0, self._empty_metrics(used_finish=used_finish, answer_nonempty=0.0, finish_missing=0.0)
+
         trace = self._history_trace(history)
-        evidence, evidence_parts = max((hb.score_evidence(gold, text, trace) for gold in self.gold_answers), key=lambda item: item[0], default=(0.0, {}))
-        grounded = hb.grounded_reward(quality, evidence)
         strong_text, weak_text = hb._trace_evidence_text(trace)
+        judge_evidence = "\n".join(x for x in (strong_text, weak_text) if x)
+        candidates: list[dict[str, Any]] = []
+        for gold in self.gold_answers:
+            deterministic_quality, answer_parts = hb.score_answer(gold, text)
+            quality, judge_parts = await answer_quality_with_judge(
+                question=self.question,
+                gold=gold,
+                candidate=text,
+                evidence=judge_evidence,
+                judge=self.judge,
+                config=self.reward_config,
+            )
+            evidence, evidence_parts = hb.score_evidence(gold, text, trace)
+            grounded = reward_formula(quality, evidence)
+            candidates.append({
+                "quality": quality,
+                "deterministic_quality": deterministic_quality,
+                "answer_parts": answer_parts,
+                "judge_parts": judge_parts,
+                "evidence": evidence,
+                "evidence_parts": evidence_parts,
+                "grounded": grounded,
+            })
+        best = max(candidates, key=lambda item: item["grounded"], default={})
+        answer_parts = best.get("answer_parts", {})
+        judge_parts = best.get("judge_parts", {})
+        evidence_parts = best.get("evidence_parts", {})
         trace_calls = sum(len(item.get("tool_calls") or []) for item in trace if item.get("role") == "assistant")
         trace_tool_messages = sum(item.get("role") == "tool" for item in trace)
-        return grounded, {"format": formatted, "correct": quality, "quality": grounded, "answer_quality": quality, "evidence_quality": evidence, "grounded_quality": grounded, "conclusion": parts.get("conclusion", 0.0), "details": parts.get("details", 0.0), "strong_source": evidence_parts.get("strong_source", 0.0), "trace_messages": float(len(trace)), "trace_tool_calls": float(trace_calls), "trace_tool_messages": float(trace_tool_messages), "trace_strong_chars": float(len(strong_text)), "trace_weak_chars": float(len(weak_text)), "used_finish": used_finish, "answer_nonempty": 1.0}
-
+        metrics: dict[str, Any] = {
+            "format": formatted,
+            "correct": float(best.get("quality", 0.0)),
+            "quality": float(best.get("grounded", 0.0)),
+            "answer_quality": float(best.get("quality", 0.0)),
+            "deterministic_answer_quality": float(best.get("deterministic_quality", 0.0)),
+            "evidence_quality": float(best.get("evidence", 0.0)),
+            "grounded_quality": float(best.get("grounded", 0.0)),
+            "conclusion": float(answer_parts.get("conclusion", 0.0)),
+            "details": float(answer_parts.get("details", 0.0)),
+            "strong_source": float(evidence_parts.get("strong_source", 0.0)),
+            "trace_messages": float(len(trace)),
+            "trace_tool_calls": float(trace_calls),
+            "trace_tool_messages": float(trace_tool_messages),
+            "trace_strong_chars": float(len(strong_text)),
+            "trace_weak_chars": float(len(weak_text)),
+            "used_finish": used_finish,
+            "finish_gate": 1.0,
+            "finish_missing": 0.0,
+            "finish_penalty": 0.0,
+            "answer_nonempty": 1.0,
+        }
+        for key, value in judge_parts.items():
+            if key.startswith("judge_") or key == "semantic_length_factor":
+                metrics[key] = value
+        return float(best.get("grounded", 0.0)), metrics
 
 def load_financebench(split_name: str = "train") -> list[dict]:
     """Load the frozen split, keeping held-out eval isolated from training."""
@@ -361,7 +448,7 @@ def _initial_messages(datum: dict, renderer: Renderer, tool_obj: Bm25Tool) -> li
 
 
 class FinanceSearchEnvGroupBuilder(EnvGroupBuilder):
-    def __init__(self, datum, model_name, renderer_name, max_turns, group_size, tool_obj, format_coef=0.0, max_trajectory_tokens=32 * 1024):
+    def __init__(self, datum, model_name, renderer_name, max_turns, group_size, tool_obj, format_coef=0.0, max_trajectory_tokens=32 * 1024, judge=None, reward_config: RewardConfig | None = None):
         self.datum = datum
         self.model_name = model_name
         self.renderer_name = renderer_name
@@ -370,13 +457,15 @@ class FinanceSearchEnvGroupBuilder(EnvGroupBuilder):
         self.tool_obj = tool_obj
         self.format_coef = format_coef
         self.max_trajectory_tokens = max_trajectory_tokens
+        self.judge = judge
+        self.reward_config = reward_config or RewardConfig.from_env()
 
     async def make_envs(self) -> Sequence[Env]:
         tokenizer = tokenizer_utils.get_tokenizer(self.model_name)
         renderer_name = self.renderer_name or model_info.get_recommended_renderer_name(self.model_name)
         renderer = get_renderer(renderer_name, tokenizer)
         initial_messages = _initial_messages(self.datum, renderer, self.tool_obj)
-        reward_fn = FinanceAnswerReward(gold_answers=self.datum["answer"], format_coef=self.format_coef)
+        reward_fn = FinanceAnswerReward(gold_answers=self.datum["answer"], question=self.datum.get("question", ""), format_coef=self.format_coef, judge=self.judge, reward_config=self.reward_config, require_finish=self.reward_config.require_finish)
         tools = [CoercingTool(t) for t in (self.tool_obj.bm25_search, self.tool_obj.grep_document, self.tool_obj.search_tables, self.tool_obj.read, self.tool_obj.read_table, self.tool_obj.calculate, self.tool_obj.finish)]
         return [build_agent_tool_env(renderer=renderer, tools=tools, initial_messages=initial_messages, reward_fn=reward_fn, model_name=self.model_name, max_turns=self.max_turns, max_trajectory_tokens=self.max_trajectory_tokens) for _ in range(self.group_size)]
 
@@ -411,8 +500,10 @@ class FinanceDatasetBuilder(RLDatasetBuilder):
 
     async def __call__(self):
         tool_obj = await Bm25Tool.build()
+        reward_config = RewardConfig.from_env()
+        judge = build_judge(reward_config)
         data = load_financebench(self.split_name)
         rng = random.Random(self.seed)
         rng.shuffle(data)
-        builders = [FinanceSearchEnvGroupBuilder(d, self.model_name_for_tokenizer, self.renderer_name, self.max_turns, self.group_size, tool_obj, self.format_coef, self.max_trajectory_tokens) for d in data]
+        builders = [FinanceSearchEnvGroupBuilder(d, self.model_name_for_tokenizer, self.renderer_name, self.max_turns, self.group_size, tool_obj, self.format_coef, self.max_trajectory_tokens, judge=judge, reward_config=reward_config) for d in data]
         return FinanceRLDataset(builders, self.batch_size), None

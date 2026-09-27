@@ -1,0 +1,20 @@
+{
+  "date": "2026-09-27",
+  "reward_source": "harness/reward_calculation.py",
+  "judge_backend": "deepinfra",
+  "judge_model": "deepseek-ai/DeepSeek-V4.1-Flash",
+  "judge_endpoint": "https://api.deepinfra.com/v1/chat/completions",
+  "judge_live_calibration": "not_run",
+  "reason": "DEEPINFRA_API_KEY is not configured in this session; no credential was requested, printed, or preserved.",
+  "finish_gate": "require_finish=true by default for Tinker reward",
+  "grounded_formula": "clip(answer_quality * (0.5 + 0.5 * evidence_quality), 0, 1)",
+  "deterministic_gates": [
+    "explicit contradiction",
+    "decision mismatch",
+    "numeric/unit mismatch",
+    "missing numeric claim"
+  ],
+  "semantic_fallback": "DeepSeek judge only for qualitative residuals; high-confidence entailed required; ambiguous is not rewarded.",
+  "tests": "17 unittest cases passed",
+  "network_side_effects": "none"
+}
