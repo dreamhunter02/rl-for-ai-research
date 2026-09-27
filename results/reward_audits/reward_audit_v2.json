@@ -1,0 +1,128 @@
+{
+  "audit_version": "answer_grounding_reward_v2",
+  "timestamp_utc": "2026-09-27T06:36:53.477079+00:00",
+  "git_commit": "9b53b56ec3b44e6d434f3e31767b1d93922448a7",
+  "strict_teacher": {
+    "n": 91,
+    "answer_mean": 0.9846153846153846,
+    "answer_median": 1.0,
+    "answer_distribution": {
+      "0.625": 1,
+      "0.95": 20,
+      "0.975": 1,
+      "1.0": 69
+    },
+    "evidence_mean": 0.5579551684035818,
+    "grounded_mean": 0.769233534375789,
+    "answer_strong_ge_0_9": 90,
+    "answer_zero": 0
+  },
+  "known_correct_grounded_old_zero": {
+    "n": 46,
+    "current_min": 0.95,
+    "all_ge_0_9": true
+  },
+  "case_01935": {
+    "stored_artifact_reward": 0.0,
+    "current_answer_reward": 0.95,
+    "current_evidence_reward": 0.9047619047619048,
+    "current_grounded_reward": 0.9047619047619047,
+    "answer_parts": {
+      "quality": 0.95,
+      "conclusion": 1.0,
+      "details": 0.9,
+      "answer_nonempty": 1.0
+    },
+    "evidence_parts": {
+      "evidence": 0.9047619047619048,
+      "strong_source": 1.0,
+      "gold_claim_support": 1.0,
+      "candidate_claim_support": 1.0
+    }
+  },
+  "adversarial_checks": [
+    {
+      "answer": "Answer: No, quick ratio was 0.64",
+      "expected": "<=0.5",
+      "got": 0.5,
+      "pass": true
+    },
+    {
+      "answer": "Answer: No, company had positive working capital of 1561M",
+      "expected": 0.0,
+      "got": 0.0,
+      "pass": true
+    },
+    {
+      "answer": "Answer: sales increased 3.0% vs international increased 0.6%",
+      "expected": 0.0,
+      "got": 0.0,
+      "pass": true
+    },
+    {
+      "answer": "Supplemental indentures.",
+      "expected": 1.0,
+      "got": 1.0,
+      "pass": true
+    },
+    {
+      "answer": "The filing reported a dividend increase.",
+      "expected": 0.0,
+      "got": 0.0,
+      "pass": true
+    }
+  ],
+  "baselines": {
+    "nemotron35_lightning_10turn": {
+      "n": 42,
+      "answer_mean": 0.4238095238095238,
+      "answer_median": 0.0,
+      "answer_distribution": {
+        "0.0": 24,
+        "0.95": 4,
+        "1.0": 14
+      },
+      "evidence_mean": 0.23503401360544218,
+      "grounded_mean": 0.31903202947845805,
+      "answer_strong_ge_0_9": 18,
+      "answer_zero": 24
+    },
+    "qwen35_9b_10turn": {
+      "n": 42,
+      "answer_mean": 0.2017857142857143,
+      "answer_median": 0.0,
+      "answer_distribution": {
+        "0.0": 33,
+        "0.625": 1,
+        "0.95": 3,
+        "1.0": 5
+      },
+      "evidence_mean": 0.1429531490015361,
+      "grounded_mean": 0.17102774577572966,
+      "answer_strong_ge_0_9": 8,
+      "answer_zero": 33
+    },
+    "lfm25_dspark": {
+      "n": 42,
+      "answer_mean": 0.11785714285714285,
+      "answer_median": 0.0,
+      "answer_distribution": {
+        "0.0": 37,
+        "0.95": 1,
+        "1.0": 4
+      },
+      "evidence_mean": 0.13554421768707484,
+      "grounded_mean": 0.1036904761904762,
+      "answer_strong_ge_0_9": 5,
+      "answer_zero": 37
+    }
+  },
+  "contract": {
+    "finish_bonus": false,
+    "format_penalty": false,
+    "tool_count_reward": false,
+    "answer_primary": true,
+    "evidence_separate": true,
+    "provider_failures_excluded": true
+  }
+}

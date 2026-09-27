@@ -15,7 +15,7 @@ from tinker_cookbook import cli_utils
 from tinker_cookbook.rl import train
 import finance_env
 
-BASE_MODEL = os.environ.get("MODEL", "Qwen/Qwen3.5-9B")
+BASE_MODEL = os.environ.get("MODEL", "nvidia/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-BF16")
 
 
 def load_tinker_key() -> str:
@@ -39,7 +39,7 @@ def tinker_evaluator_builder(split_name: str = "eval"):
                 model_name_for_tokenizer=BASE_MODEL,
                 batch_size=1,
                 group_size=1,
-                renderer_name=os.environ.get("RENDERER", "qwen3_5"),
+                renderer_name=os.environ.get("RENDERER", "nemotron3_ultra"),
                 max_turns=6,
                 split_name=split_name,
                 seed=0,
@@ -57,7 +57,7 @@ async def main():
     lr = float(os.environ.get("LR", "2e-5"))
     max_turns = int(os.environ.get("MAX_TURNS", "6"))
     split_name = os.environ.get("SPLIT_NAME", "train")
-    renderer = os.environ.get("RENDERER", "qwen3_5")
+    renderer = os.environ.get("RENDERER", "nemotron3_ultra")
     seed = int(os.environ.get("SEED", "0"))
     run_name = os.environ.get("RUN_NAME", f"finbench_structured_{BASE_MODEL.lower().replace('/', '-')}_bs{batch}_gs{group}_lr{lr}_{datetime.now():%Y%m%d-%H%M%S}")
     log_path = os.environ.get("LOG_PATH", f"/tmp/tinker-examples/rl_finance/{run_name}")
@@ -69,7 +69,7 @@ async def main():
         group_size=group,
         renderer_name=renderer,
         max_turns=max_turns,
-        format_coef=0.1,
+        format_coef=0.0,
         seed=seed,
         split_name=split_name,
     )
@@ -83,7 +83,8 @@ async def main():
         "learning_rate": lr,
         "max_turns": max_turns,
         "seed": seed,
-        "harness": "structured_sparse_agent_v1",
+        "harness": "structured_sparse_agent_v2_grounded_reward",
+        "reward_contract": {"answer_primary": True, "evidence_grounding": True, "finish_bonus": False, "format_penalty": False},
         "timestamp": datetime.now().isoformat(),
     }
     os.makedirs(log_path, exist_ok=True)

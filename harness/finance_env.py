@@ -238,6 +238,42 @@ class FinanceAnswerReward:
                     return answer
         return ""
 
+    @staticmethod
+    def _history_trace(history: list[Message]) -> list[dict]:
+        """Convert Tinker messages into the harness trace schema for grounding."""
+        trace: list[dict] = []
+        for message in history:
+            role = message.get("role") if isinstance(message, dict) else getattr(message, "role", "")
+            content = _message_text(message) if isinstance(message, dict) else str(message)
+            if role == "assistant":
+                calls = []
+                for call in (message.get("tool_calls") or []) if isinstance(message, dict) else []:
+                    if isinstance(call, dict):
+                        fn = call.get("function", call)
+                        name = fn.get("name", "") if isinstance(fn, dict) else ""
+                        raw = fn.get("arguments", {}) if isinstance(fn, dict) else {}
+                        call_id = call.get("id", call.get("call_id", ""))
+                    else:
+                        fn = getattr(call, "function", None)
+                        name = getattr(fn, "name", "") if fn is not None else getattr(call, "name", "")
+                        raw = getattr(fn, "arguments", {}) if fn is not None else getattr(call, "arguments", {})
+                        call_id = getattr(call, "id", getattr(call, "call_id", ""))
+                    if isinstance(raw, str):
+                        try:
+                            arguments = json.loads(raw)
+                        except (TypeError, json.JSONDecodeError):
+                            arguments = {"raw": raw}
+                    else:
+                        arguments = raw if isinstance(raw, dict) else {"raw": str(raw)}
+                    calls.append({"name": name, "arguments": arguments, "call_id": call_id})
+                trace.append({"role": "assistant", "content": content, "tool_calls": calls})
+            elif role == "tool":
+                call_id = message.get("tool_call_id", message.get("call_id", "")) if isinstance(message, dict) else getattr(message, "tool_call_id", "")
+                trace.append({"role": "tool", "call_id": call_id, "content": content})
+            else:
+                trace.append({"role": role, "content": content})
+        return trace
+
     async def __call__(self, history: list[Message]) -> tuple[float, dict[str, float]]:
         submitted = self._finish_answer(history)
         if submitted:
@@ -246,14 +282,17 @@ class FinanceAnswerReward:
             formatted = 1.0
         else:
             final = next((m for m in reversed(history) if m.get("role") == "assistant"), None)
-            text = hb._message_text(final) if final is not None else ""
+            text = _message_text(final) if final is not None else ""
             used_finish = 0.0
             formatted = float(bool(re.search(r"^\s*Answer:\s*", text, re.I | re.M)))
         if not text.strip():
-            return 0.0, {"format": formatted, "correct": 0.0, "quality": 0.0, "conclusion": 0.0, "details": 0.0, "used_finish": used_finish, "answer_nonempty": 0.0}
+            return 0.0, {"format": formatted, "correct": 0.0, "quality": 0.0, "answer_quality": 0.0, "evidence_quality": 0.0, "grounded_quality": 0.0, "conclusion": 0.0, "details": 0.0, "used_finish": used_finish, "answer_nonempty": 0.0}
         scored = [hb.score_answer(gold, text) for gold in self.gold_answers]
         quality, parts = max(scored, key=lambda item: item[0], default=(0.0, {}))
-        return quality, {"format": formatted, "correct": quality, "quality": quality, "conclusion": parts.get("conclusion", 0.0), "details": parts.get("details", 0.0), "used_finish": used_finish, "answer_nonempty": 1.0}
+        trace = self._history_trace(history)
+        evidence, evidence_parts = max((hb.score_evidence(gold, text, trace) for gold in self.gold_answers), key=lambda item: item[0], default=(0.0, {}))
+        grounded = hb.grounded_reward(quality, evidence)
+        return grounded, {"format": formatted, "correct": quality, "quality": grounded, "answer_quality": quality, "evidence_quality": evidence, "grounded_quality": grounded, "conclusion": parts.get("conclusion", 0.0), "details": parts.get("details", 0.0), "strong_source": evidence_parts.get("strong_source", 0.0), "used_finish": used_finish, "answer_nonempty": 1.0}
 
 
 def load_financebench(split_name: str = "train") -> list[dict]:

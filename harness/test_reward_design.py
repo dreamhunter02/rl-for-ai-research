@@ -18,6 +18,16 @@ class RewardDesignTests(unittest.TestCase):
         self.assertEqual(hb.extract_answer_text("**Answer:** No, the ratio was 0.54"), "No, the ratio was 0.54")
         self.assertEqual(hb.reward("$11588.00", "Answer: $11,588.00"), 1.0)
 
+    def test_textual_finance_answer_supplemental_indentures(self):
+        gold = ("Amcor Finance (USA), Inc. and Amcor Flexibles North America, Inc., entered into "
+                "supplemental indentures relating to Guaranteed Senior Notes due 2026 and 2028. "
+                "This involved the substitution of the Substitute Issuer for the Former Issuer "
+                "and the assumption of covenants under the indentures.")
+        answer = "The filing reported supplemental indentures substituting the former issuer with the substitute issuer."
+        self.assertGreaterEqual(hb.reward(gold, answer), 0.9)
+        self.assertEqual(hb.reward(gold, "The filing reported a dividend increase."), 0.0)
+
+
     def test_narrative_direction_and_missing_finish_are_scored(self):
         answer = (
             "The table shows an increase/(decrease) due to factors. "
