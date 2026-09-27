@@ -471,7 +471,8 @@ def _decision(text: str) -> str | None:
 
 def _number_mentions(text: str) -> list[tuple[float, bool, str]]:
     mentions = []
-    raw_text = text or ""
+    # Normalize common PDF/typographic minus signs before parsing amounts.
+    raw_text = (text or "").replace("−", "-").replace("–", "-").replace("—", "-")
     lower = raw_text.lower()
     for match in _NUM_RE.finditer(raw_text):
         token = match.group(0)

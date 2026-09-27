@@ -3,6 +3,7 @@ import unittest
 from pathlib import Path
 
 import financebench_harness as hb
+from reward_calculation import _numeric_or_decision_hard_veto
 
 
 class RewardDesignTests(unittest.TestCase):
@@ -47,6 +48,19 @@ class RewardDesignTests(unittest.TestCase):
         )
         self.assertEqual(evidence, 0.0)
         self.assertEqual(parts["gold_claim_support"], 0.0)
+
+    def test_numeric_gate_allows_derived_unit_residuals_but_vetoes_same_unit_errors(self):
+        self.assertEqual(
+            _numeric_or_decision_hard_veto(
+                "Corporate bonds were almost 82% of short-term investments.",
+                "Corporate bonds were approximately $416.4 million of the $507.7 million total.",
+            ),
+            (False, ""),
+        )
+        self.assertEqual(
+            _numeric_or_decision_hard_veto("No. quick ratio was 0.54.", "No. quick ratio was 0.64"),
+            (True, "numeric_mismatch"),
+        )
 
     def test_adversarial_wrong_answers_do_not_pass(self):
         self.assertLessEqual(hb.reward("No. quick ratio was 0.54 for Verizon.", "Answer: No, quick ratio was 0.64"), 0.5)
