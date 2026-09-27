@@ -656,6 +656,15 @@ def _trace_evidence_text(trace: list[dict[str, Any]] | None) -> tuple[str, str]:
         if not text:
             continue
         name = call_names.get(str(item.get("call_id", "")), str(item.get("name", "")))
+        if not name:
+            # Tinker tool wrappers can lose call metadata while preserving the
+            # structured result; infer the provenance class from stable result keys.
+            if '"matches"' in text or '"backend_used"' in text:
+                name = "grep_document"
+            elif '"table"' in text or '"table_id"' in text:
+                name = "read_table"
+            elif '"prose_hits"' in text or '"table_hits"' in text:
+                name = "bm25_search"
         if name in {"read", "read_table", "grep_document"}:
             strong_parts.append(text)
         elif name in {"bm25_search", "search_tables"}:
