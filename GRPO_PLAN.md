@@ -22,6 +22,7 @@ The primary goal is to improve answer correctness and evidence grounding on the 
 - Held-out evaluation split: 42 questions.
 - Strict teacher traces: 91 unique training questions, selected from 349 candidates and judged for correctness and grounding.
 - Missing teacher-reference coverage: 17 of the 108 training questions.
+- Selection audit required: retain candidate rejection/verdict counts and check whether the 17 uncovered questions or rejected candidates are systematically harder or structurally different.
 
 The current Qwen3.5-4B baseline has approximately `0.704` and `0.708` mean answer reward across two 25-question seeds, and `0.469` and `0.516` mean grounded reward. This is a useful starting point, but evidence grounding remains the main weakness.
 
@@ -53,9 +54,9 @@ This is the safest use and should happen before teacher guidance affects trainin
 
 ### Phase 2: optional tie-breaking
 
-Only after several pure answer/evidence GRPO runs should teacher information influence the reward. If multiple Qwen trajectories in one group have identical primary answer/evidence reward, a small tie-breaker may prefer the trajectory whose final claim/evidence provenance is more consistent with the matched teacher reference.
+Only after several pure answer/evidence GRPO runs should teacher information influence the reward. First measure how often primary-reward ties occur and whether the matched teacher reference agrees with the best Qwen trajectory. If multiple Qwen trajectories in one group have identical primary answer/evidence reward, a small tie-breaker may prefer the trajectory whose final claim/evidence provenance is more consistent with the matched teacher reference.
 
-The tie-breaker must never overturn a primary reward difference. It should not compare full tool-call strings or force a particular search order.
+A tie-breaker magnitude must be ablated at least three ways, remain no more than a small fraction of the primary reward range, and never overturn a primary reward difference. Track effective group diversity, unique tool-call sequences, teacher disagreement, and per-question changes. It should not compare full tool-call strings or force a particular search order.
 
 ### Prohibited teacher uses
 
@@ -68,32 +69,33 @@ The tie-breaker must never overturn a primary reward difference. It should not c
 
 ## Training schedule
 
-### Stage 0: exact bridge verification
+### Stage 0: de novo local-policy verification
 
-The minimal bridge proof has already completed one simplified optimizer step, but the production gate requires exact same-policy rollouts:
+The previous four-trajectory SGLang-to-Unsloth experiment validated reward and integration mechanics only; it did not validate on-policy training dynamics, because actions were reconstructed and did not carry exact sampled token IDs and old log-probabilities. The production gate is a new, same-policy verification:
 
 - Qwen4B itself generates the assistant/tool actions.
 - Tool observations are executed by the existing FinanceBench harness.
-- Exact assistant action token IDs, masks, and old log-probabilities are retained.
-- The same checkpoint computes the update log-probabilities.
+- Exact assistant action token IDs, per-token masks, and old log-probabilities are retained from that same sampling pass.
+- The same checkpoint computes the update log-probabilities and reference-policy KL.
 - Group-relative advantages are nonzero.
 - The adapter changes and saves successfully.
 
-No SGLang-generated trajectories may be used for the final on-policy GRPO result.
+Before rollout, freeze the retrieval corpus, page cache/index, chunking and passage settings, tool schemas, prompt, and environment version. No SGLang-generated trajectories may be used for the final on-policy GRPO result.
 
 ### Stage 1: small pure-GRPO pilot
 
-Start without a teacher reward term:
+Start without a teacher reward term using a stratified question sample:
 
-- 20–30 training questions.
-- 10 held-out questions for monitoring.
-- Group size: 4 generations per question.
+- 20–30 training questions spanning ratio computation, trend identification, line-item lookup, multi-hop retrieval, and comparison questions.
+- 15–20 held-out monitoring questions; report confidence intervals rather than relying on a 10-question point estimate.
+- Group size: 4 generations per question initially.
+- Ablate group size 4 versus 8, and 16 only if the GB10 memory budget permits.
 - Two sampling seeds.
-- Approximately 50–100 optimizer steps.
+- Approximately 50–100 gradient optimizer steps, explicitly distinguished from groups processed and rollout passes.
 - Primary reward: answer correctness plus evidence grounding.
 - Log every trajectory and every optimizer statistic.
 
-The teacher traces are used only for reward validation in this stage.
+Before scaling, estimate memory for simultaneous 16k-token groups and record peak GPU memory. The teacher traces are used only for reward validation in this stage.
 
 ### Stage 2: teacher-guided ablation
 
@@ -117,14 +119,15 @@ For a stronger multi-trace reference study, generate 2–3 independent traces fo
 
 ## Epoch definition
 
-In this online setting, one epoch means one fresh rollout group for each question in the active training set. It does not mean replaying a fixed teacher dataset.
+In this online setting, one epoch means one fresh rollout group for each question in the active training set. It does not mean replaying a fixed teacher dataset. A groups-processed count and a gradient-optimizer-step count must be logged separately because gradient accumulation and batching can make them differ.
 
 Planned budget:
 
 - First pilot: one pass over 20–30 questions.
 - If stable: one or two additional passes over the active set.
 - Hard initial cap: three passes before reviewing validation results.
-- Early stopping: based on held-out grounded reward, answer reward, evidence support, and diversity diagnostics.
+- Early stopping: based on held-out grounded reward, answer reward, evidence support, diversity diagnostics, and KL drift from the initial checkpoint.
+- Stop or reduce the budget if policy KL or tool-path concentration rises sharply; monitor a soft KL warning around 1 nat/token and investigate any sustained drift toward 5 nat/token.
 
 ## Trace capture and run reproducibility
 
@@ -141,6 +144,8 @@ Before training, save:
 - Random seeds and RNG states.
 - Active question split and teacher-trace hashes.
 - Environment and tool-schema version.
+- Frozen retrieval corpus/index/page-cache/chunking manifest.
+- Sampling defaults and decoding configuration.
 
 For every rollout, save:
 
@@ -149,8 +154,10 @@ For every rollout, save:
 - Every assistant tool call, arguments, and call ID.
 - Tool observations, truncation metadata, and provenance.
 - Evidence documents/pages and calculations.
-- Exact assistant action token IDs and action masks.
-- Old and new action log-probabilities.
+- Exact assistant action token IDs and per-token action masks.
+- Per-token old and new action log-probabilities, not only sequence sums.
+- Per-trajectory sampling parameters: temperature, top-p, top-k, seed, and decoding constraints.
+- Per-trajectory KL against the frozen initial/reference policy.
 - Finish arguments and termination reason.
 - Answer reward, evidence reward, teacher/tie-breaker signal, final reward, group mean/std, and advantage.
 - Latency, token counts, errors, and retry metadata.
@@ -166,23 +173,27 @@ Use append-only JSONL for trajectories and metrics, checksums for artifacts, and
 
 ## Experiment tracking
 
-Use MLflow as the open-source run tracker for parameters, scalar metrics, checkpoints, and artifacts. Optionally use Langfuse or Phoenix/OpenTelemetry for a UI over agent trajectories and tool spans.
+Use MLflow as the open-source run tracker for parameters, scalar metrics, checkpoints, and artifacts. MLflow values must be derived from the append-only JSONL rather than computed by a separate code path; upload the JSONL files as MLflow artifacts and run a post-run validator that compares MLflow aggregates with JSONL aggregates. Optionally use Langfuse or Phoenix/OpenTelemetry for a UI over agent trajectories and tool spans.
 
-The canonical source of truth remains the local JSONL trajectory and metric artifacts because generic trackers do not fully represent our multi-turn FinanceBench evidence state.
+The canonical source is the versioned JSONL artifact, while MLflow is its queryable derived view; this prevents a dual-source-of-truth problem. Generic trackers do not fully represent our multi-turn FinanceBench evidence state.
 
 ## Go/no-go gates
 
 Proceed only if:
 
+- The retrieval corpus, index/page cache, chunking, tool schemas, prompt, and environment are frozen and hashed.
 - The same local checkpoint generated and scored the logged action tokens.
 - Tool calls and observations round-trip correctly.
 - At least 80% of sampled actions are syntactically valid.
 - Finish rate is at least 60% in the exact local-policy pilot.
+- The fraction of zero-variance groups is reported and is acceptably low; group-size ablations are recorded where feasible.
 - At least one group has nonzero reward variance, preferably most groups.
 - Gradients and adapter changes are nonzero.
 - Empty answers remain zero-reward.
 - Teacher guidance never overturns a primary answer/evidence reward difference.
+- Tie rate, teacher disagreement, unique tool-call sequences, and diversity changes are measured before and after guidance.
 - Held-out grounded reward does not decline materially.
 - Search volume, evidence citation, and tool diversity do not collapse.
+- KL from the initial/reference policy and peak GPU memory are logged and remain within the predeclared investigation limits.
 
 Do not claim model improvement from a toy run, a reward-calibration audit, or a bridge-only optimizer step. The improvement claim requires comparison with the untouched base checkpoint on the 42-question evaluation split and complete reproducibility artifacts.
