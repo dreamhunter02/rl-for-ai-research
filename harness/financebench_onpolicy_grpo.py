@@ -343,6 +343,24 @@ def save_rng_state(path: Path) -> None:
     torch.save({"python":random.getstate(),"torch_cpu":torch.get_rng_state(),"torch_cuda":torch.cuda.get_rng_state_all() if torch.cuda.is_available() else []},path)
 
 
+def log_mlflow_if_requested(out: Path, args: argparse.Namespace, metrics: dict[str, Any]) -> dict[str, Any]:
+    if not args.mlflow_uri:
+        return {"status":"not_requested"}
+    try:
+        import mlflow
+        mlflow.set_tracking_uri(args.mlflow_uri)
+        mlflow.set_experiment(args.mlflow_experiment)
+        with mlflow.start_run(run_name=metrics["run_id"]) as run:
+            mlflow.log_params({k:str(v) for k,v in vars(args).items() if k != "teacher_traces"})
+            mlflow.log_metrics({k:float(v) for k,v in metrics.items() if isinstance(v,(int,float)) and math.isfinite(float(v))})
+            for name in ["config.json","environment.json","corpus_manifest.json","teacher_trace_hashes.json","rollouts.jsonl","optimizer_metrics.jsonl","summary.json"]:
+                path=out/name
+                if path.exists(): mlflow.log_artifact(str(path))
+            return {"status":"logged","tracking_uri":args.mlflow_uri,"experiment":args.mlflow_experiment,"run_id":run.info.run_id}
+    except Exception as exc:
+        return {"status":"error","error":repr(exc),"tracking_uri":args.mlflow_uri}
+
+
 def group_advantages(records: list[dict[str,Any]], teacher_by_id: dict[str,dict[str,Any]], coef: float) -> dict[int,float]:
     groups: dict[str,list[dict[str,Any]]]={}
     for r in records: groups.setdefault(r["financebench_id"],[]).append(r)
@@ -387,6 +405,8 @@ def main() -> None:
     ap.add_argument("--clip-epsilon",type=float,default=0.2)
     ap.add_argument("--max-grad-norm",type=float,default=1.0)
     ap.add_argument("--output-dir",default="")
+    ap.add_argument("--mlflow-uri",default="")
+    ap.add_argument("--mlflow-experiment",default="financebench-grpo")
     ap.add_argument("--reference-kl",action=argparse.BooleanOptionalAction,default=True)
     args=ap.parse_args()
     if args.ids_file:
@@ -465,7 +485,9 @@ def main() -> None:
     metrics={"stage":"exact_on_policy_optimizer_step_complete","run_id":run_id,"questions":args.ids,"records":len(records),"group_size":args.group_size,"groups_processed":len(records)//max(1,args.group_size),"optimizer_steps":1,"mean_reward":sum(r["reward"] for r in records)/max(1,len(records)),"mean_answer_reward":sum(r["answer_reward"] for r in records)/max(1,len(records)),"mean_evidence_reward":sum(r["evidence_reward"] for r in records)/max(1,len(records)),"zero_variance_groups":sum(1 for fid in set(r["financebench_id"] for r in records) if max(r2["reward"] for r2 in records if r2["financebench_id"]==fid)-min(r2["reward"] for r2 in records if r2["financebench_id"]==fid)<=1e-8),"loss_mean":sum(losses)/max(1,len(losses)),"grad_norm":float(grad_norm),"ratio_mean":sum(ratio_values)/max(1,len(ratio_values)),"ratio_min":min(ratio_values or [0]),"ratio_max":max(ratio_values or [0]),"clipped_fraction":clipped/max(1,total_tokens),"action_tokens":total_tokens,"teacher_tie_coef":args.teacher_tie_coef,"reference_kl_mean":sum(float(a.get("reference_kl_mean",0)) for r in records for a in r["action_records"])/max(1,sum(len(r["action_records"]) for r in records)),"peak_gpu_memory_bytes":torch.cuda.max_memory_allocated() if torch.cuda.is_available() else None,"learning_rate":args.learning_rate,"clip_epsilon":args.clip_epsilon,"adapter":str(adapter),"adapter_sha256":sha256(adapter/"adapter_model.safetensors") if (adapter/"adapter_model.safetensors").exists() else None}
     (out/"optimizer_metrics.jsonl").write_text(json.dumps(metrics,default=float)+"\n")
     (out/"summary.json").write_text(json.dumps(metrics,indent=2,default=float))
-    print(json.dumps(metrics,indent=2,default=float),flush=True)
+    tracking=log_mlflow_if_requested(out,args,metrics)
+    (out/"mlflow_status.json").write_text(json.dumps(tracking,indent=2))
+    print(json.dumps(metrics|{"mlflow":tracking},indent=2,default=float),flush=True)
 
 if __name__=="__main__":
     main()
