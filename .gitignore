@@ -6,6 +6,7 @@ artifacts/
 # Large or non-source experiment logs
 results/tinker_runs/
 results/local_eval/financebench_grpo_trial_qwen35_4b_r32_16k/adapter-step-1/
+results/grpo_runs/*/adapter-step-*/
 
 # Python/build/runtime files
 __pycache__/

@@ -174,7 +174,12 @@ def parse_tool_calls(text: str) -> list[dict[str, Any]]:
     return calls
 
 
+def _inner_tokenizer(processor: Any) -> Any:
+    return getattr(processor, "tokenizer", processor)
+
+
 def _template_ids(tokenizer: Any, messages: list[dict[str, Any]], max_length: int, max_new_tokens: int) -> torch.Tensor:
+    tokenizer=_inner_tokenizer(tokenizer)
     encoded = tokenizer.apply_chat_template(messages, tools=TOOLS, add_generation_prompt=True, tokenize=True, return_tensors="pt")
     if isinstance(encoded, dict):
         ids = encoded["input_ids"]
@@ -198,7 +203,7 @@ def _generation_logprobs(scores: tuple[torch.Tensor, ...], token_ids: torch.Tens
 
 
 def _decode(tokenizer: Any, ids: torch.Tensor) -> str:
-    return tokenizer.decode(ids.tolist(), skip_special_tokens=False)
+    return _inner_tokenizer(tokenizer).decode(ids.tolist(), skip_special_tokens=False)
 
 
 def rollout_one(model: torch.nn.Module, tokenizer: Any, index: hb.StructuredIndex, row: dict[str, Any], seed: int, max_turns: int, max_new_tokens: int, max_seq_length: int, temperature: float, top_p: float) -> dict[str, Any]:
@@ -219,10 +224,10 @@ def rollout_one(model: torch.nn.Module, tokenizer: Any, index: hb.StructuredInde
         prompt_ids = prompt_ids.to(device)
         attention = attention.to(device)
         with torch.no_grad():
-            generated = model.generate(input_ids=prompt_ids, attention_mask=attention, max_new_tokens=max_new_tokens, do_sample=temperature > 0, temperature=max(temperature, 1e-5), top_p=top_p, return_dict_in_generate=True, output_scores=True, pad_token_id=tokenizer.eos_token_id)
+            generated = model.generate(input_ids=prompt_ids, attention_mask=attention, max_new_tokens=max_new_tokens, do_sample=temperature > 0, temperature=max(temperature, 1e-5), top_p=top_p, return_dict_in_generate=True, output_scores=True, pad_token_id=_inner_tokenizer(tokenizer).eos_token_id)
         action_ids = generated.sequences[0, prompt_ids.shape[1]:].detach().cpu()
         action_text = _decode(tokenizer, action_ids)
-        old_logprobs = _generation_logprobs(generated.scores, action_ids)
+        generation_logprobs = _generation_logprobs(generated.scores, action_ids)
         if not action_ids.numel():
             termination = "empty_generation"
             break
@@ -230,7 +235,7 @@ def rollout_one(model: torch.nn.Module, tokenizer: Any, index: hb.StructuredInde
         if not calls:
             answer = action_text.strip()
             trace.append({"role": "assistant", "content": answer, "token_ids": action_ids.tolist()})
-            action_records.append({"turn": turn, "text": action_text, "token_ids": action_ids.tolist(), "action_mask":[1]*int(action_ids.numel()), "prompt_token_ids": prompt_ids[0].detach().cpu().tolist(), "old_logprobs": old_logprobs, "tool_calls": []})
+            action_records.append({"turn": turn, "text": action_text, "token_ids": action_ids.tolist(), "action_mask":[1]*int(action_ids.numel()), "prompt_token_ids": prompt_ids[0].detach().cpu().tolist(), "old_logprobs": [], "sampling_logprobs": generation_logprobs, "tool_calls": []})
             termination = "assistant"
             break
         assistant_calls=[]
@@ -242,7 +247,7 @@ def rollout_one(model: torch.nn.Module, tokenizer: Any, index: hb.StructuredInde
             call_record={"name":call["name"],"arguments":args,"call_id":call_id,"turn":turn}
             tool_calls.append(call_record)
             assistant_calls.append(call_record)
-            openai_calls.append({"id":call_id,"type":"function","function":{"name":call["name"],"arguments":json.dumps(args,ensure_ascii=False)}})
+            openai_calls.append({"id":call_id,"type":"function","function":{"name":call["name"],"arguments":args}})
         messages.append({"role":"assistant","content":None,"tool_calls":openai_calls})
         for call_record in assistant_calls:
             raw_observation=execute_local(index,call_record["name"],call_record["arguments"])
@@ -256,7 +261,7 @@ def rollout_one(model: torch.nn.Module, tokenizer: Any, index: hb.StructuredInde
                 raw_page=finish_args.get("evidence_page",-1)
                 finish_metadata={"evidence_document":str(finish_args.get("evidence_document","")),"evidence_page":int(raw_page) if str(raw_page).lstrip("-").isdigit() else -1}
         trace.insert(len(trace)-len(tool_items),{"role":"assistant","tool_calls":assistant_calls,"token_ids":action_ids.tolist()})
-        action_records.append({"turn":turn,"text":action_text,"token_ids":action_ids.tolist(),"action_mask":[1]*int(action_ids.numel()),"prompt_token_ids":prompt_ids[0].detach().cpu().tolist(),"old_logprobs":old_logprobs,"tool_calls":assistant_calls})
+        action_records.append({"turn":turn,"text":action_text,"token_ids":action_ids.tolist(),"action_mask":[1]*int(action_ids.numel()),"prompt_token_ids":prompt_ids[0].detach().cpu().tolist(),"old_logprobs":[],"sampling_logprobs":generation_logprobs,"tool_calls":assistant_calls})
         if answer:
             termination="finish"
             break
@@ -445,6 +450,10 @@ def main() -> None:
             for generation in range(args.group_size):
                 seed=args.seed+row_index*1000+generation
                 record=rollout_one(model,tokenizer,index,row,seed,args.max_turns,args.max_new_tokens,args.max_seq_length,args.temperature,args.top_p)
+                with torch.no_grad():
+                    for action in record["action_records"]:
+                        exact_old=action_logprobs(model,action["prompt_token_ids"],action["token_ids"],args.max_seq_length)
+                        action["old_logprobs"]=[float(x) for x in exact_old.detach().cpu()]
                 if reference is not None:
                     reference_logprobs(reference,[record],args.max_seq_length)
                     for action in record["action_records"]:
@@ -480,7 +489,7 @@ def main() -> None:
             for action in record["action_records"]:
                 post=action_logprobs(model,action["prompt_token_ids"],action["token_ids"],args.max_seq_length)
                 action["new_logprobs_after_update"]=[float(x) for x in post.detach().cpu()]
-    (out/"rollouts.jsonl").write_text("".join(json.dumps(r,ensure_ascii=False)+"\\n" for r in records))
+    (out/"rollouts.jsonl").write_text("".join(json.dumps(r,ensure_ascii=False)+"\n" for r in records))
     adapter=out/"adapter-step-1";model.save_pretrained(adapter);tokenizer.save_pretrained(adapter)
     metrics={"stage":"exact_on_policy_optimizer_step_complete","run_id":run_id,"questions":args.ids,"records":len(records),"group_size":args.group_size,"groups_processed":len(records)//max(1,args.group_size),"optimizer_steps":1,"mean_reward":sum(r["reward"] for r in records)/max(1,len(records)),"mean_answer_reward":sum(r["answer_reward"] for r in records)/max(1,len(records)),"mean_evidence_reward":sum(r["evidence_reward"] for r in records)/max(1,len(records)),"zero_variance_groups":sum(1 for fid in set(r["financebench_id"] for r in records) if max(r2["reward"] for r2 in records if r2["financebench_id"]==fid)-min(r2["reward"] for r2 in records if r2["financebench_id"]==fid)<=1e-8),"loss_mean":sum(losses)/max(1,len(losses)),"grad_norm":float(grad_norm),"ratio_mean":sum(ratio_values)/max(1,len(ratio_values)),"ratio_min":min(ratio_values or [0]),"ratio_max":max(ratio_values or [0]),"clipped_fraction":clipped/max(1,total_tokens),"action_tokens":total_tokens,"teacher_tie_coef":args.teacher_tie_coef,"reference_kl_mean":sum(float(a.get("reference_kl_mean",0)) for r in records for a in r["action_records"])/max(1,sum(len(r["action_records"]) for r in records)),"peak_gpu_memory_bytes":torch.cuda.max_memory_allocated() if torch.cuda.is_available() else None,"learning_rate":args.learning_rate,"clip_epsilon":args.clip_epsilon,"adapter":str(adapter),"adapter_sha256":sha256(adapter/"adapter_model.safetensors") if (adapter/"adapter_model.safetensors").exists() else None}
     (out/"optimizer_metrics.jsonl").write_text(json.dumps(metrics,default=float)+"\n")

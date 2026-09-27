@@ -1,0 +1,26 @@
+{
+  "python": "3.12.3 (main, Jul 15 2026, 23:46:41) [GCC 13.3.0]",
+  "platform": "Linux-7.0.0-1019-nvidia-aarch64-with-glibc2.39",
+  "hostname": "26e329b7a721",
+  "packages": {
+    "unsloth": "2026.9.11",
+    "transformers": "5.5.0",
+    "trl": "0.24.0",
+    "torch": "2.12.1",
+    "accelerate": "1.15.0",
+    "peft": "0.21.0",
+    "datasets": "4.3.0"
+  },
+  "torch_cuda": "13.0",
+  "gpu": [
+    {
+      "index": 0,
+      "name": "NVIDIA GB10",
+      "total_memory": 130660974592,
+      "capability": [
+        12,
+        1
+      ]
+    }
+  ]
+}
