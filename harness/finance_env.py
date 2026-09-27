@@ -285,7 +285,7 @@ class FinanceAnswerReward:
                 trace.append({"role": "assistant", "content": content, "tool_calls": calls})
             elif role == "tool":
                 call_id = message.get("tool_call_id", message.get("call_id", "")) if isinstance(message, dict) else getattr(message, "tool_call_id", "")
-                trace.append({"role": "tool", "call_id": call_id, "content": content})
+                trace.append({"role": "tool", "call_id": call_id, "name": message.get("name", "") if isinstance(message, dict) else getattr(message, "name", ""), "content": content})
             else:
                 trace.append({"role": role, "content": content})
         return trace
@@ -308,7 +308,10 @@ class FinanceAnswerReward:
         trace = self._history_trace(history)
         evidence, evidence_parts = max((hb.score_evidence(gold, text, trace) for gold in self.gold_answers), key=lambda item: item[0], default=(0.0, {}))
         grounded = hb.grounded_reward(quality, evidence)
-        return grounded, {"format": formatted, "correct": quality, "quality": grounded, "answer_quality": quality, "evidence_quality": evidence, "grounded_quality": grounded, "conclusion": parts.get("conclusion", 0.0), "details": parts.get("details", 0.0), "strong_source": evidence_parts.get("strong_source", 0.0), "used_finish": used_finish, "answer_nonempty": 1.0}
+        strong_text, weak_text = hb._trace_evidence_text(trace)
+        trace_calls = sum(len(item.get("tool_calls") or []) for item in trace if item.get("role") == "assistant")
+        trace_tool_messages = sum(item.get("role") == "tool" for item in trace)
+        return grounded, {"format": formatted, "correct": quality, "quality": grounded, "answer_quality": quality, "evidence_quality": evidence, "grounded_quality": grounded, "conclusion": parts.get("conclusion", 0.0), "details": parts.get("details", 0.0), "strong_source": evidence_parts.get("strong_source", 0.0), "trace_messages": float(len(trace)), "trace_tool_calls": float(trace_calls), "trace_tool_messages": float(trace_tool_messages), "trace_strong_chars": float(len(strong_text)), "trace_weak_chars": float(len(weak_text)), "used_finish": used_finish, "answer_nonempty": 1.0}
 
 
 def load_financebench(split_name: str = "train") -> list[dict]:

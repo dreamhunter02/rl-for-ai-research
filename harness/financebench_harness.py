@@ -655,7 +655,7 @@ def _trace_evidence_text(trace: list[dict[str, Any]] | None) -> tuple[str, str]:
         text = flatten(item.get("content", ""))
         if not text:
             continue
-        name = call_names.get(str(item.get("call_id", "")), "")
+        name = call_names.get(str(item.get("call_id", "")), str(item.get("name", "")))
         if name in {"read", "read_table", "grep_document"}:
             strong_parts.append(text)
         elif name in {"bm25_search", "search_tables"}:

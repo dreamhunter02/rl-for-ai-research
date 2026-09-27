@@ -13,7 +13,7 @@ class TinkerRewardTests(unittest.TestCase):
                 "id": "read-1",
                 "function": {"name": "read", "arguments": json.dumps({"document_id": "amcor_8k", "start": 1, "end": 2})},
             }]},
-            {"role": "tool", "tool_call_id": "read-1", "content": "Amcor entered into supplemental indentures."},
+            {"role": "tool", "tool_call_id": "read-1", "name": "read", "content": "Amcor entered into supplemental indentures."},
             {"role": "assistant", "content": "", "tool_calls": [{
                 "id": "finish-1",
                 "function": {"name": "finish", "arguments": json.dumps({"answer": "Supplemental indentures."})},
