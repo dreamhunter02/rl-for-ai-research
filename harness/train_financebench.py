@@ -59,6 +59,7 @@ async def main():
     split_name = os.environ.get("SPLIT_NAME", "train")
     renderer = os.environ.get("RENDERER", "nemotron3_ultra")
     seed = int(os.environ.get("SEED", "0"))
+    remove_constant_reward_groups = os.environ.get("REMOVE_CONSTANT_REWARD_GROUPS", "false").strip().lower() in {"1", "true", "yes", "on"}
     run_name = os.environ.get("RUN_NAME", f"finbench_structured_{BASE_MODEL.lower().replace('/', '-')}_bs{batch}_gs{group}_lr{lr}_{datetime.now():%Y%m%d-%H%M%S}")
     log_path = os.environ.get("LOG_PATH", f"/tmp/tinker-examples/rl_finance/{run_name}")
     cli_utils.check_log_dir(log_path, behavior_if_exists="delete")
@@ -86,6 +87,7 @@ async def main():
         "harness": "structured_sparse_agent_v2_grounded_reward",
         "reward_contract": {"answer_primary": True, "evidence_grounding": True, "finish_bonus": False, "format_penalty": False, "finish_required": finance_env.RewardConfig.from_env().require_finish},
         "reward_config": finance_env.RewardConfig.from_env().summary(),
+        "remove_constant_reward_groups": remove_constant_reward_groups,
         "timestamp": datetime.now().isoformat(),
     }
     os.makedirs(log_path, exist_ok=True)
@@ -102,6 +104,7 @@ async def main():
         max_tokens=1024,
         lora_rank=32,
         max_steps=steps,
+        remove_constant_reward_groups=remove_constant_reward_groups,
         eval_every=int(os.environ.get("EVAL_EVERY", "0")),
         save_every=int(os.environ.get("SAVE_EVERY", "0")),
         evaluator_builders=[tinker_evaluator_builder("eval")] if int(os.environ.get("EVAL_EVERY", "0")) > 0 else [],
