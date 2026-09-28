@@ -1,0 +1,1 @@
+{"optimizer_updates": 0, "skipped_batches": 1, "calls": 1, "actual_updates_this_call": 0, "training_datums": 0, "elapsed_s": 0, "metrics": {"workshop/zero_signal_batch": 1, "workshop/optimizer_updates": 0, "workshop/skipped_batches": 1, "workshop/calls": 1}}

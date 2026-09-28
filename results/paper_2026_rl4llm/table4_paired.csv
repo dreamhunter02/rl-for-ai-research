@@ -1,0 +1,3 @@
+comparison,status,reason
+B1-B0,blocked,"B0 common-rubric receipts and matched rerun are unavailable"
+R1-B1,blocked,"R1 had zero actual optimizer updates; no learning condition was run"

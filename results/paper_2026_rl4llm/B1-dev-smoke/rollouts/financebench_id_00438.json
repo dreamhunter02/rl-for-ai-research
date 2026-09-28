@@ -1,0 +1,419 @@
+{
+  "history": [
+    {
+      "role": "system",
+      "content": "You are a financial-filings retrieval agent.\n\nYour job is to answer the user's question using the SEC filing corpus. Search\nbefore answering. Start with bm25_search to identify the likely document and\npassages, then use grep_document for exact accounting terms or regexes and\nread/read_table to inspect bounded evidence. Any derived numeric answer must come from calculate using named, source-backed operands. Direct extraction needs no calculation.\nYou may switch documents or issue refined searches when the evidence is not\nsufficient. Do not invent values or rely on outside knowledge.\n\nAvailable tools:\n- bm25_search: ranked keyword search with optional company/year/document filters\n- grep_document: document-scoped exact or regex search; choose grep_type text, pdfgrep, or rga\n- search_tables: ranked search over table-like pages in one or all filings\n- read: bounded page/passage retrieval with provenance\n- read_table: retrieve a table candidate with neighboring headers and footnotes\n- calculate: safe arithmetic for ratios, changes, and unit conversions\n\nWhen you have enough evidence, call finish exactly once. For numeric answers use\nanswer_type=\"numeric\", value as a decimal string, unit and scale; leave answer_text\nempty. For yes/no-only answers use answer_type=\"boolean\", decision=\"yes\" or \"no\".\nFor text or multipart answers use answer_type=\"text\", answer_text with all requested\nfacts. Cite receipt_id, document_id and one-based page from read/grep results.\nFor arithmetic, calculate accepts an expression with named variables and an operands\nobject mapping each variable to value, unit, scale, metric, period, receipt_id and an\nexact quote. Include its calc_id in finish. Do not use constant-only calculations as\nsupport. Read beyond snippets when needed. Use the final available turn to finish;\nnever continue searching when only one turn remains.\n\n\n# Tools\n\nYou have access to the following functions:\n\n<tools>\n<function>\n<name>bm25_search</name>\n<parameters>\n<parameter>\n<name>query_list</name>\n<type>array</type>\n<description>One or more keyword queries.</description>\n<items>{\"type\": \"string\"}</items>\n<title>Query List</title>\n</parameter>\n<parameter>\n<name>company</name>\n<type>string</type>\n<description>Optional company filter, for example 3M.</description>\n<default></default>\n<title>Company</title>\n</parameter>\n<parameter>\n<name>year</name>\n<type>integer</type>\n<description>Optional fiscal year; use -1 when unknown.</description>\n<default>-1</default>\n<title>Year</title>\n</parameter>\n<parameter>\n<name>filing_type</name>\n<type>string</type>\n<description>Optional type such as 10-K or 10-Q.</description>\n<default></default>\n<title>Filing Type</title>\n</parameter>\n<parameter>\n<name>document_id</name>\n<type>string</type>\n<description>Optional exact filing name.</description>\n<default></default>\n<title>Document Id</title>\n</parameter>\n<parameter>\n<name>scope</name>\n<type>string</type>\n<description>prose, tables, or both.</description>\n<default>both</default>\n<title>Scope</title>\n</parameter>\n<parameter>\n<name>top_k</name>\n<type>integer</type>\n<description>Maximum results to return.</description>\n<default>3</default>\n<title>Top K</title>\n</parameter>\n<title>bm25_search_params</title>\n<required>[\"query_list\"]</required>\n</parameters>\n</function>\n<function>\n<name>grep_document</name>\n<parameters>\n<parameter>\n<name>document_id</name>\n<type>string</type>\n<description>Exact document_id returned by bm25_search.</description>\n<title>Document Id</title>\n</parameter>\n<parameter>\n<name>patterns</name>\n<type>array</type>\n<description>Literal or regular-expression patterns.</description>\n<items>{\"type\": \"string\"}</items>\n<title>Patterns</title>\n</parameter>\n<parameter>\n<name>page_start</name>\n<type>integer</type>\n<description>First page to search, or -1 for all pages.</description>\n<default>-1</default>\n<title>Page Start</title>\n</parameter>\n<parameter>\n<name>page_end</name>\n<type>integer</type>\n<description>Last page to search, or -1 for all pages.</description>\n<default>-1</default>\n<title>Page End</title>\n</parameter>\n<parameter>\n<name>context_lines</name>\n<type>integer</type>\n<description>Number of surrounding lines per match.</description>\n<default>2</default>\n<title>Context Lines</title>\n</parameter>\n<parameter>\n<name>grep_type</name>\n<type>string</type>\n<description>Backend choice: text, pdfgrep, or rga.</description>\n<default>text</default>\n<title>Grep Type</title>\n</parameter>\n<title>grep_document_params</title>\n<required>[\"document_id\", \"patterns\"]</required>\n</parameters>\n</function>\n<function>\n<name>search_tables</name>\n<parameters>\n<parameter>\n<name>query_list</name>\n<type>array</type>\n<description>Terms such as revenue, cash flows, balance sheet, or PP&E.</description>\n<items>{\"type\": \"string\"}</items>\n<title>Query List</title>\n</parameter>\n<parameter>\n<name>document_id</name>\n<type>string</type>\n<description>Optional exact document_id; leave empty for corpus search.</description>\n<default></default>\n<title>Document Id</title>\n</parameter>\n<parameter>\n<name>company</name>\n<type>string</type>\n<description>Optional company filter.</description>\n<default></default>\n<title>Company</title>\n</parameter>\n<parameter>\n<name>year</name>\n<type>integer</type>\n<description>Optional fiscal year; use -1 when unknown.</description>\n<default>-1</default>\n<title>Year</title>\n</parameter>\n<parameter>\n<name>top_k</name>\n<type>integer</type>\n<description>Maximum table candidates.</description>\n<default>3</default>\n<title>Top K</title>\n</parameter>\n<title>search_tables_params</title>\n<required>[\"query_list\"]</required>\n</parameters>\n</function>\n<function>\n<name>read</name>\n<parameters>\n<parameter>\n<name>document_id</name>\n<type>string</type>\n<description>Exact document_id.</description>\n<title>Document Id</title>\n</parameter>\n<parameter>\n<name>page</name>\n<type>integer</type>\n<description>One-based page number, or -1 when using passage_id.</description>\n<default>-1</default>\n<title>Page</title>\n</parameter>\n<parameter>\n<name>start</name>\n<type>integer</type>\n<description>Character start within the selected page/window.</description>\n<default>0</default>\n<title>Start</title>\n</parameter>\n<parameter>\n<name>end</name>\n<type>integer</type>\n<description>Absolute character end, or -1 for the next bounded window.</description>\n<default>-1</default>\n<title>End</title>\n</parameter>\n<parameter>\n<name>passage_id</name>\n<type>string</type>\n<description>Optional passage_id returned by search.</description>\n<default></default>\n<title>Passage Id</title>\n</parameter>\n<title>read_params</title>\n<required>[\"document_id\"]</required>\n</parameters>\n</function>\n<function>\n<name>read_table</name>\n<parameters>\n<parameter>\n<name>table_id</name>\n<type>string</type>\n<description>Exact table_id returned by search_tables.</description>\n<title>Table Id</title>\n</parameter>\n<parameter>\n<name>include_neighbors</name>\n<type>boolean</type>\n<description>Return neighbor page identifiers for headers and footnotes.</description>\n<default>True</default>\n<title>Include Neighbors</title>\n</parameter>\n<parameter>\n<name>start</name>\n<type>integer</type>\n<description>Character offset within table page.</description>\n<default>0</default>\n<title>Start</title>\n</parameter>\n<parameter>\n<name>end</name>\n<type>integer</type>\n<description>Absolute end, or -1 for the next bounded table window.</description>\n<default>-1</default>\n<title>End</title>\n</parameter>\n<title>read_table_params</title>\n<required>[\"table_id\"]</required>\n</parameters>\n</function>\n<function>\n<name>calculate</name>\n<parameters>\n<parameter>\n<name>expression</name>\n<type>string</type>\n<description>Arithmetic using named source-backed operands and + - * /.</description>\n<title>Expression</title>\n</parameter>\n<parameter>\n<name>operands</name>\n<type>object</type>\n<description>Variable to value/unit/scale/metric/period/receipt_id/quote mapping.</description>\n<additionalProperties>True</additionalProperties>\n<default>{}</default>\n<title>Operands</title>\n</parameter>\n<title>calculate_params</title>\n<required>[\"expression\"]</required>\n</parameters>\n</function>\n<function>\n<name>finish</name>\n<parameters>\n<parameter>\n<name>answer_type</name>\n<type>string</type>\n<description>numeric, boolean, or text</description>\n<title>Answer Type</title>\n</parameter>\n<parameter>\n<name>value</name>\n<type>string</type>\n<description>Single decimal numeric answer; no units here.</description>\n<default></default>\n<title>Value</title>\n</parameter>\n<parameter>\n<name>unit</name>\n<type>string</type>\n<description>USD, EUR, percent, ratio, shares, or number.</description>\n<default></default>\n<title>Unit</title>\n</parameter>\n<parameter>\n<name>scale</name>\n<type>string</type>\n<description>ones, thousand, million, or billion.</description>\n<default></default>\n<title>Scale</title>\n</parameter>\n<parameter>\n<name>decision</name>\n<type>string</type>\n<description>yes or no for boolean answers.</description>\n<default></default>\n<title>Decision</title>\n</parameter>\n<parameter>\n<name>answer_text</name>\n<type>string</type>\n<description>Text/multipart answer; empty for numeric and boolean.</description>\n<default></default>\n<title>Answer Text</title>\n</parameter>\n<parameter>\n<name>citations</name>\n<type>array</type>\n<description>Each contains receipt_id, document_id and one-based page.</description>\n<default>[]</default>\n<items>{\"additionalProperties\": true, \"type\": \"object\"}</items>\n<title>Citations</title>\n</parameter>\n<parameter>\n<name>calc_id</name>\n<type>string</type>\n<description>Calculation record for a derived numeric result.</description>\n<default></default>\n<title>Calc Id</title>\n</parameter>\n<title>finish_params</title>\n<required>[\"answer_type\"]</required>\n</parameters>\n</function>\n</tools>\n\nIf you choose to call a function ONLY reply in the following format with NO suffix:\n\n<tool_call>\n<function=example_function_name>\n<parameter=example_parameter_1>\nvalue_1\n</parameter>\n<parameter=example_parameter_2>\nThis is the value for the second parameter\nthat can span\nmultiple lines\n</parameter>\n</function>\n</tool_call>\n\n<IMPORTANT>\nReminder:\n- Function calls MUST follow the specified format: an inner <function=...></function> block must be nested within <tool_call></tool_call> XML tags\n- Required parameters MUST be specified\n- You may provide optional reasoning for your function call in natural language BEFORE the function call, but NOT after\n- If there is no function call available, answer the question like normal with your current knowledge and do not tell the user about function calls\n</IMPORTANT>"
+    },
+    {
+      "role": "user",
+      "content": "Does Adobe have an improving operating margin profile as of FY2022? If operating margin is not a useful metric for a company like this, then state that and explain why."
+    },
+    {
+      "role": "assistant",
+      "content": [
+        {
+          "type": "thinking",
+          "thinking": "We need to answer whether Adobe has an improving operating margin profile as of FY2022. Need to retrieve financial data, likely from 10-K filings. Use bm25_search to find Adobe FY2022 operating margin. Then maybe grep for operating margin. Let's search."
+        },
+        {
+          "type": "text",
+          "text": ""
+        },
+        {
+          "type": "text",
+          "text": "\n"
+        }
+      ],
+      "tool_calls": [
+        {
+          "type": "function",
+          "id": null,
+          "function": {
+            "name": "bm25_search",
+            "arguments": "{\"query_list\": [\"Adobe operating margin FY2022\", \"Adobe operating income revenue FY2022 10-K\"], \"company\": \"Adobe\", \"year\": 2022, \"filing_type\": \"10-K\", \"top_k\": 5}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "content": "{\"queries\":[\"Adobe operating margin FY2022\",\"Adobe operating income revenue FY2022 10-K\"],\"filters\":{\"company\":\"Adobe\",\"year\":2022,\"filing_type\":\"10-K\",\"document_id\":\"\"},\"prose_hits\":[{\"document_id\":\"ADOBE_2022_10K\",\"page\":54,\"passage_id\":\"p:ADOBE_2022_10K:page:54:chunk:0\",\"score\":12.17123,\"snippet\":\"ADOBE INC.\\nCONSOLIDATED STATEMENTS OF INCOME\\n(In millions, except per share data)\\n Years Ended\\n \\nDecember 2,\\n2022\\nDecember 3,\\n2021\\nNovember 27,\\n2020\\nRevenue: \\nSubscription $ 16,388 $ 14,573 $ 11,626 \\nProduct 532 555 507 \\nServices and other 686 657 735 \\nTotal revenue 17,606 15,785 12,868 \\n \\nCost of r\",\"snippet_start\":0},{\"document_id\":\"ADOBE_2022_10K\",\"page\":53,\"passage_id\":\"p:ADOBE_2022_10K:page:53:chunk:0\",\"score\":10.47958,\"snippet\":\"ADOBE INC.\\n CONSOLIDATED BALANCE SHEETS\\n(In millions, except par value)\\n \\nDecember 2,\\n2022\\nDecember 3,\\n2021\\nASSETS\\nCurrent assets: \\nCash and cash equivalents $ 4,236 $ 3,844 \\nShort-term investments 1,860 1,954 \\nTrade receivables, net of allowances for doubtful accounts of $23 and of $16, respectivel\",\"snippet_start\":0},{\"document_id\":\"ADOBE_2022_10K\",\"page\":63,\"passage_id\":\"p:ADOBE_2022_10K:page:63:chunk:2\",\"score\":9.93826,\"snippet\":\"r loss on the foreign currency revenue, foreign \\ncurrency expense or Treasury lock cash flow hedge to revenue, operating expense or interest expense, as applicable.\\nConcentration of Risk\\nFinancial instruments that potentially subject us to concentrations of credit risk are short-term fixed-income in\",\"snippet_start\":3800},{\"document_id\":\"ADOBE_2022_10K\",\"page\":87,\"passage_id\":\"p:ADOBE_2022_10K:page:87:chunk:1\",\"score\":9.70863,\"snippet\":\"018 (the \u201cPrior Revolving Credit Agreement\u201d). The Revolving Credit Agreement provides \\nfor loans to Adobe and certain of its subsidiaries that may be designated from time to time as additional borrowers. Pursuant to \\nthe terms of the Revolving Credit Agreement, we may, subject to the agreement of le\",\"snippet_start\":2219}],\"table_hits\":[{\"document_id\":\"ADOBE_2022_10K\",\"page\":54,\"table_id\":\"t:ADOBE_2022_10K:page:54\",\"score\":9.56125,\"units\":\"In millions, except per share data\",\"title\":\"\",\"snippet\":\"ADOBE INC.\\nCONSOLIDATED STATEMENTS OF INCOME\\n(In millions, except per share data)\\n Years Ended\\n \\nDecember 2,\\n2022\\nDecember 3,\\n2021\\nNovember 27,\\n2020\\nRevenue: \\nSubscription $ 16,388 $ 14,573 $ 11,626 \\nProduct 532 555 507 \\nServices and other 686 657 735 \\nTotal revenue 17,606 15,785 12,868 \\n \\nCost of r\",\"snippet_start\":0}],\"turns_remaining\":7,\"observation\":{\"raw_chars\":2515,\"truncated\":false}}",
+      "tool_call_id": "",
+      "name": "bm25_search"
+    },
+    {
+      "role": "assistant",
+      "content": [
+        {
+          "type": "thinking",
+          "thinking": "We have a snippet of the income statement page 54 showing revenue and maybe cost and operating income. Need operating margin = operating income / revenue. We need operating income figures for FY2022 and FY2021 perhaps. The snippet shows revenue but not operating income yet. Let's read page 54 fully."
+        },
+        {
+          "type": "text",
+          "text": ""
+        },
+        {
+          "type": "text",
+          "text": "\n"
+        }
+      ],
+      "tool_calls": [
+        {
+          "type": "function",
+          "id": null,
+          "function": {
+            "name": "read",
+            "arguments": "{\"document_id\": \"ADOBE_2022_10K\", \"page\": 54, \"start\": 0, \"end\": -1}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "content": "{\"document_id\":\"ADOBE_2022_10K\",\"page\":54,\"page_start\":54,\"page_end\":54,\"start\":0,\"end\":1406,\"total_chars\":1406,\"text\":\"ADOBE INC.\\nCONSOLIDATED STATEMENTS OF INCOME\\n(In millions, except per share data)\\n Years Ended\\n \\nDecember 2,\\n2022\\nDecember 3,\\n2021\\nNovember 27,\\n2020\\nRevenue: \\nSubscription $ 16,388 $ 14,573 $ 11,626 \\nProduct 532 555 507 \\nServices and other 686 657 735 \\nTotal revenue 17,606 15,785 12,868 \\n \\nCost of revenue:\\nSubscription 1,646 1,374 1,108 \\nProduct 35 41 36 \\nServices and other 484 450 578 \\nTotal cost of revenue 2,165 1,865 1,722 \\n \\nGross profit 15,441 13,920 11,146 \\n \\nOperating expenses:\\nResearch and development 2,987 2,540 2,188 \\nSales and marketing 4,968 4,321 3,591 \\nGeneral and administrative 1,219 1,085 968 \\nAmortization of intangibles 169 172 162 \\nTotal operating expenses 9,343 8,118 6,909 \\n \\nOperating income 6,098 5,802 4,237 \\n \\nNon-operating income (expense):\\nInterest expense (112) (113) (116) \\nInvestment gains (losses), net (19) 16 13 \\nOther income (expense), net 41 \u2014 42 \\nTotal non-operating income (expense), net (90) (97) (61) \\nIncome before income taxes 6,008 5,705 4,176 \\nProvision for (benefit from) income taxes 1,252 883 (1,084) \\nNet income $ 4,756 $ 4,822 $ 5,260 \\nBasic net income per share $ 10.13 $ 10.10 $ 10.94 \\nShares used to compute basic net income per share 470 477 481 \\nDiluted net income per share $ 10.10 $ 10.02 $ 10.83 \\nShares used to compute diluted net income per share 471 481 485 \\nSee accompanying Notes to Consolidated Financial Statements.\\nTable of Contents\\n54\",\"next_start\":null,\"has_more\":false,\"turns_remaining\":6,\"receipt_id\":\"r1\",\"observation\":{\"raw_chars\":1649,\"truncated\":false}}",
+      "tool_call_id": "",
+      "name": "read"
+    },
+    {
+      "role": "assistant",
+      "content": [
+        {
+          "type": "thinking",
+          "thinking": "Now we have operating income for FY2022: $6,098 million; FY2021: $5,802 million; FY2020: $4,237 million. Revenue: FY2022 $17,606M; FY2021 $15,785M; FY2020 $12,868M.\n\nCompute operating margin: operating income / revenue.\n\nFY2022: 6,098 / 17,606 = let's calculate."
+        },
+        {
+          "type": "text",
+          "text": ""
+        },
+        {
+          "type": "text",
+          "text": "\n"
+        }
+      ],
+      "tool_calls": [
+        {
+          "type": "function",
+          "id": null,
+          "function": {
+            "name": "calculate",
+            "arguments": "{\"expression\": \"6098 / 17606\", \"operands\": {\"6098\": {\"value\": 6098, \"unit\": \"million\", \"metric\": \"operating income\", \"period\": \"FY2022\", \"receipt_id\": \"r1\", \"quote\": \"Operating income 6,098\"}, \"17606\": {\"value\": 17606, \"unit\": \"million\", \"metric\": \"revenue\", \"period\": \"FY2022\", \"receipt_id\": \"r1\", \"quote\": \"Total revenue 17,606\"}}}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "content": "{\"error\":\"Provide exactly one source-backed operand for every expression variable\",\"turns_remaining\":5,\"observation\":{\"raw_chars\":103,\"truncated\":false}}",
+      "tool_call_id": "",
+      "name": "calculate"
+    },
+    {
+      "role": "assistant",
+      "content": [
+        {
+          "type": "thinking",
+          "thinking": "The calculate tool expects named variables, maybe we need to reference operand names like op1, op2? Actually description: \"Expression using named source-backed operands and + - * /.\" The operands object maps variable names to value etc. We need to assign variable names, maybe \"a\" and \"b\". Let's try with variables x and y."
+        },
+        {
+          "type": "text",
+          "text": ""
+        },
+        {
+          "type": "text",
+          "text": "\n"
+        }
+      ],
+      "tool_calls": [
+        {
+          "type": "function",
+          "id": null,
+          "function": {
+            "name": "calculate",
+            "arguments": "{\"expression\": \"x / y\", \"operands\": {\"x\": {\"value\": 6098, \"unit\": \"million\", \"metric\": \"operating income\", \"period\": \"FY2022\", \"receipt_id\": \"r1\", \"quote\": \"Operating income 6,098\"}, \"y\": {\"value\": 17606, \"unit\": \"million\", \"metric\": \"revenue\", \"period\": \"FY2022\", \"receipt_id\": \"r1\", \"quote\": \"Total revenue 17,606\"}}}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "content": "{\"error\":\"Operand metric and period must identify text in its source quote\",\"turns_remaining\":4,\"observation\":{\"raw_chars\":96,\"truncated\":false}}",
+      "tool_call_id": "",
+      "name": "calculate"
+    },
+    {
+      "role": "assistant",
+      "content": [
+        {
+          "type": "thinking",
+          "thinking": "Maybe the tool expects the quote to exactly match text in the source; but maybe we can skip providing quotes; just value and unit. Let's try minimal: just value and unit."
+        },
+        {
+          "type": "text",
+          "text": ""
+        },
+        {
+          "type": "text",
+          "text": "\n"
+        }
+      ],
+      "tool_calls": [
+        {
+          "type": "function",
+          "id": null,
+          "function": {
+            "name": "calculate",
+            "arguments": "{\"expression\": \"x / y\", \"operands\": {\"x\": {\"value\": 6098, \"unit\": \"million\"}, \"y\": {\"value\": 17606, \"unit\": \"million\"}}}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "content": "{\"error\":\"Operand quote was not delivered by a strong read\",\"turns_remaining\":3,\"observation\":{\"raw_chars\":80,\"truncated\":false}}",
+      "tool_call_id": "",
+      "name": "calculate"
+    },
+    {
+      "role": "assistant",
+      "content": [
+        {
+          "type": "thinking",
+          "thinking": "It seems the calculate tool is picky about quotes from read results. Maybe easier: we can compute manually and just provide answer without using calculate, as direct extraction. The instruction: \"Any derived numeric answer must come from calculate using named, source-backed operands. Direct extraction needs no calculation.\" But we have the numbers; we could compute manually, but they want calculate. However maybe we can avoid calculation by stating the margin ratio as a derived value but we can compute manually and present as percent; but they require calculate. Let's try to get the calculate to work by providing receipt_id and quote that exactly matches snippet. The quote we provided maybe not exact; need to match exactly as in the text. The snippet shows \"Operating income 6,098\". That's exact. The revenue line \"Total revenue 17,606\". Let's try with those quotes exactly."
+        },
+        {
+          "type": "text",
+          "text": ""
+        },
+        {
+          "type": "text",
+          "text": "\n"
+        }
+      ],
+      "tool_calls": [
+        {
+          "type": "function",
+          "id": null,
+          "function": {
+            "name": "calculate",
+            "arguments": "{\"expression\": \"x / y\", \"operands\": {\"x\": {\"value\": 6098, \"unit\": \"million\", \"metric\": \"operating income\", \"period\": \"FY2022\", \"receipt_id\": \"r1\", \"quote\": \"Operating income 6,098\"}, \"y\": {\"value\": 17606, \"unit\": \"million\", \"metric\": \"revenue\", \"period\": \"FY2022\", \"receipt_id\": \"r1\", \"quote\": \"Total revenue 17,606\"}}}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "content": "{\"error\":\"Operand metric and period must identify text in its source quote\",\"turns_remaining\":2,\"observation\":{\"raw_chars\":96,\"truncated\":false}}",
+      "tool_call_id": "",
+      "name": "calculate"
+    },
+    {
+      "role": "assistant",
+      "content": [
+        {
+          "type": "thinking",
+          "thinking": "Maybe the tool expects metric and period to match the source's metric names; but maybe we can omit metric and period. Let's try just value and unit and receipt_id and quote."
+        },
+        {
+          "type": "text",
+          "text": ""
+        },
+        {
+          "type": "text",
+          "text": "\n"
+        }
+      ],
+      "tool_calls": [
+        {
+          "type": "function",
+          "id": null,
+          "function": {
+            "name": "calculate",
+            "arguments": "{\"expression\": \"x / y\", \"operands\": {\"x\": {\"value\": 6098, \"unit\": \"million\", \"receipt_id\": \"r1\", \"quote\": \"Operating income 6,098\"}, \"y\": {\"value\": 17606, \"unit\": \"million\", \"receipt_id\": \"r1\", \"quote\": \"Total revenue 17,606\"}}}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "content": "{\"error\":\"Operand metric and period must identify text in its source quote\",\"turns_remaining\":1,\"next_action\":\"Next turn must be finish.\",\"observation\":{\"raw_chars\":138,\"truncated\":false}}",
+      "tool_call_id": "",
+      "name": "calculate"
+    }
+  ],
+  "receipts": {
+    "r1": {
+      "document_id": "ADOBE_2022_10K",
+      "page": 54,
+      "page_start": 54,
+      "page_end": 54,
+      "start": 0,
+      "end": 1406,
+      "total_chars": 1406,
+      "text": "ADOBE INC.\nCONSOLIDATED STATEMENTS OF INCOME\n(In millions, except per share data)\n Years Ended\n \nDecember 2,\n2022\nDecember 3,\n2021\nNovember 27,\n2020\nRevenue: \nSubscription $ 16,388 $ 14,573 $ 11,626 \nProduct 532 555 507 \nServices and other 686 657 735 \nTotal revenue 17,606 15,785 12,868 \n \nCost of revenue:\nSubscription 1,646 1,374 1,108 \nProduct 35 41 36 \nServices and other 484 450 578 \nTotal cost of revenue 2,165 1,865 1,722 \n \nGross profit 15,441 13,920 11,146 \n \nOperating expenses:\nResearch and development 2,987 2,540 2,188 \nSales and marketing 4,968 4,321 3,591 \nGeneral and administrative 1,219 1,085 968 \nAmortization of intangibles 169 172 162 \nTotal operating expenses 9,343 8,118 6,909 \n \nOperating income 6,098 5,802 4,237 \n \nNon-operating income (expense):\nInterest expense (112) (113) (116) \nInvestment gains (losses), net (19) 16 13 \nOther income (expense), net 41 \u2014 42 \nTotal non-operating income (expense), net (90) (97) (61) \nIncome before income taxes 6,008 5,705 4,176 \nProvision for (benefit from) income taxes 1,252 883 (1,084) \nNet income $ 4,756 $ 4,822 $ 5,260 \nBasic net income per share $ 10.13 $ 10.10 $ 10.94 \nShares used to compute basic net income per share 470 477 481 \nDiluted net income per share $ 10.10 $ 10.02 $ 10.83 \nShares used to compute diluted net income per share 471 481 485 \nSee accompanying Notes to Consolidated Financial Statements.\nTable of Contents\n54",
+      "next_start": null,
+      "has_more": false,
+      "turns_remaining": 6,
+      "receipt_id": "r1",
+      "observation": {
+        "raw_chars": 1649,
+        "truncated": false
+      },
+      "tool": "read",
+      "delivered_turn": 2
+    }
+  },
+  "calculations": {},
+  "observations": [
+    {
+      "name": "bm25_search",
+      "payload": {
+        "queries": [
+          "Adobe operating margin FY2022",
+          "Adobe operating income revenue FY2022 10-K"
+        ],
+        "filters": {
+          "company": "Adobe",
+          "year": 2022,
+          "filing_type": "10-K",
+          "document_id": ""
+        },
+        "prose_hits": [
+          {
+            "document_id": "ADOBE_2022_10K",
+            "page": 54,
+            "passage_id": "p:ADOBE_2022_10K:page:54:chunk:0",
+            "score": 12.17123,
+            "snippet": "ADOBE INC.\nCONSOLIDATED STATEMENTS OF INCOME\n(In millions, except per share data)\n Years Ended\n \nDecember 2,\n2022\nDecember 3,\n2021\nNovember 27,\n2020\nRevenue: \nSubscription $ 16,388 $ 14,573 $ 11,626 \nProduct 532 555 507 \nServices and other 686 657 735 \nTotal revenue 17,606 15,785 12,868 \n \nCost of r",
+            "snippet_start": 0
+          },
+          {
+            "document_id": "ADOBE_2022_10K",
+            "page": 53,
+            "passage_id": "p:ADOBE_2022_10K:page:53:chunk:0",
+            "score": 10.47958,
+            "snippet": "ADOBE INC.\n CONSOLIDATED BALANCE SHEETS\n(In millions, except par value)\n \nDecember 2,\n2022\nDecember 3,\n2021\nASSETS\nCurrent assets: \nCash and cash equivalents $ 4,236 $ 3,844 \nShort-term investments 1,860 1,954 \nTrade receivables, net of allowances for doubtful accounts of $23 and of $16, respectivel",
+            "snippet_start": 0
+          },
+          {
+            "document_id": "ADOBE_2022_10K",
+            "page": 63,
+            "passage_id": "p:ADOBE_2022_10K:page:63:chunk:2",
+            "score": 9.93826,
+            "snippet": "r loss on the foreign currency revenue, foreign \ncurrency expense or Treasury lock cash flow hedge to revenue, operating expense or interest expense, as applicable.\nConcentration of Risk\nFinancial instruments that potentially subject us to concentrations of credit risk are short-term fixed-income in",
+            "snippet_start": 3800
+          },
+          {
+            "document_id": "ADOBE_2022_10K",
+            "page": 87,
+            "passage_id": "p:ADOBE_2022_10K:page:87:chunk:1",
+            "score": 9.70863,
+            "snippet": "018 (the \u201cPrior Revolving Credit Agreement\u201d). The Revolving Credit Agreement provides \nfor loans to Adobe and certain of its subsidiaries that may be designated from time to time as additional borrowers. Pursuant to \nthe terms of the Revolving Credit Agreement, we may, subject to the agreement of le",
+            "snippet_start": 2219
+          }
+        ],
+        "table_hits": [
+          {
+            "document_id": "ADOBE_2022_10K",
+            "page": 54,
+            "table_id": "t:ADOBE_2022_10K:page:54",
+            "score": 9.56125,
+            "units": "In millions, except per share data",
+            "title": "",
+            "snippet": "ADOBE INC.\nCONSOLIDATED STATEMENTS OF INCOME\n(In millions, except per share data)\n Years Ended\n \nDecember 2,\n2022\nDecember 3,\n2021\nNovember 27,\n2020\nRevenue: \nSubscription $ 16,388 $ 14,573 $ 11,626 \nProduct 532 555 507 \nServices and other 686 657 735 \nTotal revenue 17,606 15,785 12,868 \n \nCost of r",
+            "snippet_start": 0
+          }
+        ],
+        "turns_remaining": 7,
+        "observation": {
+          "raw_chars": 2515,
+          "truncated": false
+        }
+      },
+      "visible_chars": 2566
+    },
+    {
+      "name": "read",
+      "payload": {
+        "document_id": "ADOBE_2022_10K",
+        "page": 54,
+        "page_start": 54,
+        "page_end": 54,
+        "start": 0,
+        "end": 1406,
+        "total_chars": 1406,
+        "text": "ADOBE INC.\nCONSOLIDATED STATEMENTS OF INCOME\n(In millions, except per share data)\n Years Ended\n \nDecember 2,\n2022\nDecember 3,\n2021\nNovember 27,\n2020\nRevenue: \nSubscription $ 16,388 $ 14,573 $ 11,626 \nProduct 532 555 507 \nServices and other 686 657 735 \nTotal revenue 17,606 15,785 12,868 \n \nCost of revenue:\nSubscription 1,646 1,374 1,108 \nProduct 35 41 36 \nServices and other 484 450 578 \nTotal cost of revenue 2,165 1,865 1,722 \n \nGross profit 15,441 13,920 11,146 \n \nOperating expenses:\nResearch and development 2,987 2,540 2,188 \nSales and marketing 4,968 4,321 3,591 \nGeneral and administrative 1,219 1,085 968 \nAmortization of intangibles 169 172 162 \nTotal operating expenses 9,343 8,118 6,909 \n \nOperating income 6,098 5,802 4,237 \n \nNon-operating income (expense):\nInterest expense (112) (113) (116) \nInvestment gains (losses), net (19) 16 13 \nOther income (expense), net 41 \u2014 42 \nTotal non-operating income (expense), net (90) (97) (61) \nIncome before income taxes 6,008 5,705 4,176 \nProvision for (benefit from) income taxes 1,252 883 (1,084) \nNet income $ 4,756 $ 4,822 $ 5,260 \nBasic net income per share $ 10.13 $ 10.10 $ 10.94 \nShares used to compute basic net income per share 470 477 481 \nDiluted net income per share $ 10.10 $ 10.02 $ 10.83 \nShares used to compute diluted net income per share 471 481 485 \nSee accompanying Notes to Consolidated Financial Statements.\nTable of Contents\n54",
+        "next_start": null,
+        "has_more": false,
+        "turns_remaining": 6,
+        "receipt_id": "r1",
+        "observation": {
+          "raw_chars": 1649,
+          "truncated": false
+        }
+      },
+      "visible_chars": 1700
+    },
+    {
+      "name": "calculate",
+      "payload": {
+        "error": "Provide exactly one source-backed operand for every expression variable",
+        "turns_remaining": 5,
+        "observation": {
+          "raw_chars": 103,
+          "truncated": false
+        }
+      },
+      "visible_chars": 153
+    },
+    {
+      "name": "calculate",
+      "payload": {
+        "error": "Operand metric and period must identify text in its source quote",
+        "turns_remaining": 4,
+        "observation": {
+          "raw_chars": 96,
+          "truncated": false
+        }
+      },
+      "visible_chars": 145
+    },
+    {
+      "name": "calculate",
+      "payload": {
+        "error": "Operand quote was not delivered by a strong read",
+        "turns_remaining": 3,
+        "observation": {
+          "raw_chars": 80,
+          "truncated": false
+        }
+      },
+      "visible_chars": 129
+    },
+    {
+      "name": "calculate",
+      "payload": {
+        "error": "Operand metric and period must identify text in its source quote",
+        "turns_remaining": 2,
+        "observation": {
+          "raw_chars": 96,
+          "truncated": false
+        }
+      },
+      "visible_chars": 145
+    },
+    {
+      "name": "calculate",
+      "payload": {
+        "error": "Operand metric and period must identify text in its source quote",
+        "turns_remaining": 1,
+        "next_action": "Next turn must be finish.",
+        "observation": {
+          "raw_chars": 138,
+          "truncated": false
+        }
+      },
+      "visible_chars": 188
+    }
+  ],
+  "score": {}
+}

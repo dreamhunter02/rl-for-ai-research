@@ -1,0 +1,13 @@
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+{"question_id": "financebench_id_03029", "correct": 0, "grounded_success": 0, "stop_reason": "turn_limit", "unresolved": false}
+{"question_id": "financebench_id_00499", "correct": 0, "grounded_success": 0, "stop_reason": "turn_limit", "unresolved": false}
+{"question_id": "financebench_id_00807", "correct": 0, "grounded_success": 0, "stop_reason": "length", "unresolved": false}
+{"question_id": "financebench_id_02987", "correct": 0, "grounded_success": 0, "stop_reason": "turn_limit", "unresolved": false}
+{"question_id": "financebench_id_04735", "correct": 0, "grounded_success": 0, "stop_reason": "turn_limit", "unresolved": false}
+{"question_id": "financebench_id_07507", "correct": 0, "grounded_success": 0, "stop_reason": "turn_limit", "unresolved": false}
+{"question_id": "financebench_id_00438", "correct": 0, "grounded_success": 0, "stop_reason": "length", "unresolved": false}
+{"question_id": "financebench_id_00540", "correct": 0, "grounded_success": 0, "stop_reason": "turn_limit", "unresolved": false}
+{"question_id": "financebench_id_06655", "correct": 0, "grounded_success": 0, "stop_reason": "length", "unresolved": false}
+{"question_id": "financebench_id_03882", "correct": 0, "grounded_success": 0, "stop_reason": "accepted_finish", "unresolved": false}
+{"question_id": "financebench_id_01936", "correct": 0, "grounded_success": 0, "stop_reason": "accepted_finish", "unresolved": true}
+{"question_id": "financebench_id_00684", "correct": 0, "grounded_success": 0, "stop_reason": "length", "unresolved": false}

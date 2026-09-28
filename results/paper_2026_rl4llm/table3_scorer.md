@@ -1,0 +1,17 @@
+| case | gold | candidate | expected | rationale | old_score | new_score | passed |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| percent-point error | 3.2% | 4.1% | 0 | One scalar; exact unit/sign/scale; round-half-up at gold precision | 1.0000 | 0.0000 | True |
+| sign flip | -5.0% | 5.0% | 0 | One scalar; exact unit/sign/scale; round-half-up at gold precision | 1.0000 | 0.0000 | True |
+| small decimal error | 0.05 | 0.06 | 0 | One scalar; exact unit/sign/scale; round-half-up at gold precision | 1.0000 | 0.0000 | True |
+| accounting negative | $(1,234) million | $1,234 million | 0 | One scalar; exact unit/sign/scale; round-half-up at gold precision | 1.0000 | 0.0000 | True |
+| number dump | $1577.00 | 1,200, 1,577 and 1,890 | 0 | One scalar; exact unit/sign/scale; round-half-up at gold precision | 1.0000 | 0.0000 | True |
+| plural scale | $1577 million | $1,577 millions | 1 | One scalar; exact unit/sign/scale; round-half-up at gold precision | 0.0000 | 1.0000 | True |
+| scale mismatch | 4.2 million | 4.2 billion | 0 | One scalar; exact unit/sign/scale; round-half-up at gold precision | 1.0000 | 0.0000 | True |
+| currency mismatch | USD 100 | EUR 100 | 0 | One scalar; exact unit/sign/scale; round-half-up at gold precision | 1.0000 | 0.0000 | True |
+| zero percent | 0.00% | 0.4% | 0 | One scalar; exact unit/sign/scale; round-half-up at gold precision | 1.0000 | 0.0000 | True |
+| amount in year range | $2000 | $2001 | 0 | One scalar; exact unit/sign/scale; round-half-up at gold precision | 0.0000 | 0.0000 | True |
+| rounding interior | 1.2 | 1.249 | 1 | One scalar; exact unit/sign/scale; round-half-up at gold precision | 0.0000 | 1.0000 | True |
+| rounding tie half-up | 1.2 | 1.25 | 0 | One scalar; exact unit/sign/scale; round-half-up at gold precision | 0.0000 | 0.0000 | True |
+| equivalent scale | 4.2 billion | 4200 million | 1 | One scalar; exact unit/sign/scale; round-half-up at gold precision | 1.0000 | 1.0000 | True |
+| verbose wrong answer | 3.2% | The requested margin was 4.1%, reflecting operating performance, financing, expenses and other effects over the period under review. | 0 | One scalar; exact unit/sign/scale; round-half-up at gold precision | 1.0000 | 0.0000 | True |
+| empty finish | 3.2% |  | 0 | One scalar; exact unit/sign/scale; round-half-up at gold precision | 0.0000 | 0.0000 | True |

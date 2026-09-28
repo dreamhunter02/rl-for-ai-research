@@ -1,0 +1,9 @@
+run_id,split,question_id,sampled_trajectories,retained,unresolved_group,all_zero,all_equal,reward_variance
+provider_smoke_lr1e5_v3,train,financebench_id_00603,8,False,False,True,True,0.0
+provider_smoke_lr1e5_v3,train,financebench_id_10499,8,False,False,True,True,0.0
+provider_smoke_lr1e5_v3,train,financebench_id_00711,8,False,True,True,True,0.0
+provider_smoke_lr1e5_v3,train,financebench_id_00585,8,False,True,True,True,0.0
+provider_smoke_lr1e5_v3,train,financebench_id_00799,8,False,False,True,True,0.0
+provider_smoke_lr1e5_v3,train,financebench_id_00216,8,False,True,True,True,0.0
+provider_smoke_lr1e5_v3,train,financebench_id_10420,8,False,False,True,True,0.0
+provider_smoke_lr1e5_v3,train,financebench_id_01290,8,False,True,True,True,0.0

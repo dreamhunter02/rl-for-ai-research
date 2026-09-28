@@ -1,0 +1,35 @@
+{
+  "code_commit": "61cd93a8048cb8d944d1da0ac1d27aaa592547fc",
+  "model": "nvidia/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-BF16",
+  "renderer": "nemotron3_ultra",
+  "judge": {
+    "backend": "deepinfra",
+    "model": "deepseek-ai/DeepSeek-V4.1-Flash",
+    "credential": "[REDACTED]/ephemeral"
+  },
+  "protocol": "results/paper_2026_rl4llm/protocol.md",
+  "conflicts": "results/paper_2026_rl4llm/protocol_conflicts.md",
+  "split": "results/paper_2026_rl4llm/split_frozen.json",
+  "targets": "results/paper_2026_rl4llm/targets.reviewed.json",
+  "target_review": "automated source-span audit; no human semantic review claimed",
+  "test_logs": [
+    "results/paper_2026_rl4llm/tests/capability_tests_authoritative.log",
+    "review_tests_root.log",
+    "review_tests_legacy.log",
+    "review_tests_capability.log"
+  ],
+  "commands": {
+    "prepare": "python harness/workshop_prepare.py prepare --split split.json --split-manifest results/paper_2026_rl4llm_agents/split_manifest.json --out artifacts/workshop --seed 0",
+    "preflight": "PYTHONPATH=harness python harness/workshop_prepare.py preflight --split results/paper_2026_rl4llm/split_frozen.json --targets results/paper_2026_rl4llm/targets.reviewed.json --corpus --out results/paper_2026_rl4llm/preflight.json",
+    "b1_dev": "PYTHONPATH=harness python harness/workshop_eval.py --condition B1 --run-id B1-dev-smoke --split dev --out results/paper_2026_rl4llm/B1-dev-smoke --model nvidia/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-BF16 --renderer nemotron3_ultra --max-turns 8 --max-tokens 1024 --temperature 0.2",
+    "provider_smoke": "PYTHONPATH=harness python harness/train_financebench.py with STEPS=1 EPOCHS=1 BATCH=8 GROUP=8 LR=1e-5 SEED=0 MAX_TURNS=8 MAX_TOKENS=1024 REMOVE_CONSTANT_REWARD_GROUPS=true DEV_SPLIT=dev LOG_PATH=results/paper_2026_rl4llm/provider_smoke_lr1e5_v3"
+  },
+  "b1_dev_run": "B1-dev-smoke",
+  "provider_smoke_run": "provider_smoke_lr1e5_v3",
+  "nominal_steps": 1,
+  "actual_optimizer_updates": 0,
+  "final_r1_status": "blocked",
+  "eval42_status": "not_run_after_gate",
+  "cost": "unmeasured",
+  "wall_time": "see run logs"
+}

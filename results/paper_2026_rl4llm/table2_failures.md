@@ -1,0 +1,3 @@
+| run_id | accepted_finish | plain_text | parse | validation | length | context | turn_limit | infrastructure | other | gold_page_read_pct | derived_calculator_pct | zero_citation_episodes | visible_citation_pct | median_turns | median_raw_tool_chars | p95_raw_tool_chars | median_visible_tool_chars | p95_visible_tool_chars | truncation_pct |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| B1-dev-smoke | 2 | 0 | 0 | 0 | 4 | 0 | 6 | 0 | 0 | 75.0000 | unmeasured | 10 | 100.0000 | 8.0000 | 2471 | 9272 | 2522 | 3782 | 15.9420 |

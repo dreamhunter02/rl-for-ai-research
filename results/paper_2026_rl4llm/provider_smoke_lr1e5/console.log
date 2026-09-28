@@ -1,0 +1,15 @@
+Traceback (most recent call last):
+  File "/home/dreamhunter/Documents/Research/rl-for-ai-research/harness/train_financebench.py", line 178, in <module>
+    asyncio.run(main())
+  File "/home/dreamhunter/.hermes/hermes-agent/.hermes-runtime/python/generation-1790288622-2480215-6a8f83e8/cpython-3.12.14-linux-aarch64-gnu/lib/python3.12/asyncio/runners.py", line 195, in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+  File "/home/dreamhunter/.hermes/hermes-agent/.hermes-runtime/python/generation-1790288622-2480215-6a8f83e8/cpython-3.12.14-linux-aarch64-gnu/lib/python3.12/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dreamhunter/.hermes/hermes-agent/.hermes-runtime/python/generation-1790288622-2480215-6a8f83e8/cpython-3.12.14-linux-aarch64-gnu/lib/python3.12/asyncio/base_events.py", line 691, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "/home/dreamhunter/Documents/Research/rl-for-ai-research/harness/train_financebench.py", line 71, in main
+    raise FileExistsError(f"Refusing to overwrite run: {log_path}")
+FileExistsError: Refusing to overwrite run: /home/dreamhunter/Documents/Research/rl-for-ai-research/results/paper_2026_rl4llm/provider_smoke_lr1e5

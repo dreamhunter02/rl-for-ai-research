@@ -1,0 +1,19 @@
+{
+  "backend": "deepinfra",
+  "model": "deepseek-ai/DeepSeek-V4.1-Flash",
+  "b1_dev": {
+    "residual_cases": 1,
+    "calls": 1,
+    "successful": 0,
+    "errors": 1,
+    "error_types": [
+      "RuntimeError"
+    ],
+    "unresolved_preserved": true
+  },
+  "training_smoke": {
+    "unresolved_groups": 4,
+    "judge_error_values_not retained in group audit": "raw rollouts preserved"
+  },
+  "credentials": "[REDACTED]; inherited ephemerally and not persisted"
+}

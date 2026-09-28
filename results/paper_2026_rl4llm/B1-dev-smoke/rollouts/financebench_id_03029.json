@@ -1,0 +1,749 @@
+{
+  "history": [
+    {
+      "role": "system",
+      "content": "You are a financial-filings retrieval agent.\n\nYour job is to answer the user's question using the SEC filing corpus. Search\nbefore answering. Start with bm25_search to identify the likely document and\npassages, then use grep_document for exact accounting terms or regexes and\nread/read_table to inspect bounded evidence. Any derived numeric answer must come from calculate using named, source-backed operands. Direct extraction needs no calculation.\nYou may switch documents or issue refined searches when the evidence is not\nsufficient. Do not invent values or rely on outside knowledge.\n\nAvailable tools:\n- bm25_search: ranked keyword search with optional company/year/document filters\n- grep_document: document-scoped exact or regex search; choose grep_type text, pdfgrep, or rga\n- search_tables: ranked search over table-like pages in one or all filings\n- read: bounded page/passage retrieval with provenance\n- read_table: retrieve a table candidate with neighboring headers and footnotes\n- calculate: safe arithmetic for ratios, changes, and unit conversions\n\nWhen you have enough evidence, call finish exactly once. For numeric answers use\nanswer_type=\"numeric\", value as a decimal string, unit and scale; leave answer_text\nempty. For yes/no-only answers use answer_type=\"boolean\", decision=\"yes\" or \"no\".\nFor text or multipart answers use answer_type=\"text\", answer_text with all requested\nfacts. Cite receipt_id, document_id and one-based page from read/grep results.\nFor arithmetic, calculate accepts an expression with named variables and an operands\nobject mapping each variable to value, unit, scale, metric, period, receipt_id and an\nexact quote. Include its calc_id in finish. Do not use constant-only calculations as\nsupport. Read beyond snippets when needed. Use the final available turn to finish;\nnever continue searching when only one turn remains.\n\n\n# Tools\n\nYou have access to the following functions:\n\n<tools>\n<function>\n<name>bm25_search</name>\n<parameters>\n<parameter>\n<name>query_list</name>\n<type>array</type>\n<description>One or more keyword queries.</description>\n<items>{\"type\": \"string\"}</items>\n<title>Query List</title>\n</parameter>\n<parameter>\n<name>company</name>\n<type>string</type>\n<description>Optional company filter, for example 3M.</description>\n<default></default>\n<title>Company</title>\n</parameter>\n<parameter>\n<name>year</name>\n<type>integer</type>\n<description>Optional fiscal year; use -1 when unknown.</description>\n<default>-1</default>\n<title>Year</title>\n</parameter>\n<parameter>\n<name>filing_type</name>\n<type>string</type>\n<description>Optional type such as 10-K or 10-Q.</description>\n<default></default>\n<title>Filing Type</title>\n</parameter>\n<parameter>\n<name>document_id</name>\n<type>string</type>\n<description>Optional exact filing name.</description>\n<default></default>\n<title>Document Id</title>\n</parameter>\n<parameter>\n<name>scope</name>\n<type>string</type>\n<description>prose, tables, or both.</description>\n<default>both</default>\n<title>Scope</title>\n</parameter>\n<parameter>\n<name>top_k</name>\n<type>integer</type>\n<description>Maximum results to return.</description>\n<default>3</default>\n<title>Top K</title>\n</parameter>\n<title>bm25_search_params</title>\n<required>[\"query_list\"]</required>\n</parameters>\n</function>\n<function>\n<name>grep_document</name>\n<parameters>\n<parameter>\n<name>document_id</name>\n<type>string</type>\n<description>Exact document_id returned by bm25_search.</description>\n<title>Document Id</title>\n</parameter>\n<parameter>\n<name>patterns</name>\n<type>array</type>\n<description>Literal or regular-expression patterns.</description>\n<items>{\"type\": \"string\"}</items>\n<title>Patterns</title>\n</parameter>\n<parameter>\n<name>page_start</name>\n<type>integer</type>\n<description>First page to search, or -1 for all pages.</description>\n<default>-1</default>\n<title>Page Start</title>\n</parameter>\n<parameter>\n<name>page_end</name>\n<type>integer</type>\n<description>Last page to search, or -1 for all pages.</description>\n<default>-1</default>\n<title>Page End</title>\n</parameter>\n<parameter>\n<name>context_lines</name>\n<type>integer</type>\n<description>Number of surrounding lines per match.</description>\n<default>2</default>\n<title>Context Lines</title>\n</parameter>\n<parameter>\n<name>grep_type</name>\n<type>string</type>\n<description>Backend choice: text, pdfgrep, or rga.</description>\n<default>text</default>\n<title>Grep Type</title>\n</parameter>\n<title>grep_document_params</title>\n<required>[\"document_id\", \"patterns\"]</required>\n</parameters>\n</function>\n<function>\n<name>search_tables</name>\n<parameters>\n<parameter>\n<name>query_list</name>\n<type>array</type>\n<description>Terms such as revenue, cash flows, balance sheet, or PP&E.</description>\n<items>{\"type\": \"string\"}</items>\n<title>Query List</title>\n</parameter>\n<parameter>\n<name>document_id</name>\n<type>string</type>\n<description>Optional exact document_id; leave empty for corpus search.</description>\n<default></default>\n<title>Document Id</title>\n</parameter>\n<parameter>\n<name>company</name>\n<type>string</type>\n<description>Optional company filter.</description>\n<default></default>\n<title>Company</title>\n</parameter>\n<parameter>\n<name>year</name>\n<type>integer</type>\n<description>Optional fiscal year; use -1 when unknown.</description>\n<default>-1</default>\n<title>Year</title>\n</parameter>\n<parameter>\n<name>top_k</name>\n<type>integer</type>\n<description>Maximum table candidates.</description>\n<default>3</default>\n<title>Top K</title>\n</parameter>\n<title>search_tables_params</title>\n<required>[\"query_list\"]</required>\n</parameters>\n</function>\n<function>\n<name>read</name>\n<parameters>\n<parameter>\n<name>document_id</name>\n<type>string</type>\n<description>Exact document_id.</description>\n<title>Document Id</title>\n</parameter>\n<parameter>\n<name>page</name>\n<type>integer</type>\n<description>One-based page number, or -1 when using passage_id.</description>\n<default>-1</default>\n<title>Page</title>\n</parameter>\n<parameter>\n<name>start</name>\n<type>integer</type>\n<description>Character start within the selected page/window.</description>\n<default>0</default>\n<title>Start</title>\n</parameter>\n<parameter>\n<name>end</name>\n<type>integer</type>\n<description>Absolute character end, or -1 for the next bounded window.</description>\n<default>-1</default>\n<title>End</title>\n</parameter>\n<parameter>\n<name>passage_id</name>\n<type>string</type>\n<description>Optional passage_id returned by search.</description>\n<default></default>\n<title>Passage Id</title>\n</parameter>\n<title>read_params</title>\n<required>[\"document_id\"]</required>\n</parameters>\n</function>\n<function>\n<name>read_table</name>\n<parameters>\n<parameter>\n<name>table_id</name>\n<type>string</type>\n<description>Exact table_id returned by search_tables.</description>\n<title>Table Id</title>\n</parameter>\n<parameter>\n<name>include_neighbors</name>\n<type>boolean</type>\n<description>Return neighbor page identifiers for headers and footnotes.</description>\n<default>True</default>\n<title>Include Neighbors</title>\n</parameter>\n<parameter>\n<name>start</name>\n<type>integer</type>\n<description>Character offset within table page.</description>\n<default>0</default>\n<title>Start</title>\n</parameter>\n<parameter>\n<name>end</name>\n<type>integer</type>\n<description>Absolute end, or -1 for the next bounded table window.</description>\n<default>-1</default>\n<title>End</title>\n</parameter>\n<title>read_table_params</title>\n<required>[\"table_id\"]</required>\n</parameters>\n</function>\n<function>\n<name>calculate</name>\n<parameters>\n<parameter>\n<name>expression</name>\n<type>string</type>\n<description>Arithmetic using named source-backed operands and + - * /.</description>\n<title>Expression</title>\n</parameter>\n<parameter>\n<name>operands</name>\n<type>object</type>\n<description>Variable to value/unit/scale/metric/period/receipt_id/quote mapping.</description>\n<additionalProperties>True</additionalProperties>\n<default>{}</default>\n<title>Operands</title>\n</parameter>\n<title>calculate_params</title>\n<required>[\"expression\"]</required>\n</parameters>\n</function>\n<function>\n<name>finish</name>\n<parameters>\n<parameter>\n<name>answer_type</name>\n<type>string</type>\n<description>numeric, boolean, or text</description>\n<title>Answer Type</title>\n</parameter>\n<parameter>\n<name>value</name>\n<type>string</type>\n<description>Single decimal numeric answer; no units here.</description>\n<default></default>\n<title>Value</title>\n</parameter>\n<parameter>\n<name>unit</name>\n<type>string</type>\n<description>USD, EUR, percent, ratio, shares, or number.</description>\n<default></default>\n<title>Unit</title>\n</parameter>\n<parameter>\n<name>scale</name>\n<type>string</type>\n<description>ones, thousand, million, or billion.</description>\n<default></default>\n<title>Scale</title>\n</parameter>\n<parameter>\n<name>decision</name>\n<type>string</type>\n<description>yes or no for boolean answers.</description>\n<default></default>\n<title>Decision</title>\n</parameter>\n<parameter>\n<name>answer_text</name>\n<type>string</type>\n<description>Text/multipart answer; empty for numeric and boolean.</description>\n<default></default>\n<title>Answer Text</title>\n</parameter>\n<parameter>\n<name>citations</name>\n<type>array</type>\n<description>Each contains receipt_id, document_id and one-based page.</description>\n<default>[]</default>\n<items>{\"additionalProperties\": true, \"type\": \"object\"}</items>\n<title>Citations</title>\n</parameter>\n<parameter>\n<name>calc_id</name>\n<type>string</type>\n<description>Calculation record for a derived numeric result.</description>\n<default></default>\n<title>Calc Id</title>\n</parameter>\n<title>finish_params</title>\n<required>[\"answer_type\"]</required>\n</parameters>\n</function>\n</tools>\n\nIf you choose to call a function ONLY reply in the following format with NO suffix:\n\n<tool_call>\n<function=example_function_name>\n<parameter=example_parameter_1>\nvalue_1\n</parameter>\n<parameter=example_parameter_2>\nThis is the value for the second parameter\nthat can span\nmultiple lines\n</parameter>\n</function>\n</tool_call>\n\n<IMPORTANT>\nReminder:\n- Function calls MUST follow the specified format: an inner <function=...></function> block must be nested within <tool_call></tool_call> XML tags\n- Required parameters MUST be specified\n- You may provide optional reasoning for your function call in natural language BEFORE the function call, but NOT after\n- If there is no function call available, answer the question like normal with your current knowledge and do not tell the user about function calls\n</IMPORTANT>"
+    },
+    {
+      "role": "user",
+      "content": "What is the FY2018 capital expenditure amount (in USD millions) for 3M? Give a response to the question by relying on the details shown in the cash flow statement."
+    },
+    {
+      "role": "assistant",
+      "content": [
+        {
+          "type": "thinking",
+          "thinking": "We need FY2018 capital expenditure (CapEx) for 3M, from cash flow statement, in USD millions. Use bm25_search to find 3M 10-K or 10-Q with cash flow statement FY2018. Then grep for \"capital expenditure\" or \"capital expenditures\" or \"CapEx\". Then read the relevant page. Let's start search."
+        },
+        {
+          "type": "text",
+          "text": ""
+        },
+        {
+          "type": "text",
+          "text": "\n"
+        }
+      ],
+      "tool_calls": [
+        {
+          "type": "function",
+          "id": null,
+          "function": {
+            "name": "bm25_search",
+            "arguments": "{\"query_list\": [\"3M capital expenditure cash flow statement FY2018\", \"3M 2018 cash flow statement capital expenditures\"], \"company\": \"3M\", \"year\": 2018, \"filing_type\": \"10-K\", \"top_k\": 5}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "content": "{\"queries\":[\"3M capital expenditure cash flow statement FY2018\",\"3M 2018 cash flow statement capital expenditures\"],\"filters\":{\"company\":\"3M\",\"year\":2018,\"filing_type\":\"10-K\",\"document_id\":\"\"},\"prose_hits\":[{\"document_id\":\"3M_2018_10K\",\"page\":43,\"passage_id\":\"p:3M_2018_10K:page:43:chunk:0\",\"score\":19.78009,\"snippet\":\"CIAL CONDITION AND LIQUIDI\\n \\nTY\\n \\nThe strength and stability of 3M\u2019s business model and strong free cash flow capability, together with proven capital markets access, positions the Company\\nto be able to add further leverage to its capital structure. Investing in 3M\u2019s businesses to drive organic grow\",\"snippet_start\":25},{\"document_id\":\"3M_2018_10K\",\"page\":83,\"passage_id\":\"p:3M_2018_10K:page:83:chunk:0\",\"score\":17.24219,\"snippet\":\" \\n \\n \\nComprehensive Income Components\\n \\nYear ended December 31,\\n \\nLocation on Income\\n \\n(Millions)\\n \\n2018\\n \\n2017\\n \\n2016\\n \\nStatement\\n \\nGains (losses) associated with defined benefit pension and postretirement plans\\namortization\\n \\n \\n \\n \\n \\n \\n \\n \\n \\n \\n \\n \\nTransition asset\\n \\n$\\n \u2014\\n \\n$\\n \u2014\\n \\n$\\n 1\\n \\nSee Note 1\",\"snippet_start\":214},{\"document_id\":\"3M_2018_10K\",\"page\":49,\"passage_id\":\"p:3M_2018_10K:page:49:chunk:1\",\"score\":16.65547,\"snippet\":\"corporate functional\\ncosts following the divestiture. On a combined basis, these items reduced free cash flow conversion by 2 percentage points.\\n \\nIn 2017, free cash flow conversion was impacted by enactment of the TCJA, along with an additional U.S. pension contribution of $600 million that 3M\\nmade\",\"snippet_start\":1976}],\"table_hits\":[{\"document_id\":\"3M_2018_10K\",\"page\":46,\"table_id\":\"t:3M_2018_10K:page:46\",\"score\":18.57693,\"units\":\"Millions\",\"title\":\"Cash Flows:\",\"snippet\":\"Table of Contents\\n \\nCash Flows:\\n \\nCash flows from operating, investing and financing activities are provided in the tables that follow. Individual amounts in the Consolidated Statement of\\nCash Flows exclude the effects of acquisitions, divestitures and exchange rate impacts on cash and cash equivale\",\"snippet_start\":0},{\"document_id\":\"3M_2018_10K\",\"page\":43,\"table_id\":\"t:3M_2018_10K:page:43\",\"score\":16.60919,\"units\":\"\",\"title\":\"The strength of 3M\u2019s capital structure and significant ongoing cash flows provide 3M proven access to capital markets. Additionally, the Company\u2019s\",\"snippet\":\"CIAL CONDITION AND LIQUIDI\\n \\nTY\\n \\nThe strength and stability of 3M\u2019s business model and strong free cash flow capability, together with proven capital markets access, positions the Company\\nto be able to add further leverage to its capital structure. Investing in 3M\u2019s businesses to drive organic grow\",\"snippet_start\":25}],\"turns_remaining\":7,\"observation\":{\"raw_chars\":2667,\"truncated\":false}}",
+      "tool_call_id": "",
+      "name": "bm25_search"
+    },
+    {
+      "role": "assistant",
+      "content": [
+        {
+          "type": "thinking",
+          "thinking": "We have hits. The table hit shows page 46 with table \"Cash Flows:\" likely contains cash flow statement. Also page 43 maybe. Let's read page 46 table."
+        },
+        {
+          "type": "text",
+          "text": ""
+        },
+        {
+          "type": "text",
+          "text": "\n"
+        }
+      ],
+      "tool_calls": [
+        {
+          "type": "function",
+          "id": null,
+          "function": {
+            "name": "read_table",
+            "arguments": "{\"table_id\": \"t:3M_2018_10K:page:46\", \"include_neighbors\": \"True\"}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "content": "{\"document_id\":\"3M_2018_10K\",\"page\":46,\"page_start\":46,\"page_end\":46,\"start\":0,\"end\":2400,\"total_chars\":3812,\"text\":\"Table of Contents\\n \\nCash Flows:\\n \\nCash flows from operating, investing and financing activities are provided in the tables that follow. Individual amounts in the Consolidated Statement of\\nCash Flows exclude the effects of acquisitions, divestitures and exchange rate impacts on cash and cash equivalents, which are presented separately in the\\ncash flows. Thus, the amounts presented in the following operating, investing and financing activities tables reflect changes in balances from period to\\nperiod adjusted for these effects.\\n \\nCash Flows from Operating Activities:\\n \\nYears Ended December 31\\n \\n \\n \\n \\n \\n \\n \\n \\n \\n \\n(Millions)\\n \\n2018\\n \\n2017\\n \\n2016\\n \\nNet income including noncontrolling interest\\n \\n$\\n5,363\\n \\n$\\n4,869\\n \\n$\\n5,058\\n \\nDepreciation and amortization\\n \\n \\n1,488\\n \\n \\n1,544\\n \\n \\n1,474\\n \\nCompany pension and postretirement contributions\\n \\n \\n(370)\\n \\n \\n(967)\\n \\n \\n(383)\\n \\nCompany pension and postretirement expense\\n \\n \\n410\\n \\n \\n334\\n \\n \\n250\\n \\nStock-based compensation expense\\n \\n \\n302\\n \\n \\n324\\n \\n \\n298\\n \\nGain on sale of businesses\\n \\n \\n(545)\\n \\n \\n(586)\\n \\n \\n(111)\\n \\nIncome taxes (deferred and accrued income taxes)\\n \\n \\n77\\n \\n \\n1,074\\n \\n \\n108\\n \\nAccounts receivable\\n \\n \\n(305)\\n \\n \\n(245)\\n \\n \\n(313)\\n \\nInventories\\n \\n \\n(509)\\n \\n \\n(387)\\n \\n \\n57\\n \\nAccounts payable\\n \\n \\n408\\n \\n \\n24\\n \\n \\n148\\n \\nOther \u2014 net\\n \\n \\n120\\n \\n \\n256\\n \\n \\n76\\n \\nNet cash provided by operating activities\\n \\n$\\n6,439\\n \\n$\\n6,240\\n \\n$\\n6,662\\n \\n \\nCash flows from operating activities can fluctuate significantly from period to period, as pension funding decisions, tax timing differences and other items\\ncan significantly impact cash flows.\\n \\nIn 2018, cash flows provided by operating activities increased $199 million compared to the same period last year, with the increase primarily made up of\\nhigher net income and lower year-on-year pension and postretirement contributions. The increase was partially offset primarily due to the Minnesota NRD\\nresolution in the first quarter of 2018 and year-on-year increases in income tax payments. Additional factors that decreased operating cash flows were\\nincreases in inventory and accounts receivable. The combination of accounts receivable, inventories and accounts payable increased working capital by\\n$406 million in 2018, compared to the working capital increases of $608 million in 2017. Additional discussion on working capital changes is provided\\nearlier in the \u201cFinancial Condition and Liquidity\u201d section.\\n \\nIn \",\"next_start\":2400,\"has_more\":true,\"table_id\":\"t:3M_2018_10K:page:46\",\"title\":\"Cash Flows:\",\"units\":\"Millions\",\"neighbor_pages\":[45,47],\"neighbor_hint\":\"Use read on neighbor_pages for headers/footnotes outside this page.\",\"turns_remaining\":6,\"receipt_id\":\"r1\",\"observation\":{\"raw_chars\":2951,\"truncated\":false}}",
+      "tool_call_id": "",
+      "name": "read_table"
+    },
+    {
+      "role": "assistant",
+      "content": [
+        {
+          "type": "thinking",
+          "thinking": "The table appears to be only operating activities. Need investing activities section which includes capital expenditures (usually \"Payments for acquisition of property, plant and equipment\" or \"Capital expenditures\"). Let's scroll further down maybe page 47 or 48. The neighbor pages hint: neighbor_pages [45,47]. Let's read page 47."
+        },
+        {
+          "type": "text",
+          "text": ""
+        },
+        {
+          "type": "text",
+          "text": "\n"
+        }
+      ],
+      "tool_calls": [
+        {
+          "type": "function",
+          "id": null,
+          "function": {
+            "name": "read",
+            "arguments": "{\"document_id\": \"3M_2018_10K\", \"page\": 47}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "content": "{\"document_id\":\"3M_2018_10K\",\"page\":47,\"page_start\":47,\"page_end\":47,\"start\":0,\"end\":2400,\"total_chars\":4331,\"text\":\"Table of Contents\\n \\nInvestments in property, plant and equipment enable growth across many diverse markets, helping to meet product demand and increasing manufacturing\\nefficiency. The Company expects 2019 capital spending to be approximately $1.7 billion to $1.9 billion as 3M continues to invest in its businesses.\\n \\n3M invests in renewal and maintenance programs, which pertain to cost reduction, cycle time, maintaining and renewing current capacity, eliminating\\npollution, and compliance. Costs related to maintenance, ordinary repairs, and certain other items are expensed. 3M also invests in growth, which adds to\\ncapacity, driven by new products, both through expansion of current facilities and new facilities. Finally, 3M also invests in other initiatives, such as\\ninformation technology (IT) and laboratory facilities.\\n \\nRefer to Note 3 for information on acquisitions and divestitures. The Company is actively considering additional acquisitions, investments and strategic\\nalliances, and from time to time may also divest certain businesses. Proceeds from sale of businesses in 2018 primarily relate to the sale of 3M\u2019s\\nCommunication Markets Division and the sale of certain personal safety product offerings primarily focused on noise, environmental, and heat stress\\nmonitoring within the Safety and Graphics business segment.\\n \\nPurchases of marketable securities and investments and proceeds from maturities and sale of marketable securities and investments are primarily\\nattributable to asset-backed securities, certificates of deposit/time deposits, commercial paper, and other securities, which are classified as available-for-sale.\\nRefer to Note 11 for more details about 3M\u2019s diversified marketable securities portfolio. Purchases of investments include additional survivor benefit\\ninsurance, plus investments in equity securities.\\n \\nCash Flows from Financing Activities:\\n \\nYears ended December 31\\n \\n \\n \\n \\n \\n \\n \\n \\n \\n \\n(Millions)\\n \\n2018\\n \\n2017\\n \\n2016\\n \\nChange in short-term debt \u2014 net\\n \\n$\\n(284)\\n \\n$\\n578\\n \\n$\\n(797)\\n \\nRepayment of debt (maturities greater than 90 days)\\n \\n \\n(1,034)\\n \\n \\n(962)\\n \\n \\n(992)\\n \\nProceeds from debt (maturities greater than 90 days)\\n \\n \\n2,251\\n \\n \\n1,987\\n \\n \\n2,832\\n \\nTotal cash change in debt\\n \\n$\\n933\\n \\n$\\n1,603\\n \\n$\\n1,043\\n \\nPurchases of treasury stock\\n \\n \\n(4,870)\\n \\n \\n(2,068)\\n \\n \\n(3,753)\\n \\nProceeds from issuances of treasury stock pursuant to stock option and bene\",\"next_start\":2400,\"has_more\":true,\"turns_remaining\":5,\"receipt_id\":\"r2\",\"observation\":{\"raw_chars\":2687,\"truncated\":false}}",
+      "tool_call_id": "",
+      "name": "read"
+    },
+    {
+      "role": "assistant",
+      "content": [
+        {
+          "type": "thinking",
+          "thinking": "Page 47 seems to discuss capital spending narrative but not the cash flow numbers. Need investing activities section likely on page 48 or 49. Let's read page 48."
+        },
+        {
+          "type": "text",
+          "text": ""
+        },
+        {
+          "type": "text",
+          "text": "\n"
+        }
+      ],
+      "tool_calls": [
+        {
+          "type": "function",
+          "id": null,
+          "function": {
+            "name": "read",
+            "arguments": "{\"document_id\": \"3M_2018_10K\", \"page\": 48}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "content": "{\"document_id\":\"3M_2018_10K\",\"page\":48,\"page_start\":48,\"page_end\":48,\"start\":0,\"end\":2400,\"total_chars\":4672,\"text\":\"Table of Contents\\n \\n2017 Debt Activity:\\n \\nThe Company\u2019s total debt was $2.3 billion higher at December 31, 2017 when compared to December 31, 2016. Increases in debt related to October 2017\\ndebt issuances of $2.0 billion, commercial paper of $745 million outstanding at year end 2017, and the net impact of repayments and borrowings of\\ninternational subsidiaries. These are partially offset by June 2017 repayments of $650 million aggregate principal amount of medium-term notes and the\\nOctober 2017 $305 million debt tender. Net commercial paper issuances and repayments and borrowings by international subsidiaries are largely reflected\\nin \u201cChange in short-term debt \u2013 net\u201d in the preceding table. Foreign exchange rate changes also impacted debt balances.\\n \\nProceeds from debt for 2017 primarily related to the October 2017 issuance of $650 million aggregate principal amount of 5.5-year fixed rate medium-term\\nnotes due 2023 with a coupon rate of 2.25%, $850 million aggregate principal amount of 10-year fixed rate medium-term notes due 2027 with a coupon\\nrate of 2.875%, and $500 million aggregate principal amount of 30-year fixed rate medium-term notes due 2047 with a coupon rate of 3.625%. Refer to\\nNote 12 for more detail of these debt issuances.\\n \\nIn October 2017, via cash tender offers, 3M repurchased $305 million aggregate principal amount of its outstanding notes. This included $110 million of its\\n$330 million principal amount of 6.375% notes due 2028 and $195 million of its $750 million principal amount of 5.70% notes due 2037. The Company\\nrecorded an early debt extinguishment charge of $96 million in the fourth quarter of 2017 within interest expense associated with the differential between\\nthe carrying value and the amount paid to acquire the tendered notes and related expenses.\\n \\n2016 Debt Activity:\\n \\nTotal debt at December 31, 2016 increased $853 million when compared to year-end 2015, with the increase primarily due to May 2016 debt issuances\\n(approximately $1.1 billion at issue date exchange rates) and September 2016 debt issuances of approximately $1.75 billion. This increase was partially\\noffset by the repayment of $1 billion aggregate principal amount of medium-term notes due September 2016 along with the net impact of repayments and\\nborrowings by international subsidiaries, primarily Japan and Korea (approximately $0.8 million decrease), which is refle\",\"next_start\":2400,\"has_more\":true,\"turns_remaining\":4,\"receipt_id\":\"r3\",\"observation\":{\"raw_chars\":2616,\"truncated\":false}}",
+      "tool_call_id": "",
+      "name": "read"
+    },
+    {
+      "role": "assistant",
+      "content": [
+        {
+          "type": "thinking",
+          "thinking": "Page 48 is about debt, not cash flow. Need investing activities. Likely page 49 or 50. Let's read page 49."
+        },
+        {
+          "type": "text",
+          "text": ""
+        },
+        {
+          "type": "text",
+          "text": "\n"
+        }
+      ],
+      "tool_calls": [
+        {
+          "type": "function",
+          "id": null,
+          "function": {
+            "name": "read",
+            "arguments": "{\"document_id\": \"3M_2018_10K\", \"page\": 49}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "content": "{\"document_id\":\"3M_2018_10K\",\"page\":49,\"page_start\":49,\"page_end\":49,\"start\":0,\"end\":2400,\"total_chars\":4455,\"text\":\"Table of Contents\\n \\nOther cash flows from financing activities may include various other items, such as changes in cash overdraft balances, and principal payments for capital\\nleases. In addition, in 2017, this included a payment related to the $96 million in interest expense associated with premiums and fees for the early retirement\\nof debt. See Note 12 for additional details.\\n \\nFree Cash Flow (non-GAAP measure):\\n \\nFree cash flow and free cash flow conversion are not defined under U.S. generally accepted accounting principles (GAAP). Therefore, they should not be\\nconsidered a substitute for income or cash flow data prepared in accordance with U.S. GAAP and may not be comparable to similarly titled measures used\\nby other companies. The Company defines free cash flow as net cash provided by operating activities less purchases of property, plant and equipment. It\\nshould not be inferred that the entire free cash flow amount is available for discretionary expenditures. The Company defines free cash flow conversion as\\nfree cash flow divided by net income attributable to 3M. The Company believes free cash flow and free cash flow conversion are meaningful to investors as\\nthey are useful measures of performance and the Company uses these measures as an indication of the strength of the company and its ability to generate\\ncash. The first quarter of each year is typically 3M\u2019s seasonal low for free cash flow and free cash flow conversion. Below find a recap of free cash flow and\\nfree cash flow conversion for 2018, 2017 and 2016.\\n \\nIn 2018, free cash flow conversion was impacted by the $176 million measurement period adjustment to the tax expense recorded in December 2017 from\\nthe enactment of the TCJA, the $897 million pre-tax impact related to the resolution of the Minnesota natural resource damages (NRD), and the $381\\nmillion pre-tax impact from the gain on sale of the Communication Markets Division, net of restructuring actions related to addressing corporate functional\\ncosts following the divestiture. On a combined basis, these items reduced free cash flow conversion by 2 percentage points.\\n \\nIn 2017, free cash flow conversion was impacted by enactment of the TCJA, along with an additional U.S. pension contribution of $600 million that 3M\\nmade following the signing of tax reform. On a combined basis, these items benefited free cash flow conversion by 3 percentage p\",\"next_start\":2400,\"has_more\":true,\"turns_remaining\":3,\"receipt_id\":\"r4\",\"observation\":{\"raw_chars\":2614,\"truncated\":false}}",
+      "tool_call_id": "",
+      "name": "read"
+    },
+    {
+      "role": "assistant",
+      "content": [
+        {
+          "type": "thinking",
+          "thinking": "Page 49 includes free cash flow definition: free cash flow = net cash provided by operating activities less purchases of property, plant and equipment. So we can compute CapEx = operating cash flow - free cash flow. But we need the actual CapEx amount from cash flow statement. Might be listed in investing activities section. Usually cash flow statement includes \"Payments for acquisition of property, plant and equipment\" as a line item under investing activities. Might be on page 46 maybe further down. The table we saw on page 46 only had operating activities. There may be separate tables for investing and financing later in the document. Let's search for \"capital expenditure\" or \"Purchases of property\" grep."
+        },
+        {
+          "type": "text",
+          "text": ""
+        },
+        {
+          "type": "text",
+          "text": "\n"
+        }
+      ],
+      "tool_calls": [
+        {
+          "type": "function",
+          "id": null,
+          "function": {
+            "name": "grep_document",
+            "arguments": "{\"document_id\": \"3M_2018_10K\", \"patterns\": [\"capital expenditure\", \"Capital Expenditure\", \"purchases of property, plant\", \"Purchases of property, plant\"], \"grep_type\": \"text\"}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "content": "{\"grep_type_requested\":\"text\",\"backend_used\":\"page_text\",\"matches\":[{\"document_id\":\"3M_2018_10K\",\"page\":7,\"line\":48,\"text\":\"expenditures for environmental purposes have included pollution control devices \u2014 such as wastewater treatment plant improvements, scrubbers,\\ncontainment structures, solvent recovery units and thermal oxidizers \u2014 at new and existing facilities constructed or upgraded in the normal course of\\nbusiness. Consistent with the Company\u2019s emphasis on environmental responsibility, capital expenditures (other than for remediation projects) for known\\nprojects are presently expected to be approximately $75 m\",\"provenance\":\"3M_2018_10K:page=7:line=48\",\"receipt_id\":\"r5\"},{\"document_id\":\"3M_2018_10K\",\"page\":8,\"line\":3,\"text\":\"Table of Contents\\n \\nWhile the Company cannot predict with certainty the future costs of such cleanup activities, capital expenditures or operating costs for environmental\\ncompliance, the Company does not believe they will have a material effect on its capital expenditures, earnings or competitive position.\\n \",\"provenance\":\"3M_2018_10K:page=8:line=3\",\"receipt_id\":\"r6\"},{\"document_id\":\"3M_2018_10K\",\"page\":8,\"line\":4,\"text\":\" \\nWhile the Company cannot predict with certainty the future costs of such cleanup activities, capital expenditures or operating costs for environmental\\ncompliance, the Company does not believe they will have a material effect on its capital expenditures, earnings or competitive position.\\n \\nExecutive Officers\",\"provenance\":\"3M_2018_10K:page=8:line=4\",\"receipt_id\":\"r7\"},{\"document_id\":\"3M_2018_10K\",\"page\":43,\"line\":9,\"text\":\"The strength and stability of 3M\u2019s business model and strong free cash flow capability, together with proven capital markets access, positions the Company\\nto be able to add further leverage to its capital structure. Investing in 3M\u2019s businesses to drive organic growth remains the first priority for capital\\ndeployment, including research and development, capital expenditures, and commercialization capability. Investment in organic growth will be\\nsupplemented by complementary acquisitions. 3M will\",\"provenance\":\"3M_2018_10K:page=43:line=9\",\"receipt_id\":\"r8\"},{\"document_id\":\"3M_2018_10K\",\"page\":46,\"line\":201,\"text\":\"2016\\n \\nPurchases of property, plant and equipment (PP&E)\\n \\n$\",\"provenance\":\"3M_2018_10K:page=46:line=201\",\"receipt_id\":\"r9\"},{\"document_id\":\"3M_2018_10K\",\"page\":49,\"line\":11,\"text\":\"Free cash flow and free cash flow conversion are not defined under U.S. generally accepted accounting principles (GAAP). Therefore, they should not be\\nconsidered a substitute for income or cash flow data prepared in accordance with U.S. GAAP and may not be comparable to similarly titled measures used\\nby other companies. The Company defines free cash flow as net cash provided by operating activities less purchases of property, plant and equipment. It\\nshould not be inferred that the entire free ca\",\"provenance\":\"3M_2018_10K:page=49:line=11\",\"receipt_id\":\"r10\"},{\"document_id\":\"3M_2018_10K\",\"page\":49,\"line\":135,\"text\":\"6,662\\n \\nPurchases of property, plant and equipment (PP&E)\\n \\n \",\"provenance\":\"3M_2018_10K:page=49:line=135\",\"receipt_id\":\"r11\"},{\"document_id\":\"3M_2018_10K\",\"page\":60,\"line\":216,\"text\":\" \\n \\nPurchases of property, plant and equipment (PP&E)\\n \\n \",\"provenance\":\"3M_2018_10K:page=60:line=216\",\"receipt_id\":\"r12\"}],\"turns_remaining\":2,\"observation\":{\"raw_chars\":4200,\"truncated\":true}}",
+      "tool_call_id": "",
+      "name": "grep_document"
+    },
+    {
+      "role": "assistant",
+      "content": [
+        {
+          "type": "thinking",
+          "thinking": "We have matches:\n\n- page 46 line 201: \"2016 Purchases of property, plant and equipment (PP&E) $\". That suggests the table includes purchases of PP&E for 2016. Need 2018 data.\n\n- page 49 line 135: \"6,662 Purchases of property, plant and equipment (PP&E)\" maybe part of free cash flow recap. Actually line 135 shows \"6,662\" maybe operating cash flow? Wait earlier we saw operating cash flow 2018 $6,439, 2017 $6,240, 2016 $6,662. So line 135 likely the 6,662 is the 2016 operating cash flow. The \"Purchases of property, plant and equipment (PP&E)\" appears after that maybe for 2016.\n\n- page 60 line 216 also mentions \"Purchases of property, plant and equipment (PP&E)\" maybe in investing activities.\n\nLet's read page 60."
+        },
+        {
+          "type": "text",
+          "text": ""
+        },
+        {
+          "type": "text",
+          "text": "\n"
+        }
+      ],
+      "tool_calls": [
+        {
+          "type": "function",
+          "id": null,
+          "function": {
+            "name": "read",
+            "arguments": "{\"document_id\": \"3M_2018_10K\", \"page\": 60}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "content": "{\"document_id\":\"3M_2018_10K\",\"page\":60,\"page_start\":60,\"page_end\":60,\"start\":0,\"end\":2400,\"total_chars\":3038,\"text\":\"Table of Contents\\n \\n3M Company and Subsidiaries\\nConsolidated Statement of Cash Flow\\n \\ns\\nYears ended December 31\\n \\n(Millions)\\n \\n2018\\n \\n2017\\n \\n2016\\n \\nCash Flows from Operating Activities\\n \\n \\n \\n \\n \\n \\n \\n \\n \\n \\nNet income including noncontrolling interest\\n \\n$\\n5,363\\n \\n$\\n4,869\\n \\n$\\n5,058\\n \\nAdjustments to reconcile net income including noncontrolling interest to net cash\\nprovided by operating activities\\n \\n \\n \\n \\n \\n \\n \\n \\n \\n \\nDepreciation and amortization\\n \\n \\n1,488\\n \\n \\n1,544\\n \\n \\n1,474\\n \\nCompany pension and postretirement contributions\\n \\n \\n(370)\\n \\n \\n(967)\\n \\n \\n(383)\\n \\nCompany pension and postretirement expense\\n \\n \\n410\\n \\n \\n334\\n \\n \\n250\\n \\nStock-based compensation expense\\n \\n \\n302\\n \\n \\n324\\n \\n \\n298\\n \\nGain on sale of businesses\\n \\n \\n(545)\\n \\n \\n(586)\\n \\n \\n(111)\\n \\nDeferred income taxes\\n \\n \\n(57)\\n \\n \\n107\\n \\n \\n 7\\n \\nChanges in assets and liabilities\\n \\n \\n \\n \\n \\n \\n \\n \\n \\n \\nAccounts receivable\\n \\n \\n(305)\\n \\n \\n(245)\\n \\n \\n(313)\\n \\nInventories\\n \\n \\n(509)\\n \\n \\n(387)\\n \\n \\n57\\n \\nAccounts payable\\n \\n \\n408\\n \\n \\n24\\n \\n \\n148\\n \\nAccrued income taxes (current and long-term)\\n \\n \\n134\\n \\n \\n967\\n \\n \\n101\\n \\nOther \u2014 net\\n \\n \\n120\\n \\n \\n256\\n \\n \\n76\\n \\nNet cash provided by (used in) operating activities\\n \\n \\n6,439\\n \\n \\n6,240\\n \\n \\n6,662\\n \\n \\n \\n \\n \\n \\n \\n \\n \\n \\n \\n \\nCash Flows from Investing Activities\\n \\n \\n \\n \\n \\n \\n \\n \\n \\n \\nPurchases of property, plant and equipment (PP&E)\\n \\n \\n(1,577)\\n \\n \\n(1,373)\\n \\n \\n(1,420)\\n \\nProceeds from sale of PP&E and other assets\\n \\n \\n262\\n \\n \\n49\\n \\n \\n58\\n \\nAcquisitions, net of cash acquired\\n \\n \\n13\\n \\n \\n(2,023)\\n \\n \\n(16)\\n \\nPurchases of marketable securities and investments\\n \\n \\n(1,828)\\n \\n \\n(2,152)\\n \\n \\n(1,410)\\n \\nProceeds from maturities and sale of marketable securities and investments\\n \\n \\n2,497\\n \\n \\n1,354\\n \\n \\n1,247\\n \\nProceeds from sale of businesses, net of cash sold\\n \\n \\n846\\n \\n \\n1,065\\n \\n \\n142\\n \\nOther \u2014 net\\n \\n \\n 9\\n \\n \\n(6)\\n \\n \\n(4)\\n \\nNet cash provided by (used in) investing activities\\n \\n \\n222\\n \\n \\n(3,086)\\n \\n \\n(1,403)\\n \\n \\n \\n \\n \\n \\n \\n \\n \\n \\n \\n \\nCash Flows from Financing Activities\\n \\n \\n \\n \\n \\n \\n \\n \\n \\n \\nChange in short-term debt \u2014 net\\n \\n \\n(284)\\n \\n \\n578\\n \\n \\n(797)\\n \\nRepayment of debt (maturities greater than 90 days)\\n \\n \\n(1,034)\\n \\n \\n(962)\\n \\n \\n(992)\\n \\nProceeds from debt (maturities greater than 90 days)\\n \\n \\n2,251\\n \\n \\n1,987\\n \\n \\n2,832\\n \\nPurchases of treasury stock\\n \\n \\n(4,870)\\n \\n \\n(2,068)\\n \\n \\n(3,753)\\n \\nProceeds from issuance of treasury stock pursuant to stock option and benefit plans\\n \\n \\n485\\n \\n \\n734\\n \\n \\n804\\n \\nDividends paid to shareholders\\n \\n \\n(3,\",\"next_start\":2400,\"has_more\":true,\"turns_remaining\":1,\"next_action\":\"Next turn must be finish.\",\"receipt_id\":\"r13\",\"observation\":{\"raw_chars\":3017,\"truncated\":false}}",
+      "tool_call_id": "",
+      "name": "read"
+    },
+    {
+      "role": "assistant",
+      "content": [
+        {
+          "type": "thinking",
+          "thinking": "Great! The cash flow statement on page 60 includes Investing Activities with \"Purchases of property, plant and equipment (PP&E)\" values: (1,577) for 2018, (1,373) for 2017, (1,420) for 2016, in millions (units likely millions as per document). The parentheses indicate cash outflow. So capital expenditure (CapEx) for FY2018 is $1,577 million.\n\nThus answer: 1,577 USD millions.\n\nWe need to provide answer with numeric, unit \"USD millions\", scale maybe \"million\". Use finish with answer_type numeric, value \"1577\", unit \"million\"? The spec: unit can be \"USD, EUR, percent, ratio, shares, or number.\" For USD millions, we can set unit \"USD\" and scale \"million\". Or we could set unit \"million\". The instruction: \"unit: USD, EUR, percent, ratio, shares, or number.\" Probably \"USD\". And scale indicates \"million\". So set unit \"USD\", scale \"million\". Value \"1577\". Provide citations: receipt_id from read result: receipt_id \"r13\". document_id \"3M_2018_10K\". page 60 (one-based). So citations array with one object.\n\nLet's finish."
+        },
+        {
+          "type": "text",
+          "text": ""
+        },
+        {
+          "type": "text",
+          "text": "\n"
+        }
+      ],
+      "tool_calls": [
+        {
+          "type": "function",
+          "id": null,
+          "function": {
+            "name": "finish",
+            "arguments": "{\"answer_type\": \"numeric\", \"value\": 1577, \"unit\": \"USD\", \"scale\": \"million\", \"citations\": [{\"receipt_id\": \"r13\", \"document_id\": \"3M_2018_10K\", \"page\": 60}]}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "content": "{\"error\": \"Parameter validation failed: 1 validation error for finish_params\\nvalue\\n  Input should be a valid string [type=string_type, input_value=1577, input_type=int]\\n    For further information visit https://errors.pydantic.dev/2.13/v/string_type\"}",
+      "tool_call_id": "",
+      "name": "finish"
+    }
+  ],
+  "receipts": {
+    "r1": {
+      "document_id": "3M_2018_10K",
+      "page": 46,
+      "page_start": 46,
+      "page_end": 46,
+      "start": 0,
+      "end": 2400,
+      "total_chars": 3812,
+      "text": "Table of Contents\n \nCash Flows:\n \nCash flows from operating, investing and financing activities are provided in the tables that follow. Individual amounts in the Consolidated Statement of\nCash Flows exclude the effects of acquisitions, divestitures and exchange rate impacts on cash and cash equivalents, which are presented separately in the\ncash flows. Thus, the amounts presented in the following operating, investing and financing activities tables reflect changes in balances from period to\nperiod adjusted for these effects.\n \nCash Flows from Operating Activities:\n \nYears Ended December 31\n \n \n \n \n \n \n \n \n \n \n(Millions)\n \n2018\n \n2017\n \n2016\n \nNet income including noncontrolling interest\n \n$\n5,363\n \n$\n4,869\n \n$\n5,058\n \nDepreciation and amortization\n \n \n1,488\n \n \n1,544\n \n \n1,474\n \nCompany pension and postretirement contributions\n \n \n(370)\n \n \n(967)\n \n \n(383)\n \nCompany pension and postretirement expense\n \n \n410\n \n \n334\n \n \n250\n \nStock-based compensation expense\n \n \n302\n \n \n324\n \n \n298\n \nGain on sale of businesses\n \n \n(545)\n \n \n(586)\n \n \n(111)\n \nIncome taxes (deferred and accrued income taxes)\n \n \n77\n \n \n1,074\n \n \n108\n \nAccounts receivable\n \n \n(305)\n \n \n(245)\n \n \n(313)\n \nInventories\n \n \n(509)\n \n \n(387)\n \n \n57\n \nAccounts payable\n \n \n408\n \n \n24\n \n \n148\n \nOther \u2014 net\n \n \n120\n \n \n256\n \n \n76\n \nNet cash provided by operating activities\n \n$\n6,439\n \n$\n6,240\n \n$\n6,662\n \n \nCash flows from operating activities can fluctuate significantly from period to period, as pension funding decisions, tax timing differences and other items\ncan significantly impact cash flows.\n \nIn 2018, cash flows provided by operating activities increased $199 million compared to the same period last year, with the increase primarily made up of\nhigher net income and lower year-on-year pension and postretirement contributions. The increase was partially offset primarily due to the Minnesota NRD\nresolution in the first quarter of 2018 and year-on-year increases in income tax payments. Additional factors that decreased operating cash flows were\nincreases in inventory and accounts receivable. The combination of accounts receivable, inventories and accounts payable increased working capital by\n$406 million in 2018, compared to the working capital increases of $608 million in 2017. Additional discussion on working capital changes is provided\nearlier in the \u201cFinancial Condition and Liquidity\u201d section.\n \nIn ",
+      "next_start": 2400,
+      "has_more": true,
+      "table_id": "t:3M_2018_10K:page:46",
+      "title": "Cash Flows:",
+      "units": "Millions",
+      "neighbor_pages": [
+        45,
+        47
+      ],
+      "neighbor_hint": "Use read on neighbor_pages for headers/footnotes outside this page.",
+      "turns_remaining": 6,
+      "receipt_id": "r1",
+      "observation": {
+        "raw_chars": 2951,
+        "truncated": false
+      },
+      "tool": "read_table",
+      "delivered_turn": 2
+    },
+    "r2": {
+      "document_id": "3M_2018_10K",
+      "page": 47,
+      "page_start": 47,
+      "page_end": 47,
+      "start": 0,
+      "end": 2400,
+      "total_chars": 4331,
+      "text": "Table of Contents\n \nInvestments in property, plant and equipment enable growth across many diverse markets, helping to meet product demand and increasing manufacturing\nefficiency. The Company expects 2019 capital spending to be approximately $1.7 billion to $1.9 billion as 3M continues to invest in its businesses.\n \n3M invests in renewal and maintenance programs, which pertain to cost reduction, cycle time, maintaining and renewing current capacity, eliminating\npollution, and compliance. Costs related to maintenance, ordinary repairs, and certain other items are expensed. 3M also invests in growth, which adds to\ncapacity, driven by new products, both through expansion of current facilities and new facilities. Finally, 3M also invests in other initiatives, such as\ninformation technology (IT) and laboratory facilities.\n \nRefer to Note 3 for information on acquisitions and divestitures. The Company is actively considering additional acquisitions, investments and strategic\nalliances, and from time to time may also divest certain businesses. Proceeds from sale of businesses in 2018 primarily relate to the sale of 3M\u2019s\nCommunication Markets Division and the sale of certain personal safety product offerings primarily focused on noise, environmental, and heat stress\nmonitoring within the Safety and Graphics business segment.\n \nPurchases of marketable securities and investments and proceeds from maturities and sale of marketable securities and investments are primarily\nattributable to asset-backed securities, certificates of deposit/time deposits, commercial paper, and other securities, which are classified as available-for-sale.\nRefer to Note 11 for more details about 3M\u2019s diversified marketable securities portfolio. Purchases of investments include additional survivor benefit\ninsurance, plus investments in equity securities.\n \nCash Flows from Financing Activities:\n \nYears ended December 31\n \n \n \n \n \n \n \n \n \n \n(Millions)\n \n2018\n \n2017\n \n2016\n \nChange in short-term debt \u2014 net\n \n$\n(284)\n \n$\n578\n \n$\n(797)\n \nRepayment of debt (maturities greater than 90 days)\n \n \n(1,034)\n \n \n(962)\n \n \n(992)\n \nProceeds from debt (maturities greater than 90 days)\n \n \n2,251\n \n \n1,987\n \n \n2,832\n \nTotal cash change in debt\n \n$\n933\n \n$\n1,603\n \n$\n1,043\n \nPurchases of treasury stock\n \n \n(4,870)\n \n \n(2,068)\n \n \n(3,753)\n \nProceeds from issuances of treasury stock pursuant to stock option and bene",
+      "next_start": 2400,
+      "has_more": true,
+      "turns_remaining": 5,
+      "receipt_id": "r2",
+      "observation": {
+        "raw_chars": 2687,
+        "truncated": false
+      },
+      "tool": "read",
+      "delivered_turn": 3
+    },
+    "r3": {
+      "document_id": "3M_2018_10K",
+      "page": 48,
+      "page_start": 48,
+      "page_end": 48,
+      "start": 0,
+      "end": 2400,
+      "total_chars": 4672,
+      "text": "Table of Contents\n \n2017 Debt Activity:\n \nThe Company\u2019s total debt was $2.3 billion higher at December 31, 2017 when compared to December 31, 2016. Increases in debt related to October 2017\ndebt issuances of $2.0 billion, commercial paper of $745 million outstanding at year end 2017, and the net impact of repayments and borrowings of\ninternational subsidiaries. These are partially offset by June 2017 repayments of $650 million aggregate principal amount of medium-term notes and the\nOctober 2017 $305 million debt tender. Net commercial paper issuances and repayments and borrowings by international subsidiaries are largely reflected\nin \u201cChange in short-term debt \u2013 net\u201d in the preceding table. Foreign exchange rate changes also impacted debt balances.\n \nProceeds from debt for 2017 primarily related to the October 2017 issuance of $650 million aggregate principal amount of 5.5-year fixed rate medium-term\nnotes due 2023 with a coupon rate of 2.25%, $850 million aggregate principal amount of 10-year fixed rate medium-term notes due 2027 with a coupon\nrate of 2.875%, and $500 million aggregate principal amount of 30-year fixed rate medium-term notes due 2047 with a coupon rate of 3.625%. Refer to\nNote 12 for more detail of these debt issuances.\n \nIn October 2017, via cash tender offers, 3M repurchased $305 million aggregate principal amount of its outstanding notes. This included $110 million of its\n$330 million principal amount of 6.375% notes due 2028 and $195 million of its $750 million principal amount of 5.70% notes due 2037. The Company\nrecorded an early debt extinguishment charge of $96 million in the fourth quarter of 2017 within interest expense associated with the differential between\nthe carrying value and the amount paid to acquire the tendered notes and related expenses.\n \n2016 Debt Activity:\n \nTotal debt at December 31, 2016 increased $853 million when compared to year-end 2015, with the increase primarily due to May 2016 debt issuances\n(approximately $1.1 billion at issue date exchange rates) and September 2016 debt issuances of approximately $1.75 billion. This increase was partially\noffset by the repayment of $1 billion aggregate principal amount of medium-term notes due September 2016 along with the net impact of repayments and\nborrowings by international subsidiaries, primarily Japan and Korea (approximately $0.8 million decrease), which is refle",
+      "next_start": 2400,
+      "has_more": true,
+      "turns_remaining": 4,
+      "receipt_id": "r3",
+      "observation": {
+        "raw_chars": 2616,
+        "truncated": false
+      },
+      "tool": "read",
+      "delivered_turn": 4
+    },
+    "r4": {
+      "document_id": "3M_2018_10K",
+      "page": 49,
+      "page_start": 49,
+      "page_end": 49,
+      "start": 0,
+      "end": 2400,
+      "total_chars": 4455,
+      "text": "Table of Contents\n \nOther cash flows from financing activities may include various other items, such as changes in cash overdraft balances, and principal payments for capital\nleases. In addition, in 2017, this included a payment related to the $96 million in interest expense associated with premiums and fees for the early retirement\nof debt. See Note 12 for additional details.\n \nFree Cash Flow (non-GAAP measure):\n \nFree cash flow and free cash flow conversion are not defined under U.S. generally accepted accounting principles (GAAP). Therefore, they should not be\nconsidered a substitute for income or cash flow data prepared in accordance with U.S. GAAP and may not be comparable to similarly titled measures used\nby other companies. The Company defines free cash flow as net cash provided by operating activities less purchases of property, plant and equipment. It\nshould not be inferred that the entire free cash flow amount is available for discretionary expenditures. The Company defines free cash flow conversion as\nfree cash flow divided by net income attributable to 3M. The Company believes free cash flow and free cash flow conversion are meaningful to investors as\nthey are useful measures of performance and the Company uses these measures as an indication of the strength of the company and its ability to generate\ncash. The first quarter of each year is typically 3M\u2019s seasonal low for free cash flow and free cash flow conversion. Below find a recap of free cash flow and\nfree cash flow conversion for 2018, 2017 and 2016.\n \nIn 2018, free cash flow conversion was impacted by the $176 million measurement period adjustment to the tax expense recorded in December 2017 from\nthe enactment of the TCJA, the $897 million pre-tax impact related to the resolution of the Minnesota natural resource damages (NRD), and the $381\nmillion pre-tax impact from the gain on sale of the Communication Markets Division, net of restructuring actions related to addressing corporate functional\ncosts following the divestiture. On a combined basis, these items reduced free cash flow conversion by 2 percentage points.\n \nIn 2017, free cash flow conversion was impacted by enactment of the TCJA, along with an additional U.S. pension contribution of $600 million that 3M\nmade following the signing of tax reform. On a combined basis, these items benefited free cash flow conversion by 3 percentage p",
+      "next_start": 2400,
+      "has_more": true,
+      "turns_remaining": 3,
+      "receipt_id": "r4",
+      "observation": {
+        "raw_chars": 2614,
+        "truncated": false
+      },
+      "tool": "read",
+      "delivered_turn": 5
+    },
+    "r5": {
+      "document_id": "3M_2018_10K",
+      "page": 7,
+      "line": 48,
+      "text": "expenditures for environmental purposes have included pollution control devices \u2014 such as wastewater treatment plant improvements, scrubbers,\ncontainment structures, solvent recovery units and thermal oxidizers \u2014 at new and existing facilities constructed or upgraded in the normal course of\nbusiness. Consistent with the Company\u2019s emphasis on environmental responsibility, capital expenditures (other than for remediation projects) for known\nprojects are presently expected to be approximately $75 m",
+      "provenance": "3M_2018_10K:page=7:line=48",
+      "receipt_id": "r5",
+      "tool": "grep_document",
+      "delivered_turn": 6
+    },
+    "r6": {
+      "document_id": "3M_2018_10K",
+      "page": 8,
+      "line": 3,
+      "text": "Table of Contents\n \nWhile the Company cannot predict with certainty the future costs of such cleanup activities, capital expenditures or operating costs for environmental\ncompliance, the Company does not believe they will have a material effect on its capital expenditures, earnings or competitive position.\n ",
+      "provenance": "3M_2018_10K:page=8:line=3",
+      "receipt_id": "r6",
+      "tool": "grep_document",
+      "delivered_turn": 6
+    },
+    "r7": {
+      "document_id": "3M_2018_10K",
+      "page": 8,
+      "line": 4,
+      "text": " \nWhile the Company cannot predict with certainty the future costs of such cleanup activities, capital expenditures or operating costs for environmental\ncompliance, the Company does not believe they will have a material effect on its capital expenditures, earnings or competitive position.\n \nExecutive Officers",
+      "provenance": "3M_2018_10K:page=8:line=4",
+      "receipt_id": "r7",
+      "tool": "grep_document",
+      "delivered_turn": 6
+    },
+    "r8": {
+      "document_id": "3M_2018_10K",
+      "page": 43,
+      "line": 9,
+      "text": "The strength and stability of 3M\u2019s business model and strong free cash flow capability, together with proven capital markets access, positions the Company\nto be able to add further leverage to its capital structure. Investing in 3M\u2019s businesses to drive organic growth remains the first priority for capital\ndeployment, including research and development, capital expenditures, and commercialization capability. Investment in organic growth will be\nsupplemented by complementary acquisitions. 3M will",
+      "provenance": "3M_2018_10K:page=43:line=9",
+      "receipt_id": "r8",
+      "tool": "grep_document",
+      "delivered_turn": 6
+    },
+    "r9": {
+      "document_id": "3M_2018_10K",
+      "page": 46,
+      "line": 201,
+      "text": "2016\n \nPurchases of property, plant and equipment (PP&E)\n \n$",
+      "provenance": "3M_2018_10K:page=46:line=201",
+      "receipt_id": "r9",
+      "tool": "grep_document",
+      "delivered_turn": 6
+    },
+    "r10": {
+      "document_id": "3M_2018_10K",
+      "page": 49,
+      "line": 11,
+      "text": "Free cash flow and free cash flow conversion are not defined under U.S. generally accepted accounting principles (GAAP). Therefore, they should not be\nconsidered a substitute for income or cash flow data prepared in accordance with U.S. GAAP and may not be comparable to similarly titled measures used\nby other companies. The Company defines free cash flow as net cash provided by operating activities less purchases of property, plant and equipment. It\nshould not be inferred that the entire free ca",
+      "provenance": "3M_2018_10K:page=49:line=11",
+      "receipt_id": "r10",
+      "tool": "grep_document",
+      "delivered_turn": 6
+    },
+    "r11": {
+      "document_id": "3M_2018_10K",
+      "page": 49,
+      "line": 135,
+      "text": "6,662\n \nPurchases of property, plant and equipment (PP&E)\n \n ",
+      "provenance": "3M_2018_10K:page=49:line=135",
+      "receipt_id": "r11",
+      "tool": "grep_document",
+      "delivered_turn": 6
+    },
+    "r12": {
+      "document_id": "3M_2018_10K",
+      "page": 60,
+      "line": 216,
+      "text": " \n \nPurchases of property, plant and equipment (PP&E)\n \n ",
+      "provenance": "3M_2018_10K:page=60:line=216",
+      "receipt_id": "r12",
+      "tool": "grep_document",
+      "delivered_turn": 6
+    },
+    "r13": {
+      "document_id": "3M_2018_10K",
+      "page": 60,
+      "page_start": 60,
+      "page_end": 60,
+      "start": 0,
+      "end": 2400,
+      "total_chars": 3038,
+      "text": "Table of Contents\n \n3M Company and Subsidiaries\nConsolidated Statement of Cash Flow\n \ns\nYears ended December 31\n \n(Millions)\n \n2018\n \n2017\n \n2016\n \nCash Flows from Operating Activities\n \n \n \n \n \n \n \n \n \n \nNet income including noncontrolling interest\n \n$\n5,363\n \n$\n4,869\n \n$\n5,058\n \nAdjustments to reconcile net income including noncontrolling interest to net cash\nprovided by operating activities\n \n \n \n \n \n \n \n \n \n \nDepreciation and amortization\n \n \n1,488\n \n \n1,544\n \n \n1,474\n \nCompany pension and postretirement contributions\n \n \n(370)\n \n \n(967)\n \n \n(383)\n \nCompany pension and postretirement expense\n \n \n410\n \n \n334\n \n \n250\n \nStock-based compensation expense\n \n \n302\n \n \n324\n \n \n298\n \nGain on sale of businesses\n \n \n(545)\n \n \n(586)\n \n \n(111)\n \nDeferred income taxes\n \n \n(57)\n \n \n107\n \n \n 7\n \nChanges in assets and liabilities\n \n \n \n \n \n \n \n \n \n \nAccounts receivable\n \n \n(305)\n \n \n(245)\n \n \n(313)\n \nInventories\n \n \n(509)\n \n \n(387)\n \n \n57\n \nAccounts payable\n \n \n408\n \n \n24\n \n \n148\n \nAccrued income taxes (current and long-term)\n \n \n134\n \n \n967\n \n \n101\n \nOther \u2014 net\n \n \n120\n \n \n256\n \n \n76\n \nNet cash provided by (used in) operating activities\n \n \n6,439\n \n \n6,240\n \n \n6,662\n \n \n \n \n \n \n \n \n \n \n \n \nCash Flows from Investing Activities\n \n \n \n \n \n \n \n \n \n \nPurchases of property, plant and equipment (PP&E)\n \n \n(1,577)\n \n \n(1,373)\n \n \n(1,420)\n \nProceeds from sale of PP&E and other assets\n \n \n262\n \n \n49\n \n \n58\n \nAcquisitions, net of cash acquired\n \n \n13\n \n \n(2,023)\n \n \n(16)\n \nPurchases of marketable securities and investments\n \n \n(1,828)\n \n \n(2,152)\n \n \n(1,410)\n \nProceeds from maturities and sale of marketable securities and investments\n \n \n2,497\n \n \n1,354\n \n \n1,247\n \nProceeds from sale of businesses, net of cash sold\n \n \n846\n \n \n1,065\n \n \n142\n \nOther \u2014 net\n \n \n 9\n \n \n(6)\n \n \n(4)\n \nNet cash provided by (used in) investing activities\n \n \n222\n \n \n(3,086)\n \n \n(1,403)\n \n \n \n \n \n \n \n \n \n \n \n \nCash Flows from Financing Activities\n \n \n \n \n \n \n \n \n \n \nChange in short-term debt \u2014 net\n \n \n(284)\n \n \n578\n \n \n(797)\n \nRepayment of debt (maturities greater than 90 days)\n \n \n(1,034)\n \n \n(962)\n \n \n(992)\n \nProceeds from debt (maturities greater than 90 days)\n \n \n2,251\n \n \n1,987\n \n \n2,832\n \nPurchases of treasury stock\n \n \n(4,870)\n \n \n(2,068)\n \n \n(3,753)\n \nProceeds from issuance of treasury stock pursuant to stock option and benefit plans\n \n \n485\n \n \n734\n \n \n804\n \nDividends paid to shareholders\n \n \n(3,",
+      "next_start": 2400,
+      "has_more": true,
+      "turns_remaining": 1,
+      "next_action": "Next turn must be finish.",
+      "receipt_id": "r13",
+      "observation": {
+        "raw_chars": 3017,
+        "truncated": false
+      },
+      "tool": "read",
+      "delivered_turn": 7
+    }
+  },
+  "calculations": {},
+  "observations": [
+    {
+      "name": "bm25_search",
+      "payload": {
+        "queries": [
+          "3M capital expenditure cash flow statement FY2018",
+          "3M 2018 cash flow statement capital expenditures"
+        ],
+        "filters": {
+          "company": "3M",
+          "year": 2018,
+          "filing_type": "10-K",
+          "document_id": ""
+        },
+        "prose_hits": [
+          {
+            "document_id": "3M_2018_10K",
+            "page": 43,
+            "passage_id": "p:3M_2018_10K:page:43:chunk:0",
+            "score": 19.78009,
+            "snippet": "CIAL CONDITION AND LIQUIDI\n \nTY\n \nThe strength and stability of 3M\u2019s business model and strong free cash flow capability, together with proven capital markets access, positions the Company\nto be able to add further leverage to its capital structure. Investing in 3M\u2019s businesses to drive organic grow",
+            "snippet_start": 25
+          },
+          {
+            "document_id": "3M_2018_10K",
+            "page": 83,
+            "passage_id": "p:3M_2018_10K:page:83:chunk:0",
+            "score": 17.24219,
+            "snippet": " \n \n \nComprehensive Income Components\n \nYear ended December 31,\n \nLocation on Income\n \n(Millions)\n \n2018\n \n2017\n \n2016\n \nStatement\n \nGains (losses) associated with defined benefit pension and postretirement plans\namortization\n \n \n \n \n \n \n \n \n \n \n \n \nTransition asset\n \n$\n \u2014\n \n$\n \u2014\n \n$\n 1\n \nSee Note 1",
+            "snippet_start": 214
+          },
+          {
+            "document_id": "3M_2018_10K",
+            "page": 49,
+            "passage_id": "p:3M_2018_10K:page:49:chunk:1",
+            "score": 16.65547,
+            "snippet": "corporate functional\ncosts following the divestiture. On a combined basis, these items reduced free cash flow conversion by 2 percentage points.\n \nIn 2017, free cash flow conversion was impacted by enactment of the TCJA, along with an additional U.S. pension contribution of $600 million that 3M\nmade",
+            "snippet_start": 1976
+          }
+        ],
+        "table_hits": [
+          {
+            "document_id": "3M_2018_10K",
+            "page": 46,
+            "table_id": "t:3M_2018_10K:page:46",
+            "score": 18.57693,
+            "units": "Millions",
+            "title": "Cash Flows:",
+            "snippet": "Table of Contents\n \nCash Flows:\n \nCash flows from operating, investing and financing activities are provided in the tables that follow. Individual amounts in the Consolidated Statement of\nCash Flows exclude the effects of acquisitions, divestitures and exchange rate impacts on cash and cash equivale",
+            "snippet_start": 0
+          },
+          {
+            "document_id": "3M_2018_10K",
+            "page": 43,
+            "table_id": "t:3M_2018_10K:page:43",
+            "score": 16.60919,
+            "units": "",
+            "title": "The strength of 3M\u2019s capital structure and significant ongoing cash flows provide 3M proven access to capital markets. Additionally, the Company\u2019s",
+            "snippet": "CIAL CONDITION AND LIQUIDI\n \nTY\n \nThe strength and stability of 3M\u2019s business model and strong free cash flow capability, together with proven capital markets access, positions the Company\nto be able to add further leverage to its capital structure. Investing in 3M\u2019s businesses to drive organic grow",
+            "snippet_start": 25
+          }
+        ],
+        "turns_remaining": 7,
+        "observation": {
+          "raw_chars": 2667,
+          "truncated": false
+        }
+      },
+      "visible_chars": 2718
+    },
+    {
+      "name": "read_table",
+      "payload": {
+        "document_id": "3M_2018_10K",
+        "page": 46,
+        "page_start": 46,
+        "page_end": 46,
+        "start": 0,
+        "end": 2400,
+        "total_chars": 3812,
+        "text": "Table of Contents\n \nCash Flows:\n \nCash flows from operating, investing and financing activities are provided in the tables that follow. Individual amounts in the Consolidated Statement of\nCash Flows exclude the effects of acquisitions, divestitures and exchange rate impacts on cash and cash equivalents, which are presented separately in the\ncash flows. Thus, the amounts presented in the following operating, investing and financing activities tables reflect changes in balances from period to\nperiod adjusted for these effects.\n \nCash Flows from Operating Activities:\n \nYears Ended December 31\n \n \n \n \n \n \n \n \n \n \n(Millions)\n \n2018\n \n2017\n \n2016\n \nNet income including noncontrolling interest\n \n$\n5,363\n \n$\n4,869\n \n$\n5,058\n \nDepreciation and amortization\n \n \n1,488\n \n \n1,544\n \n \n1,474\n \nCompany pension and postretirement contributions\n \n \n(370)\n \n \n(967)\n \n \n(383)\n \nCompany pension and postretirement expense\n \n \n410\n \n \n334\n \n \n250\n \nStock-based compensation expense\n \n \n302\n \n \n324\n \n \n298\n \nGain on sale of businesses\n \n \n(545)\n \n \n(586)\n \n \n(111)\n \nIncome taxes (deferred and accrued income taxes)\n \n \n77\n \n \n1,074\n \n \n108\n \nAccounts receivable\n \n \n(305)\n \n \n(245)\n \n \n(313)\n \nInventories\n \n \n(509)\n \n \n(387)\n \n \n57\n \nAccounts payable\n \n \n408\n \n \n24\n \n \n148\n \nOther \u2014 net\n \n \n120\n \n \n256\n \n \n76\n \nNet cash provided by operating activities\n \n$\n6,439\n \n$\n6,240\n \n$\n6,662\n \n \nCash flows from operating activities can fluctuate significantly from period to period, as pension funding decisions, tax timing differences and other items\ncan significantly impact cash flows.\n \nIn 2018, cash flows provided by operating activities increased $199 million compared to the same period last year, with the increase primarily made up of\nhigher net income and lower year-on-year pension and postretirement contributions. The increase was partially offset primarily due to the Minnesota NRD\nresolution in the first quarter of 2018 and year-on-year increases in income tax payments. Additional factors that decreased operating cash flows were\nincreases in inventory and accounts receivable. The combination of accounts receivable, inventories and accounts payable increased working capital by\n$406 million in 2018, compared to the working capital increases of $608 million in 2017. Additional discussion on working capital changes is provided\nearlier in the \u201cFinancial Condition and Liquidity\u201d section.\n \nIn ",
+        "next_start": 2400,
+        "has_more": true,
+        "table_id": "t:3M_2018_10K:page:46",
+        "title": "Cash Flows:",
+        "units": "Millions",
+        "neighbor_pages": [
+          45,
+          47
+        ],
+        "neighbor_hint": "Use read on neighbor_pages for headers/footnotes outside this page.",
+        "turns_remaining": 6,
+        "receipt_id": "r1",
+        "observation": {
+          "raw_chars": 2951,
+          "truncated": false
+        }
+      },
+      "visible_chars": 3002
+    },
+    {
+      "name": "read",
+      "payload": {
+        "document_id": "3M_2018_10K",
+        "page": 47,
+        "page_start": 47,
+        "page_end": 47,
+        "start": 0,
+        "end": 2400,
+        "total_chars": 4331,
+        "text": "Table of Contents\n \nInvestments in property, plant and equipment enable growth across many diverse markets, helping to meet product demand and increasing manufacturing\nefficiency. The Company expects 2019 capital spending to be approximately $1.7 billion to $1.9 billion as 3M continues to invest in its businesses.\n \n3M invests in renewal and maintenance programs, which pertain to cost reduction, cycle time, maintaining and renewing current capacity, eliminating\npollution, and compliance. Costs related to maintenance, ordinary repairs, and certain other items are expensed. 3M also invests in growth, which adds to\ncapacity, driven by new products, both through expansion of current facilities and new facilities. Finally, 3M also invests in other initiatives, such as\ninformation technology (IT) and laboratory facilities.\n \nRefer to Note 3 for information on acquisitions and divestitures. The Company is actively considering additional acquisitions, investments and strategic\nalliances, and from time to time may also divest certain businesses. Proceeds from sale of businesses in 2018 primarily relate to the sale of 3M\u2019s\nCommunication Markets Division and the sale of certain personal safety product offerings primarily focused on noise, environmental, and heat stress\nmonitoring within the Safety and Graphics business segment.\n \nPurchases of marketable securities and investments and proceeds from maturities and sale of marketable securities and investments are primarily\nattributable to asset-backed securities, certificates of deposit/time deposits, commercial paper, and other securities, which are classified as available-for-sale.\nRefer to Note 11 for more details about 3M\u2019s diversified marketable securities portfolio. Purchases of investments include additional survivor benefit\ninsurance, plus investments in equity securities.\n \nCash Flows from Financing Activities:\n \nYears ended December 31\n \n \n \n \n \n \n \n \n \n \n(Millions)\n \n2018\n \n2017\n \n2016\n \nChange in short-term debt \u2014 net\n \n$\n(284)\n \n$\n578\n \n$\n(797)\n \nRepayment of debt (maturities greater than 90 days)\n \n \n(1,034)\n \n \n(962)\n \n \n(992)\n \nProceeds from debt (maturities greater than 90 days)\n \n \n2,251\n \n \n1,987\n \n \n2,832\n \nTotal cash change in debt\n \n$\n933\n \n$\n1,603\n \n$\n1,043\n \nPurchases of treasury stock\n \n \n(4,870)\n \n \n(2,068)\n \n \n(3,753)\n \nProceeds from issuances of treasury stock pursuant to stock option and bene",
+        "next_start": 2400,
+        "has_more": true,
+        "turns_remaining": 5,
+        "receipt_id": "r2",
+        "observation": {
+          "raw_chars": 2687,
+          "truncated": false
+        }
+      },
+      "visible_chars": 2738
+    },
+    {
+      "name": "read",
+      "payload": {
+        "document_id": "3M_2018_10K",
+        "page": 48,
+        "page_start": 48,
+        "page_end": 48,
+        "start": 0,
+        "end": 2400,
+        "total_chars": 4672,
+        "text": "Table of Contents\n \n2017 Debt Activity:\n \nThe Company\u2019s total debt was $2.3 billion higher at December 31, 2017 when compared to December 31, 2016. Increases in debt related to October 2017\ndebt issuances of $2.0 billion, commercial paper of $745 million outstanding at year end 2017, and the net impact of repayments and borrowings of\ninternational subsidiaries. These are partially offset by June 2017 repayments of $650 million aggregate principal amount of medium-term notes and the\nOctober 2017 $305 million debt tender. Net commercial paper issuances and repayments and borrowings by international subsidiaries are largely reflected\nin \u201cChange in short-term debt \u2013 net\u201d in the preceding table. Foreign exchange rate changes also impacted debt balances.\n \nProceeds from debt for 2017 primarily related to the October 2017 issuance of $650 million aggregate principal amount of 5.5-year fixed rate medium-term\nnotes due 2023 with a coupon rate of 2.25%, $850 million aggregate principal amount of 10-year fixed rate medium-term notes due 2027 with a coupon\nrate of 2.875%, and $500 million aggregate principal amount of 30-year fixed rate medium-term notes due 2047 with a coupon rate of 3.625%. Refer to\nNote 12 for more detail of these debt issuances.\n \nIn October 2017, via cash tender offers, 3M repurchased $305 million aggregate principal amount of its outstanding notes. This included $110 million of its\n$330 million principal amount of 6.375% notes due 2028 and $195 million of its $750 million principal amount of 5.70% notes due 2037. The Company\nrecorded an early debt extinguishment charge of $96 million in the fourth quarter of 2017 within interest expense associated with the differential between\nthe carrying value and the amount paid to acquire the tendered notes and related expenses.\n \n2016 Debt Activity:\n \nTotal debt at December 31, 2016 increased $853 million when compared to year-end 2015, with the increase primarily due to May 2016 debt issuances\n(approximately $1.1 billion at issue date exchange rates) and September 2016 debt issuances of approximately $1.75 billion. This increase was partially\noffset by the repayment of $1 billion aggregate principal amount of medium-term notes due September 2016 along with the net impact of repayments and\nborrowings by international subsidiaries, primarily Japan and Korea (approximately $0.8 million decrease), which is refle",
+        "next_start": 2400,
+        "has_more": true,
+        "turns_remaining": 4,
+        "receipt_id": "r3",
+        "observation": {
+          "raw_chars": 2616,
+          "truncated": false
+        }
+      },
+      "visible_chars": 2667
+    },
+    {
+      "name": "read",
+      "payload": {
+        "document_id": "3M_2018_10K",
+        "page": 49,
+        "page_start": 49,
+        "page_end": 49,
+        "start": 0,
+        "end": 2400,
+        "total_chars": 4455,
+        "text": "Table of Contents\n \nOther cash flows from financing activities may include various other items, such as changes in cash overdraft balances, and principal payments for capital\nleases. In addition, in 2017, this included a payment related to the $96 million in interest expense associated with premiums and fees for the early retirement\nof debt. See Note 12 for additional details.\n \nFree Cash Flow (non-GAAP measure):\n \nFree cash flow and free cash flow conversion are not defined under U.S. generally accepted accounting principles (GAAP). Therefore, they should not be\nconsidered a substitute for income or cash flow data prepared in accordance with U.S. GAAP and may not be comparable to similarly titled measures used\nby other companies. The Company defines free cash flow as net cash provided by operating activities less purchases of property, plant and equipment. It\nshould not be inferred that the entire free cash flow amount is available for discretionary expenditures. The Company defines free cash flow conversion as\nfree cash flow divided by net income attributable to 3M. The Company believes free cash flow and free cash flow conversion are meaningful to investors as\nthey are useful measures of performance and the Company uses these measures as an indication of the strength of the company and its ability to generate\ncash. The first quarter of each year is typically 3M\u2019s seasonal low for free cash flow and free cash flow conversion. Below find a recap of free cash flow and\nfree cash flow conversion for 2018, 2017 and 2016.\n \nIn 2018, free cash flow conversion was impacted by the $176 million measurement period adjustment to the tax expense recorded in December 2017 from\nthe enactment of the TCJA, the $897 million pre-tax impact related to the resolution of the Minnesota natural resource damages (NRD), and the $381\nmillion pre-tax impact from the gain on sale of the Communication Markets Division, net of restructuring actions related to addressing corporate functional\ncosts following the divestiture. On a combined basis, these items reduced free cash flow conversion by 2 percentage points.\n \nIn 2017, free cash flow conversion was impacted by enactment of the TCJA, along with an additional U.S. pension contribution of $600 million that 3M\nmade following the signing of tax reform. On a combined basis, these items benefited free cash flow conversion by 3 percentage p",
+        "next_start": 2400,
+        "has_more": true,
+        "turns_remaining": 3,
+        "receipt_id": "r4",
+        "observation": {
+          "raw_chars": 2614,
+          "truncated": false
+        }
+      },
+      "visible_chars": 2665
+    },
+    {
+      "name": "grep_document",
+      "payload": {
+        "grep_type_requested": "text",
+        "backend_used": "page_text",
+        "matches": [
+          {
+            "document_id": "3M_2018_10K",
+            "page": 7,
+            "line": 48,
+            "text": "expenditures for environmental purposes have included pollution control devices \u2014 such as wastewater treatment plant improvements, scrubbers,\ncontainment structures, solvent recovery units and thermal oxidizers \u2014 at new and existing facilities constructed or upgraded in the normal course of\nbusiness. Consistent with the Company\u2019s emphasis on environmental responsibility, capital expenditures (other than for remediation projects) for known\nprojects are presently expected to be approximately $75 m",
+            "provenance": "3M_2018_10K:page=7:line=48",
+            "receipt_id": "r5"
+          },
+          {
+            "document_id": "3M_2018_10K",
+            "page": 8,
+            "line": 3,
+            "text": "Table of Contents\n \nWhile the Company cannot predict with certainty the future costs of such cleanup activities, capital expenditures or operating costs for environmental\ncompliance, the Company does not believe they will have a material effect on its capital expenditures, earnings or competitive position.\n ",
+            "provenance": "3M_2018_10K:page=8:line=3",
+            "receipt_id": "r6"
+          },
+          {
+            "document_id": "3M_2018_10K",
+            "page": 8,
+            "line": 4,
+            "text": " \nWhile the Company cannot predict with certainty the future costs of such cleanup activities, capital expenditures or operating costs for environmental\ncompliance, the Company does not believe they will have a material effect on its capital expenditures, earnings or competitive position.\n \nExecutive Officers",
+            "provenance": "3M_2018_10K:page=8:line=4",
+            "receipt_id": "r7"
+          },
+          {
+            "document_id": "3M_2018_10K",
+            "page": 43,
+            "line": 9,
+            "text": "The strength and stability of 3M\u2019s business model and strong free cash flow capability, together with proven capital markets access, positions the Company\nto be able to add further leverage to its capital structure. Investing in 3M\u2019s businesses to drive organic growth remains the first priority for capital\ndeployment, including research and development, capital expenditures, and commercialization capability. Investment in organic growth will be\nsupplemented by complementary acquisitions. 3M will",
+            "provenance": "3M_2018_10K:page=43:line=9",
+            "receipt_id": "r8"
+          },
+          {
+            "document_id": "3M_2018_10K",
+            "page": 46,
+            "line": 201,
+            "text": "2016\n \nPurchases of property, plant and equipment (PP&E)\n \n$",
+            "provenance": "3M_2018_10K:page=46:line=201",
+            "receipt_id": "r9"
+          },
+          {
+            "document_id": "3M_2018_10K",
+            "page": 49,
+            "line": 11,
+            "text": "Free cash flow and free cash flow conversion are not defined under U.S. generally accepted accounting principles (GAAP). Therefore, they should not be\nconsidered a substitute for income or cash flow data prepared in accordance with U.S. GAAP and may not be comparable to similarly titled measures used\nby other companies. The Company defines free cash flow as net cash provided by operating activities less purchases of property, plant and equipment. It\nshould not be inferred that the entire free ca",
+            "provenance": "3M_2018_10K:page=49:line=11",
+            "receipt_id": "r10"
+          },
+          {
+            "document_id": "3M_2018_10K",
+            "page": 49,
+            "line": 135,
+            "text": "6,662\n \nPurchases of property, plant and equipment (PP&E)\n \n ",
+            "provenance": "3M_2018_10K:page=49:line=135",
+            "receipt_id": "r11"
+          },
+          {
+            "document_id": "3M_2018_10K",
+            "page": 60,
+            "line": 216,
+            "text": " \n \nPurchases of property, plant and equipment (PP&E)\n \n ",
+            "provenance": "3M_2018_10K:page=60:line=216",
+            "receipt_id": "r12"
+          }
+        ],
+        "turns_remaining": 2,
+        "observation": {
+          "raw_chars": 4200,
+          "truncated": true
+        }
+      },
+      "visible_chars": 3430
+    },
+    {
+      "name": "read",
+      "payload": {
+        "document_id": "3M_2018_10K",
+        "page": 60,
+        "page_start": 60,
+        "page_end": 60,
+        "start": 0,
+        "end": 2400,
+        "total_chars": 3038,
+        "text": "Table of Contents\n \n3M Company and Subsidiaries\nConsolidated Statement of Cash Flow\n \ns\nYears ended December 31\n \n(Millions)\n \n2018\n \n2017\n \n2016\n \nCash Flows from Operating Activities\n \n \n \n \n \n \n \n \n \n \nNet income including noncontrolling interest\n \n$\n5,363\n \n$\n4,869\n \n$\n5,058\n \nAdjustments to reconcile net income including noncontrolling interest to net cash\nprovided by operating activities\n \n \n \n \n \n \n \n \n \n \nDepreciation and amortization\n \n \n1,488\n \n \n1,544\n \n \n1,474\n \nCompany pension and postretirement contributions\n \n \n(370)\n \n \n(967)\n \n \n(383)\n \nCompany pension and postretirement expense\n \n \n410\n \n \n334\n \n \n250\n \nStock-based compensation expense\n \n \n302\n \n \n324\n \n \n298\n \nGain on sale of businesses\n \n \n(545)\n \n \n(586)\n \n \n(111)\n \nDeferred income taxes\n \n \n(57)\n \n \n107\n \n \n 7\n \nChanges in assets and liabilities\n \n \n \n \n \n \n \n \n \n \nAccounts receivable\n \n \n(305)\n \n \n(245)\n \n \n(313)\n \nInventories\n \n \n(509)\n \n \n(387)\n \n \n57\n \nAccounts payable\n \n \n408\n \n \n24\n \n \n148\n \nAccrued income taxes (current and long-term)\n \n \n134\n \n \n967\n \n \n101\n \nOther \u2014 net\n \n \n120\n \n \n256\n \n \n76\n \nNet cash provided by (used in) operating activities\n \n \n6,439\n \n \n6,240\n \n \n6,662\n \n \n \n \n \n \n \n \n \n \n \n \nCash Flows from Investing Activities\n \n \n \n \n \n \n \n \n \n \nPurchases of property, plant and equipment (PP&E)\n \n \n(1,577)\n \n \n(1,373)\n \n \n(1,420)\n \nProceeds from sale of PP&E and other assets\n \n \n262\n \n \n49\n \n \n58\n \nAcquisitions, net of cash acquired\n \n \n13\n \n \n(2,023)\n \n \n(16)\n \nPurchases of marketable securities and investments\n \n \n(1,828)\n \n \n(2,152)\n \n \n(1,410)\n \nProceeds from maturities and sale of marketable securities and investments\n \n \n2,497\n \n \n1,354\n \n \n1,247\n \nProceeds from sale of businesses, net of cash sold\n \n \n846\n \n \n1,065\n \n \n142\n \nOther \u2014 net\n \n \n 9\n \n \n(6)\n \n \n(4)\n \nNet cash provided by (used in) investing activities\n \n \n222\n \n \n(3,086)\n \n \n(1,403)\n \n \n \n \n \n \n \n \n \n \n \n \nCash Flows from Financing Activities\n \n \n \n \n \n \n \n \n \n \nChange in short-term debt \u2014 net\n \n \n(284)\n \n \n578\n \n \n(797)\n \nRepayment of debt (maturities greater than 90 days)\n \n \n(1,034)\n \n \n(962)\n \n \n(992)\n \nProceeds from debt (maturities greater than 90 days)\n \n \n2,251\n \n \n1,987\n \n \n2,832\n \nPurchases of treasury stock\n \n \n(4,870)\n \n \n(2,068)\n \n \n(3,753)\n \nProceeds from issuance of treasury stock pursuant to stock option and benefit plans\n \n \n485\n \n \n734\n \n \n804\n \nDividends paid to shareholders\n \n \n(3,",
+        "next_start": 2400,
+        "has_more": true,
+        "turns_remaining": 1,
+        "next_action": "Next turn must be finish.",
+        "receipt_id": "r13",
+        "observation": {
+          "raw_chars": 3017,
+          "truncated": false
+        }
+      },
+      "visible_chars": 3068
+    }
+  ],
+  "score": {
+    "F": 0.0,
+    "A": 0.0,
+    "G": 0.0,
+    "Ret": 0.0,
+    "reward": 0.0,
+    "correct": 0,
+    "grounded_success": 0,
+    "unresolved": false,
+    "fabricated_citation": false,
+    "grader_version": "workshop-v1"
+  }
+}

@@ -1,0 +1,56 @@
+{
+  "code_commit": "61cd93a8048cb8d944d1da0ac1d27aaa592547fc",
+  "b1_dev": {
+    "run_id": "B1-dev-smoke",
+    "split": "dev12",
+    "questions": 12,
+    "rollouts": 12,
+    "accepted_finishes": 2,
+    "valid_finish_rate": 0.16666666666666666,
+    "correct_finished": 0,
+    "correct_finished_rate": 0.0,
+    "grounded_success": 0,
+    "grounded_success_rate": 0.0,
+    "mean_A": 0.0,
+    "mean_G": 0.08333333333333333,
+    "unresolved": 1,
+    "infrastructure_failures": 0,
+    "stop_reasons": {
+      "turn_limit": 6,
+      "length": 4,
+      "accepted_finish": 2
+    },
+    "tool_calls_per_question": 5.75,
+    "output_tokens_per_question": 1936.1666666666667,
+    "visible_citation_episodes": 2,
+    "gold_page_read": 9,
+    "judge_calls": 1,
+    "judge_errors": 1,
+    "judge_coverage": {
+      "residual_cases": 1,
+      "successful": 0,
+      "provider_or_credential_errors": 1
+    },
+    "supported_citation_episodes": 0,
+    "zero_citation_episodes": 10
+  },
+  "provider_smoke": {
+    "run_id": "provider_smoke_lr1e5_v3",
+    "nominal_batches": 1,
+    "actual_optimizer_updates": 0,
+    "skipped_batches": 1,
+    "sampled_groups": 8,
+    "sampled_trajectories": 64,
+    "retained_groups": 0,
+    "all_zero_groups": 8,
+    "all_equal_groups": 8,
+    "unresolved_groups": 4,
+    "actual_trained_tokens": "0 because no optimizer update",
+    "kl": "unmeasured because no optimizer update",
+    "checkpoint": "tinker://6df1509b-c923-5f88-a0d7-6aff5e05afa5:train:0/sampler_weights/final",
+    "final_dev_questions": 12,
+    "final_dev_mean_reward": 0.0,
+    "final_dev_correct_finished": 0,
+    "final_dev_grounded_success": 0
+  }
+}
