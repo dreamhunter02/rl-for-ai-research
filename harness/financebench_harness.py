@@ -533,13 +533,23 @@ def _question_scale(question: str) -> float:
     return 1.0
 
 
-def _mention_has_local_scale(text: str, token: str) -> bool:
+def _local_scale_multiplier(text: str, token: str) -> float:
     raw = text or ""
     for match in re.finditer(re.escape(token), raw, re.I):
         context = raw[max(0, match.start() - 40):match.end() + 40]
-        if re.search(r"\b(?:thousand|thousands|million|millions|billion|billions|bn|mm)\b", context, re.I) or re.search(r"[0-9][KMB]\b", token, re.I):
-            return True
-    return False
+        if re.search(r"\b(?:billion|billions|bn)\b", context, re.I):
+            return 1e9
+        if re.search(r"\b(?:million|millions|mm)\b", context, re.I):
+            return 1e6
+        if re.search(r"\b(?:thousand|thousands)\b", context, re.I):
+            return 1e3
+        if re.search(r"[0-9]B\b", token, re.I):
+            return 1e9
+        if re.search(r"[0-9]M\b", token, re.I):
+            return 1e6
+        if re.search(r"[0-9]K\b", token, re.I):
+            return 1e3
+    return 1.0
 
 
 def _mentions_for_question(text: str, question: str = "") -> list[tuple[float, bool, str]]:
@@ -550,10 +560,16 @@ def _mentions_for_question(text: str, question: str = "") -> list[tuple[float, b
     # FinanceBench gold answers often omit the unit while the question supplies
     # it (e.g. "$1577.00" for a question asking for USD millions). Apply the
     # question unit only to bare local numbers, never to explicitly scaled ones.
-    return [
-        (value * scale if not percent and not _is_year(value) and not _mention_has_local_scale(text, token) else value, percent, token)
-        for value, percent, token in mentions
-    ]
+    normalized = []
+    for value, percent, token in mentions:
+        if percent or _is_year(value):
+            normalized.append((value, percent, token))
+            continue
+        local_scale = _local_scale_multiplier(text, token)
+        # _number_mentions already normalizes immediately adjacent/nearby scale
+        # words; only apply the question's scale to genuinely bare numbers.
+        normalized.append((value if local_scale != 1.0 else value * scale, percent, token))
+    return normalized
 
 
 def _numbers_match(gold: str, candidate: str, question: str = "") -> tuple[bool, int]:

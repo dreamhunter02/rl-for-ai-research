@@ -29,27 +29,16 @@ def load_tinker_key() -> str:
     return value
 
 
-def tinker_evaluator_builder(split_name: str = "eval"):
-    """Tinker RL test-set evaluator on a named split (held-out eval for ablation)."""
+def tinker_evaluator_builder(split_name: str, dataset):
+    """Build the pinned SDK evaluator from an already materialized RLDataset."""
     from tinker_cookbook.rl.metric_util import RLTestSetEvaluator
     from tinker_cookbook.rl.train import _sanitize_filename_component
-
-    def builder():
-        return RLTestSetEvaluator(
-            testset_builder=finance_env.FinanceDatasetBuilder(
-                model_name_for_tokenizer=BASE_MODEL,
-                batch_size=1,
-                group_size=1,
-                renderer_name=os.environ.get("RENDERER", "nemotron3_ultra"),
-                max_turns=int(os.environ.get("EVAL_MAX_TURNS", os.environ.get("MAX_TURNS", "8"))),
-                max_generation_tokens=int(os.environ.get("MAX_TOKENS", "1024")),
-                split_name=split_name,
-                seed=0,
-            ),
-            name="financebench_" + _sanitize_filename_component(split_name),
-        )
-
-    return builder
+    return lambda: RLTestSetEvaluator(
+        dataset=dataset,
+        max_tokens=int(os.environ.get("MAX_TOKENS", "1024")),
+        name="financebench_" + _sanitize_filename_component(split_name),
+        num_groups_to_log=int(os.environ.get("EVAL_GROUPS_TO_LOG", "4")),
+    )
 
 
 async def main():
@@ -106,6 +95,21 @@ async def main():
     os.makedirs(log_path, exist_ok=True)
     with open(os.path.join(log_path, "experiment_manifest.json"), "w") as f:
         json.dump(manifest, f, indent=2)
+
+    eval_every = int(os.environ.get("EVAL_EVERY", "0"))
+    eval_split = os.environ.get("EVAL_SPLIT", "eval")
+    eval_dataset = None
+    if eval_every > 0:
+        eval_dataset, _ = await finance_env.FinanceDatasetBuilder(
+            model_name_for_tokenizer=BASE_MODEL,
+            batch_size=1,
+            group_size=1,
+            renderer_name=os.environ.get("RENDERER", "nemotron3_ultra"),
+            max_turns=int(os.environ.get("EVAL_MAX_TURNS", os.environ.get("MAX_TURNS", "8"))),
+            max_generation_tokens=int(os.environ.get("MAX_TOKENS", "1024")),
+            split_name=eval_split,
+            seed=0,
+        )()
 
     config = train.Config(
         model_name=BASE_MODEL,

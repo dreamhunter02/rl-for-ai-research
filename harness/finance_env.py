@@ -379,7 +379,7 @@ class FinanceAnswerReward:
                 continue
             if page < 1:
                 return True
-            if re.search(rf"(?:page(?:_start|_end)?|pages)=?\s*[-:]?\s*{page}(?:\D|$)", content, re.I):
+            if re.search(rf"(?:page(?:_start|_end)?|pages)\s*[\"']?\s*[:=]\s*{page}(?:\D|$)", content, re.I) or re.search(rf"(?:page(?:_start|_end)?|pages)=?\s*[-:]?\s*{page}(?:\D|$)", content, re.I):
                 return True
         return False
 
