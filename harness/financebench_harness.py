@@ -521,9 +521,44 @@ def _number_mentions(text: str) -> list[tuple[float, bool, str]]:
 def _is_year(value: float) -> bool:
     return 1900 <= abs(value) <= 2100 and abs(value - round(value)) < 1e-9
 
-def _numbers_match(gold: str, candidate: str) -> tuple[bool, int]:
-    gold_mentions = [(v, pct) for v, pct, _ in _number_mentions(gold) if not _is_year(v)]
-    candidate_mentions = [(v, pct) for v, pct, _ in _number_mentions(candidate) if not _is_year(v)]
+
+def _question_scale(question: str) -> float:
+    lower = (question or "").lower()
+    if re.search(r"\b(?:billion|billions|bn)\b", lower):
+        return 1e9
+    if re.search(r"\b(?:million|millions|mm)\b", lower):
+        return 1e6
+    if re.search(r"\b(?:thousand|thousands)\b", lower):
+        return 1e3
+    return 1.0
+
+
+def _mention_has_local_scale(text: str, token: str) -> bool:
+    raw = text or ""
+    for match in re.finditer(re.escape(token), raw, re.I):
+        context = raw[max(0, match.start() - 40):match.end() + 40]
+        if re.search(r"\b(?:thousand|thousands|million|millions|billion|billions|bn|mm)\b", context, re.I) or re.search(r"[0-9][KMB]\b", token, re.I):
+            return True
+    return False
+
+
+def _mentions_for_question(text: str, question: str = "") -> list[tuple[float, bool, str]]:
+    mentions = _number_mentions(text)
+    scale = _question_scale(question)
+    if scale == 1.0:
+        return mentions
+    # FinanceBench gold answers often omit the unit while the question supplies
+    # it (e.g. "$1577.00" for a question asking for USD millions). Apply the
+    # question unit only to bare local numbers, never to explicitly scaled ones.
+    return [
+        (value * scale if not percent and not _is_year(value) and not _mention_has_local_scale(text, token) else value, percent, token)
+        for value, percent, token in mentions
+    ]
+
+
+def _numbers_match(gold: str, candidate: str, question: str = "") -> tuple[bool, int]:
+    gold_mentions = [(v, pct) for v, pct, _ in _mentions_for_question(gold, question) if not _is_year(v)]
+    candidate_mentions = [(v, pct) for v, pct, _ in _mentions_for_question(candidate, question) if not _is_year(v)]
     if not gold_mentions:
         return False, 0
     matched = 0
@@ -576,7 +611,7 @@ def _explicit_contradiction(gold: str, candidate: str) -> bool:
         return True
     return False
 
-def score_answer(ground_truth: str, model_answer_text: str) -> tuple[float, dict[str, float]]:
+def score_answer(ground_truth: str, model_answer_text: str, question: str = "") -> tuple[float, dict[str, float]]:
     candidate = extract_answer_text(model_answer_text)
     if not candidate.strip():
         return 0.0, {"quality": 0.0, "conclusion": 0.0, "details": 0.0, "answer_nonempty": 0.0}
@@ -587,10 +622,10 @@ def score_answer(ground_truth: str, model_answer_text: str) -> tuple[float, dict
         return 1.0, {"quality": 1.0, "conclusion": 1.0, "details": 1.0, "answer_nonempty": 1.0}
     gold_decision = _decision(gold)
     candidate_decision = _decision(candidate)
-    number_match, number_count = _numbers_match(gold, candidate)
+    number_match, number_count = _numbers_match(gold, candidate, question)
     recall, short_coverage, overlap = _text_overlap(gold, candidate)
-    has_gold_numbers = bool([x for x, _, _ in _number_mentions(gold) if not _is_year(x)])
-    candidate_has_numbers = bool([x for x, _, _ in _number_mentions(candidate) if not _is_year(x)])
+    has_gold_numbers = bool([x for x, _, _ in _mentions_for_question(gold, question) if not _is_year(x)])
+    candidate_has_numbers = bool([x for x, _, _ in _mentions_for_question(candidate, question) if not _is_year(x)])
     if _explicit_contradiction(gold, candidate):
         return 0.0, {"quality": 0.0, "conclusion": 0.0, "details": 0.0, "answer_nonempty": 1.0}
     numeric_conflict = has_gold_numbers and candidate_has_numbers and not number_match and number_count == 0
@@ -692,9 +727,9 @@ def _trace_evidence_text(trace: list[dict[str, Any]] | None) -> tuple[str, str]:
     return "\n".join(strong_parts), "\n".join(weak_parts)
 
 
-def _number_supported(mention: tuple[float, bool, str], evidence_text: str) -> bool:
+def _number_supported(mention: tuple[float, bool, str], evidence_text: str, question: str = "") -> bool:
     expected, expected_pct, _ = mention
-    for observed, observed_pct, _ in _number_mentions(evidence_text):
+    for observed, observed_pct, _ in _mentions_for_question(evidence_text, question):
         # Compare explicitly normalized units; do not infer scale by division.
         value = observed
         if expected_pct or observed_pct:
@@ -708,7 +743,7 @@ def _number_supported(mention: tuple[float, bool, str], evidence_text: str) -> b
     return False
 
 
-def score_evidence(ground_truth: str, model_answer_text: str, trace: list[dict[str, Any]] | None) -> tuple[float, dict[str, float]]:
+def score_evidence(ground_truth: str, model_answer_text: str, trace: list[dict[str, Any]] | None, question: str = "") -> tuple[float, dict[str, float]]:
     """Score whether answer-bearing claims were actually encountered in tools.
 
     This is deliberately conservative: required gold numbers must appear in
@@ -723,11 +758,11 @@ def score_evidence(ground_truth: str, model_answer_text: str, trace: list[dict[s
     if not all_evidence:
         return 0.0, {"evidence": 0.0, "strong_source": 0.0, "gold_claim_support": 0.0, "candidate_claim_support": 0.0}
 
-    gold_numbers = [x for x in _number_mentions(ground_truth) if not _is_year(x[0])]
-    candidate_numbers = [x for x in _number_mentions(candidate) if not _is_year(x[0])]
-    gold_in_answer = (sum(_number_supported(x, candidate) for x in gold_numbers) / len(gold_numbers)) if gold_numbers else 1.0
-    gold_in_trace = (sum(_number_supported(x, all_evidence) for x in gold_numbers) / len(gold_numbers)) if gold_numbers else 1.0
-    candidate_in_trace = (sum(_number_supported(x, all_evidence) for x in candidate_numbers) / len(candidate_numbers)) if candidate_numbers else 1.0
+    gold_numbers = [x for x in _mentions_for_question(ground_truth, question) if not _is_year(x[0])]
+    candidate_numbers = [x for x in _mentions_for_question(candidate, question) if not _is_year(x[0])]
+    gold_in_answer = (sum(_number_supported(x, candidate, question) for x in gold_numbers) / len(gold_numbers)) if gold_numbers else 1.0
+    gold_in_trace = (sum(_number_supported(x, all_evidence, question) for x in gold_numbers) / len(gold_numbers)) if gold_numbers else 1.0
+    candidate_in_trace = (sum(_number_supported(x, all_evidence, question) for x in candidate_numbers) / len(candidate_numbers)) if candidate_numbers else 1.0
 
     if gold_numbers:
         claim_support = min(gold_in_answer, gold_in_trace)

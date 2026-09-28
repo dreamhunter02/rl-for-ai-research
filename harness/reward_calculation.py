@@ -350,7 +350,7 @@ async def answer_quality_with_judge(
     judge: SemanticJudge | None,
     config: RewardConfig,
 ) -> tuple[float, dict[str, Any]]:
-    deterministic, parts = hb.score_answer(gold, candidate)
+    deterministic, parts = hb.score_answer(gold, candidate, question=question)
     meta: dict[str, Any] = {
         "deterministic_quality": deterministic,
         "judge_used": 0.0,

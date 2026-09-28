@@ -95,6 +95,17 @@ class RewardDesignTests(unittest.TestCase):
         self.assertEqual(target["unit"], "")
         self.assertEqual(target["supporting_spans"][0]["page"], 7)
 
+
+    def test_question_units_align_plain_gold_with_explicit_candidate_scale(self):
+        self.assertGreaterEqual(
+            hb.score_answer(
+                "$1577.00",
+                "The FY2018 capital expenditure was $1,577 million.",
+                question="What is the capital expenditure amount in USD millions?",
+            )[0],
+            0.9,
+        )
+
     def test_adversarial_wrong_answers_do_not_pass(self):
         self.assertLessEqual(hb.reward("No. quick ratio was 0.54 for Verizon.", "Answer: No, quick ratio was 0.64"), 0.5)
         self.assertEqual(hb.reward("No, company had negative working capital of -1561M.", "Answer: No, company had positive working capital of 1561M"), 0.0)

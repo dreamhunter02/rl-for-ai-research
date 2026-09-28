@@ -482,7 +482,7 @@ class FinanceAnswerReward:
         judge_evidence = "\n".join(x for x in (strong_text, weak_text) if x)
         candidates: list[dict[str, Any]] = []
         for gold in self.gold_answers:
-            deterministic_quality, answer_parts = hb.score_answer(gold, text)
+            deterministic_quality, answer_parts = hb.score_answer(gold, text, question=self.question)
             quality, judge_parts = await answer_quality_with_judge(
                 question=self.question,
                 gold=gold,
@@ -491,7 +491,7 @@ class FinanceAnswerReward:
                 judge=self.judge,
                 config=self.reward_config,
             )
-            evidence, evidence_parts = hb.score_evidence(gold, text, trace)
+            evidence, evidence_parts = hb.score_evidence(gold, text, trace, question=self.question)
             citation_document = str(submission.get("evidence_document", ""))
             citation_page = int(submission.get("evidence_page", -1) or -1)
             citation_present = float(bool(citation_document or citation_page >= 1))
