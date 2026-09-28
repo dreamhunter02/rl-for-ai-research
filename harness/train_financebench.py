@@ -122,7 +122,7 @@ async def main():
         remove_constant_reward_groups=remove_constant_reward_groups,
         eval_every=int(os.environ.get("EVAL_EVERY", "0")),
         save_every=int(os.environ.get("SAVE_EVERY", "0")),
-        evaluator_builders=[tinker_evaluator_builder("eval")] if int(os.environ.get("EVAL_EVERY", "0")) > 0 else [],
+        evaluator_builders=[tinker_evaluator_builder(os.environ.get("EVAL_SPLIT", "eval"))] if int(os.environ.get("EVAL_EVERY", "0")) > 0 else [],
         rollout_json_export=True,
         enable_trace=True,
         num_groups_to_log=4,
