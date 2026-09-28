@@ -28,6 +28,10 @@ async def run():
     cases["calculator_or_search_without_evidence_not_full_credit"] = {"pass": value < 1 and metrics["evidence_quality"] == 0, "reward": value, "metrics": metrics}
     value, metrics = await reward(history(finish=False))
     cases["missing_finish_exit"] = {"pass": value == 0 and metrics["finish_missing"] == 1, "reward": value, "metrics": metrics}
+    malformed = history()
+    malformed[-1]["tool_calls"][0]["arguments"]["evidence_page"] = "33, 30, 32"
+    value, metrics = await reward(malformed)
+    cases["malformed_terminal_fields_do_not_crash"] = {"pass": value == 0 and metrics["finish_missing"] == 1, "reward": value, "metrics": metrics}
     return {"protocol": "2026-09-27-repaired-v1", "cases": cases, "pass": all(x["pass"] for x in cases.values())}
 
 if __name__ == "__main__":

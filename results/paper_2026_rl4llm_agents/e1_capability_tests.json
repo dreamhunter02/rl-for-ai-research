@@ -36,6 +36,35 @@
       "pass": true,
       "reward": 0.5
     },
+    "malformed_terminal_fields_do_not_crash": {
+      "metrics": {
+        "answer_nonempty": 0.0,
+        "answer_quality": 0.0,
+        "citation_present": 0.0,
+        "citation_valid": 1.0,
+        "conclusion": 0.0,
+        "correct": 0.0,
+        "details": 0.0,
+        "evidence_quality": 0.0,
+        "finish_gate": 0.0,
+        "finish_missing": 1.0,
+        "finish_penalty": 1.0,
+        "format": 0.0,
+        "grounded_quality": 0.0,
+        "hard_gate_veto": 0.0,
+        "judge_cache_hit": 0.0,
+        "judge_confidence": 0.0,
+        "judge_entailment": 0.0,
+        "judge_error_flag": 0.0,
+        "judge_numeric_ok": 0.0,
+        "judge_used": 0.0,
+        "quality": 0.0,
+        "strong_source": 0.0,
+        "used_finish": 0.0
+      },
+      "pass": true,
+      "reward": 0.0
+    },
     "missing_finish_exit": {
       "metrics": {
         "answer_nonempty": 0.0,

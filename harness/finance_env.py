@@ -349,6 +349,12 @@ class FinanceAnswerReward:
                     continue
                 answer = str(args.get("answer_text") or args.get("answer") or "").strip()
                 if answer:
+                    try:
+                        evidence_page = int(args.get("evidence_page", -1) or -1)
+                    except (TypeError, ValueError):
+                        # Multiple alternatives or non-integral page fields are
+                        # validation failures, never a reason to crash rollout.
+                        continue
                     return {
                         "answer": answer,
                         "answer_type": str(args.get("answer_type", "text")),
@@ -359,7 +365,7 @@ class FinanceAnswerReward:
                         "citations": args.get("citations", []),
                         "calc_id": str(args.get("calc_id", "")),
                         "evidence_document": str(args.get("evidence_document", "")).strip(),
-                        "evidence_page": int(args.get("evidence_page", -1) or -1),
+                        "evidence_page": evidence_page,
                     }
         return {}
 
