@@ -4,6 +4,12 @@ This repository contains the reproducible FinanceBench retrieval harness, teache
 
 The corpus PDFs, extracted text, page-cache index, large Tinker run logs, and generated adapter weights are intentionally excluded from GitHub. They are local or regenerable artifacts; the tracked JSONL traces and metrics preserve the experiment evidence without publishing the corpus or a large binary checkpoint.
 
+## Active execution brief: repaired causal comparison
+
+`NEMOTRON_FINANCEBENCH_GRPO_EXECUTION_BRIEF-3.md` is the authoritative execution contract for the ICAIF RL4LLM-Agents workshop study. It supersedes the earlier direct-full-run plan and defines the causal comparison `B0` (base/original harness), `B1` (base/repaired harness), and `R1` (GRPO/repaired harness), with optional SFT and retrieval-shaping arms kept separate.
+
+The repaired protocol is recorded in `results/paper_2026_rl4llm_agents/protocol.md`, the exact 96/12/42 split IDs in `split_manifest.json`, and the E0 preflight in `e0_preflight.json`. Current E0 status: 31 tests passing, compact search/read JSON verified, pagination verified, numeric sign/scale regressions covered, and the `nemotron3_ultra` tool schema includes the typed finish fields.
+
 ## Current status: Reward-v2 FinanceBench GRPO review (2026-09-27)
 
 The reward-v2 implementation, audit harness, teacher-trace scoring, Tinker integration, and full-run artifact capture are complete and available in this repository. The full run completed technically, but it is a diagnostic/training regression rather than evidence of model improvement; the 42-question holdout evaluation is still pending.
