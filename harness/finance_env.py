@@ -164,8 +164,8 @@ class Bm25Tool:
         self.index = index
 
     @staticmethod
-    async def build(max_docs: int | None = None) -> "Bm25Tool":
-        return Bm25Tool(hb.build_index(max_docs=max_docs))
+    async def build(max_docs: int | None = None, doc_names: list[str] | None = None) -> "Bm25Tool":
+        return Bm25Tool(hb.build_index(max_docs=max_docs, doc_names=doc_names))
 
     @tool
     async def bm25_search(
