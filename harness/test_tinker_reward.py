@@ -39,6 +39,36 @@ class TinkerRewardTests(unittest.TestCase):
         self.assertEqual(parts["evidence_quality"], 0.0)
         self.assertEqual(reward, 0.5)
 
+
+    def test_unsupported_finish_citation_removes_grounding_credit(self):
+        history = [
+            {"role": "user", "content": "What happened?"},
+            {"role": "assistant", "content": "", "tool_calls": [{
+                "id": "read-1", "function": {"name": "read", "arguments": json.dumps({"document_id": "amcor_8k", "page": 3})},
+            }]},
+            {"role": "tool", "tool_call_id": "read-1", "content": json.dumps({"document_id": "amcor_8k", "page_start": 3, "page_end": 3, "text": "Amcor entered into supplemental indentures.", "provenance": "amcor_8k:pages=3-3"})},
+            {"role": "assistant", "content": "", "tool_calls": [{
+                "id": "finish-1", "function": {"name": "finish", "arguments": json.dumps({"answer": "Supplemental indentures.", "evidence_document": "wrong_doc", "evidence_page": 99})},
+            }]},
+        ]
+        reward, parts = asyncio.run(FinanceAnswerReward(["Amcor entered into supplemental indentures."])(history))
+        self.assertEqual(parts["answer_quality"], 1.0)
+        self.assertEqual(parts["citation_valid"], 0.0)
+        self.assertEqual(parts["evidence_quality"], 0.0)
+        self.assertEqual(reward, 0.0)
+
+
+    def test_supported_finish_citation_retains_grounding_credit(self):
+        history = [
+            {"role": "user", "content": "What happened?"},
+            {"role": "assistant", "content": "", "tool_calls": [{"id": "read-1", "function": {"name": "read", "arguments": json.dumps({"document_id": "amcor_8k", "page": 3})}}]},
+            {"role": "tool", "tool_call_id": "read-1", "content": json.dumps({"document_id": "amcor_8k", "page_start": 3, "page_end": 3, "text": "Amcor entered into supplemental indentures.", "provenance": "amcor_8k:pages=3-3"})},
+            {"role": "assistant", "content": "", "tool_calls": [{"id": "finish-1", "function": {"name": "finish", "arguments": json.dumps({"answer": "Supplemental indentures.", "evidence_document": "amcor_8k", "evidence_page": 3})}}]},
+        ]
+        reward, parts = asyncio.run(FinanceAnswerReward(["Amcor entered into supplemental indentures."])(history))
+        self.assertEqual(parts["citation_valid"], 1.0)
+        self.assertEqual(reward, 1.0)
+
     def test_tinker_metrics_are_numeric(self):
         history = [
             {"role": "user", "content": "What happened?"},

@@ -1,6 +1,7 @@
 """Tinker RL environment for the structured FinanceBench harness."""
 from __future__ import annotations
 
+import hashlib
 import json
 import os
 import random
@@ -84,7 +85,7 @@ Available tools:
 - read_table: retrieve a table candidate with neighboring headers and footnotes
 - calculate: safe arithmetic for ratios, changes, and unit conversions
 
-When you have enough evidence, call finish(answer, evidence_document, evidence_page) exactly once. Put the complete answer in the answer argument, including units and the requested conclusion. Do not stop after a search hit unless it actually resolves the question.
+When you have enough evidence, call finish exactly once. Put the complete answer in answer_text/answer, set answer_type (text, decision, scalar, percentage, currency, date, or multipart) when known, include value/unit/scale for numeric answers, cite evidence_document/evidence_page and citations, and provide calc_id for derived results. Do not stop after a search hit unless it actually resolves the question.
 """
 
 
@@ -246,7 +247,8 @@ class Bm25Tool:
     ) -> ToolResult:
         try:
             value = hb.calculate(expression)
-            return _tool_result({"expression": expression, "value": value})
+            calc_id = hashlib.sha256(f"{expression}={value}".encode()).hexdigest()[:16]
+            return _tool_result({"expression": expression, "value": value, "calc_id": calc_id, "operands_source_backed": False})
         except Exception as exc:
             return _tool_result({"error": str(exc)})
 
@@ -254,11 +256,20 @@ class Bm25Tool:
     @tool
     async def finish(
         self,
-        answer: Annotated[str, "Final answer to the user, with units and concise reasoning."],
+        answer: Annotated[str, "Compatibility alias for the complete final answer."] = "",
         evidence_document: Annotated[str, "Primary evidence document identifier, if known."] = "",
         evidence_page: Annotated[int, "Primary evidence page, or -1 when unknown."] = -1,
+        answer_type: Annotated[str, "text, decision, scalar, percentage, currency, date, or multipart."] = "text",
+        value: Annotated[str, "Typed requested value, preserving zero and sign."] = "",
+        unit: Annotated[str, "Currency or measurement unit."] = "",
+        scale: Annotated[str, "thousand, million, billion, or empty."] = "",
+        decision: Annotated[str, "yes/no or other requested decision."] = "",
+        answer_text: Annotated[str, "Preferred complete final answer text."] = "",
+        citations: Annotated[list[str], "Exact provenance identifiers used in the answer."] = [],
+        calc_id: Annotated[str, "Calculation receipt identifier for derived results."] = "",
     ) -> ToolResult:
-        return _tool_result({"finish": True, "answer": answer, "evidence_document": evidence_document, "evidence_page": evidence_page})
+        final_text = answer_text.strip() or answer.strip()
+        return _tool_result({"finish": True, "answer": final_text, "answer_text": final_text, "answer_type": answer_type, "value": value, "unit": unit, "scale": scale, "decision": decision, "evidence_document": evidence_document, "evidence_page": evidence_page, "citations": citations, "calc_id": calc_id})
 
 
 def _company_name(doc_name: str) -> str:
@@ -313,7 +324,7 @@ class FinanceAnswerReward:
         self.require_finish = require_finish
 
     @staticmethod
-    def _finish_answer(history: list[Message]) -> str:
+    def _finish_submission(history: list[Message]) -> dict[str, Any]:
         for msg in reversed(history):
             if msg.get("role") != "assistant":
                 continue
@@ -334,10 +345,43 @@ class FinanceAnswerReward:
                     args = json.loads(raw) if isinstance(raw, str) else raw
                 except (TypeError, json.JSONDecodeError):
                     args = {}
-                answer = str(args.get("answer", "")).strip() if isinstance(args, dict) else ""
+                if not isinstance(args, dict):
+                    continue
+                answer = str(args.get("answer_text") or args.get("answer") or "").strip()
                 if answer:
-                    return answer
-        return ""
+                    return {
+                        "answer": answer,
+                        "answer_type": str(args.get("answer_type", "text")),
+                        "value": str(args.get("value", "")),
+                        "unit": str(args.get("unit", "")),
+                        "scale": str(args.get("scale", "")),
+                        "decision": str(args.get("decision", "")),
+                        "citations": args.get("citations", []),
+                        "calc_id": str(args.get("calc_id", "")),
+                        "evidence_document": str(args.get("evidence_document", "")).strip(),
+                        "evidence_page": int(args.get("evidence_page", -1) or -1),
+                    }
+        return {}
+
+    @staticmethod
+    def _finish_answer(history: list[Message]) -> str:
+        return str(FinanceAnswerReward._finish_submission(history).get("answer", ""))
+
+    @staticmethod
+    def _citation_seen(trace: list[dict], document_id: str, page: int) -> bool:
+        if not document_id and page < 1:
+            return True
+        for item in trace:
+            if item.get("role") != "tool":
+                continue
+            content = str(item.get("content", ""))
+            if document_id and document_id.lower() not in content.lower():
+                continue
+            if page < 1:
+                return True
+            if re.search(rf"(?:page(?:_start|_end)?|pages)=?\s*[-:]?\s*{page}(?:\D|$)", content, re.I):
+                return True
+        return False
 
     @staticmethod
     def _history_trace(history: list[Message]) -> list[dict]:
@@ -411,10 +455,13 @@ class FinanceAnswerReward:
             "judge_numeric_ok": 0.0,
             "judge_error_flag": 0.0,
             "hard_gate_veto": 0.0,
+            "citation_present": 0.0,
+            "citation_valid": 1.0,
         }
 
     async def __call__(self, history: list[Message]) -> tuple[float, dict[str, Any]]:
-        submitted = self._finish_answer(history)
+        submission = self._finish_submission(history)
+        submitted = str(submission.get("answer", ""))
         used_finish = 1.0 if submitted else 0.0
         if self.require_finish and not submitted:
             final = next((m for m in reversed(history) if m.get("role") == "assistant"), None)
@@ -445,7 +492,18 @@ class FinanceAnswerReward:
                 config=self.reward_config,
             )
             evidence, evidence_parts = hb.score_evidence(gold, text, trace)
-            grounded = reward_formula(quality, evidence)
+            citation_document = str(submission.get("evidence_document", ""))
+            citation_page = int(submission.get("evidence_page", -1) or -1)
+            citation_present = float(bool(citation_document or citation_page >= 1))
+            citation_valid = float(self._citation_seen(trace, citation_document, citation_page))
+            if citation_present and not citation_valid:
+                evidence = 0.0
+                evidence_parts["citation_valid"] = 0.0
+            else:
+                evidence_parts["citation_valid"] = 1.0
+            evidence_parts["citation_present"] = citation_present
+            citation_veto = bool(citation_present and not citation_valid)
+            grounded = 0.0 if citation_veto else reward_formula(quality, evidence)
             candidates.append({
                 "quality": quality,
                 "deterministic_quality": deterministic_quality,
@@ -454,6 +512,9 @@ class FinanceAnswerReward:
                 "evidence": evidence,
                 "evidence_parts": evidence_parts,
                 "grounded": grounded,
+                "citation_present": citation_present,
+                "citation_valid": citation_valid,
+                "citation_veto": float(citation_veto),
             })
         best = max(candidates, key=lambda item: item["grounded"], default={})
         answer_parts = best.get("answer_parts", {})
@@ -482,6 +543,9 @@ class FinanceAnswerReward:
             "finish_missing": 0.0,
             "finish_penalty": 0.0,
             "answer_nonempty": 1.0,
+            "citation_present": float(evidence_parts.get("citation_present", 0.0)),
+            "citation_valid": float(evidence_parts.get("citation_valid", 1.0)),
+            "citation_veto": float(best.get("citation_veto", 0.0)),
         }
         for key, value in judge_parts.items():
             if key.startswith("judge_") and isinstance(value, (int, float, bool)):

@@ -13,6 +13,7 @@ from datetime import datetime
 sys.path.insert(0, os.path.dirname(__file__))
 from tinker_cookbook import cli_utils
 from tinker_cookbook.rl import train
+from tinker_cookbook.rl.rollout_limits import TerminationRewardPolicy
 import finance_env
 
 BASE_MODEL = os.environ.get("MODEL", "nvidia/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-BF16")
@@ -61,6 +62,7 @@ async def main():
     lora_rank = int(os.environ.get("LORA_RANK", "32"))
     temperature = float(os.environ.get("TEMPERATURE", "1.0"))
     compute_post_kl = os.environ.get("COMPUTE_POST_KL", "false").strip().lower() in {"1", "true", "yes", "on"}
+    zero_reward_on_limit = os.environ.get("ZERO_REWARD_ON_LIMIT", "true").strip().lower() in {"1", "true", "yes", "on"}
     split_name = os.environ.get("SPLIT_NAME", "train96")
     renderer = os.environ.get("RENDERER", "nemotron3_ultra")
     seed = int(os.environ.get("SEED", "0"))
@@ -93,6 +95,7 @@ async def main():
         "lora_rank": lora_rank,
         "temperature": temperature,
         "compute_post_kl": compute_post_kl,
+        "zero_reward_on_limit": zero_reward_on_limit,
         "seed": seed,
         "harness": "structured_sparse_agent_v2_grounded_reward",
         "reward_contract": {"answer_primary": True, "evidence_grounding": True, "finish_bonus": False, "format_penalty": False, "finish_required": finance_env.RewardConfig.from_env().require_finish},

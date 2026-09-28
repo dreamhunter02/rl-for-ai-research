@@ -111,6 +111,21 @@ def answer_reward(text: str, gold: str) -> float:
     return hb.reward(gold, text)
 
 
+def score_record(rec: dict[str, Any], row: dict[str, Any], judge=None) -> dict[str, Any]:
+    """Apply the same strict finish/evidence scorer used by training."""
+    trace = rec.get("trace") or rec.get("messages") or []
+    strict, metrics = asyncio.run(fe.FinanceAnswerReward(
+        gold_answers=[row["answer"][0]],
+        question=row["question"],
+        judge=judge,
+        reward_config=fe.RewardConfig.from_env(),
+    )(trace))
+    rec["ungated_answer_reward"] = answer_reward(rec.get("answer_text", ""), row["answer"][0])
+    rec["reward"] = strict
+    rec["metrics"] = metrics
+    return rec
+
+
 def extract_call(text: str) -> tuple[str, dict[str, Any]] | None:
     block = re.search(r"<tool_call>\s*(.*?)\s*</tool_call>", text or "", re.S)
     body = block.group(1).strip() if block else (text or "")
@@ -253,13 +268,15 @@ def main() -> None:
         raise SystemExit("OPENAI_API_KEY is not available in the environment or Hermes .env")
     rows = rows_for_eval(args.limit, args.split)
     index = hb.build_index()
+    judge = fe.build_judge(fe.RewardConfig.from_env())
     Path(args.out).parent.mkdir(parents=True, exist_ok=True)
     records = []
     runner = run_openai if args.backend == "openai" else run_tinker
     for i, row in enumerate(rows, 1):
         try:
             rec = runner(index, row, args.model, args.max_turns) if args.backend == "openai" else runner(index, row, args.model, args.project, args.max_turns, model_path=args.model_path, renderer_name=args.renderer or None)
-            rec.update({"financebench_id": row["financebench_id"], "question": row["question"], "gold": row["answer"][0], "split": args.split, "reward": answer_reward(rec.get("answer_text", ""), row["answer"][0])})
+            rec.update({"financebench_id": row["financebench_id"], "question": row["question"], "gold": row["answer"][0], "split": args.split})
+            rec = score_record(rec, row, judge=judge)
         except Exception as exc:
             rec = {"backend": args.backend, "model": args.model, "financebench_id": row["financebench_id"], "question": row["question"], "gold": row["answer"][0], "error": repr(exc), "reward": 0.0}
         records.append(rec)
