@@ -1,4 +1,6 @@
-# FinanceBench × Nemotron 3.5 Lightning completion report
+# Historical FinanceBench completion report — superseded by September 28 review
+
+**Correction:** E0/E1 did not cover the reproduced scorer, citation and live-grounding bugs. The 5/42 classification below is an old-scorer output, not verified grounded accuracy. Strong/weak evidence extraction was zero throughout the recorded pilot. Do not use it to conclude that the intended GRPO reward failed. See `docs/REVIEW_FIXES.md`; raw runs remain unchanged for reproducibility.
 
 Protocol: `2026-09-27-repaired-v1`  
 Model: `nvidia/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-BF16`  
@@ -23,7 +25,7 @@ The minimal validated E2 run is `e2_minimal_validated_lr1e-5_20260927/`: 3 optim
 | checkpoint stage | train mean total reward | dev mean total reward | dev finish rate |
 |---|---:|---:|---:|
 | initial / iteration 0 | 0.01875 | 0.16458 | 0.4167 |
-| after update 1 | 0.09688 | 0.11458 | 0.3636 |
+| after update 1 | 0.09688 | 0.11458 | 0.3333 |
 | after update 2 | 0.07500 | 0.16458 | 0.4167 |
 
 These 12-question dev measurements show no controlled improvement over the initial repaired-base sample. Training reward increased in one update while dev reward fell, so reward increase is not reported as learning. No final R1 checkpoint was selected and no eval42 GRPO claim is made.
@@ -45,3 +47,5 @@ The old `results/local_eval/nemotron35_base_eval42_corrected_v1.json` is legacy 
 - source implementation under `harness/`
 
 All result files are intended to be reproducible artifacts; credentials, API keys, tokens, and connection strings are not included.
+
+Denominator correction: update 1 has four finishes across twelve scheduled questions; the historical aggregate omitted one missing metric. The third-update checkpoint was not evaluated in these committed summaries. New training evaluates its final checkpoint explicitly.

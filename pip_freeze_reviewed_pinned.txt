@@ -1,0 +1,8 @@
+matplotlib==3.11.2
+pypdf==6.19.0
+tinker==0.30.4
+tinker_cookbook @ git+https://github.com/thinking-machines-lab/tinker-cookbook.git@5d6e1eb9ffb0328771bdec97a95eb509e84d43f1
+tml-renderers==0.1.0
+tokenizers==0.22.2
+torch==2.14.0
+transformers==5.5.4

@@ -1,5 +1,8 @@
 # FinanceBench agentic GRPO
 
+
+**September 28 review correction:** the recorded E0/E1 gate claims and 5/42 grounded-accuracy classification are provisional because review reproduced reward and grounding bugs. Apply the validated-target workflow in [docs/REVIEW_FIXES.md](docs/REVIEW_FIXES.md); historical results are diagnostics, not corrected benchmark evidence.
+
 This repository contains the reproducible FinanceBench retrieval harness, teacher-trace artifacts, baseline evaluations, Unsloth/TRL smoke tests, and the minimal FinanceBench-to-LoRA optimizer-step bridge.
 
 The corpus PDFs, extracted text, page-cache index, large Tinker run logs, and generated adapter weights are intentionally excluded from GitHub. They are local or regenerable artifacts; the tracked JSONL traces and metrics preserve the experiment evidence without publishing the corpus or a large binary checkpoint.
@@ -8,7 +11,7 @@ The corpus PDFs, extracted text, page-cache index, large Tinker run logs, and ge
 
 `NEMOTRON_FINANCEBENCH_GRPO_EXECUTION_BRIEF-3.md` is the authoritative execution contract for the ICAIF RL4LLM-Agents workshop study. It supersedes the earlier direct-full-run plan and defines the causal comparison `B0` (base/original harness), `B1` (base/repaired harness), and `R1` (GRPO/repaired harness), with optional SFT and retrieval-shaping arms kept separate.
 
-The repaired protocol is recorded in `results/paper_2026_rl4llm_agents/protocol.md`, the exact 96/12/42 split IDs in `split_manifest.json`, and the E0 preflight in `e0_preflight.json`. Current status: 32 tests passing, E0/E1 passed, B1 repaired-base eval42 completed with `5/42` correct-and-finished grounded answers (`11.90%`), and the minimal E2 pilot found no dev improvement; therefore the large R1 run is correctly gated rather than overstated.
+The repaired protocol is recorded in `results/paper_2026_rl4llm_agents/protocol.md`, the exact 96/12/42 split IDs in `split_manifest.json`, and the E0 preflight in `e0_preflight.json`. Historical status at f29df1a: the old suite passed and a base/pilot run completed. Subsequent review invalidated the scorer/grounding gates; rerun B1 and the pilot under the corrected evaluator before making accuracy or learning claims.
 
 ## Current status: Reward-v2 FinanceBench GRPO review (2026-09-27)
 

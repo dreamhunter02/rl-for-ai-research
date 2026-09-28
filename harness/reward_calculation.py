@@ -141,7 +141,7 @@ class DeepSeekJudge:
 
     def _cache_key(self, question: str, gold: str, candidate: str, evidence: str) -> str:
         payload = json.dumps(
-            {"model": self.config.judge_model, "question": question, "gold": gold, "candidate": candidate, "evidence": evidence},
+            {"prompt_version": "workshop-semantic-v1", "model": self.config.judge_model, "question": question, "gold": gold, "candidate": candidate, "evidence": evidence},
             sort_keys=True,
             ensure_ascii=False,
         ).encode("utf-8")
@@ -295,7 +295,7 @@ def build_judge(config: RewardConfig | None = None) -> DeepSeekJudge | None:
     return DeepSeekJudge(config)
 
 
-def _numeric_or_decision_hard_veto(gold: str, candidate: str, question: str = "") -> tuple[bool, str]:
+def _numeric_or_decision_hard_veto(gold: str, candidate: str) -> tuple[bool, str]:
     """Reject only confirmed contradictions; leave paraphrase residuals to the judge.
 
     Gold answers often contain supporting numbers that are not the requested answer
@@ -309,10 +309,10 @@ def _numeric_or_decision_hard_veto(gold: str, candidate: str, question: str = ""
     candidate_decision = hb._decision(candidate)
     if gold_decision is not None and candidate_decision is not None and gold_decision != candidate_decision:
         return True, "decision_mismatch"
-    gold_numbers = [x for x in hb._mentions_for_question(gold, question) if not hb._is_year(x[0])]
-    candidate_numbers = [x for x in hb._mentions_for_question(candidate, question) if not hb._is_year(x[0])]
+    gold_numbers = [x for x in hb._number_mentions(gold) if not hb._is_year(x[0])]
+    candidate_numbers = [x for x in hb._number_mentions(candidate) if not hb._is_year(x[0])]
     if gold_numbers and candidate_numbers:
-        number_match, matched = hb._numbers_match(gold, candidate, question)
+        number_match, matched = hb._numbers_match(gold, candidate)
         if not number_match and matched == 0:
             # A percent-vs-amount mismatch may be a derived equivalent (for
             # example, 82% versus $416.4M); leave that residual to the judge.
@@ -321,16 +321,14 @@ def _numeric_or_decision_hard_veto(gold: str, candidate: str, question: str = ""
             if gold_pct == candidate_pct:
                 # Concise same-unit numeric answers are explicit enough for a
                 # deterministic veto; verbose answers may contain paraphrases.
-                answer_tokens = hb._answer_tokens(candidate)
-                if len(answer_tokens) <= 18:
-                    return True, "numeric_mismatch"
+                return True, "numeric_mismatch"
     return False, ""
 
 
-def _is_qualitative_residual(gold: str, candidate: str, deterministic_quality: float, question: str = "") -> bool:
-    if deterministic_quality >= 0.9:
+def _is_qualitative_residual(gold: str, candidate: str, deterministic_quality: float) -> bool:
+    if hb._norm(gold) == hb._norm(candidate):
         return False
-    if _numeric_or_decision_hard_veto(gold, candidate, question)[0]:
+    if _numeric_or_decision_hard_veto(gold, candidate)[0]:
         return False
     return True
 
@@ -350,7 +348,7 @@ async def answer_quality_with_judge(
     judge: SemanticJudge | None,
     config: RewardConfig,
 ) -> tuple[float, dict[str, Any]]:
-    deterministic, parts = hb.score_answer(gold, candidate, question=question)
+    deterministic, parts = hb.score_answer(gold, candidate)
     meta: dict[str, Any] = {
         "deterministic_quality": deterministic,
         "judge_used": 0.0,
@@ -361,11 +359,11 @@ async def answer_quality_with_judge(
         "hard_gate": "pass",
         "judge_error": "",
     }
-    veto, reason = _numeric_or_decision_hard_veto(gold, candidate, question)
+    veto, reason = _numeric_or_decision_hard_veto(gold, candidate)
     if veto:
         meta["hard_gate"] = reason
         return 0.0, meta
-    if judge is None or not question or not _is_qualitative_residual(gold, candidate, deterministic, question):
+    if judge is None or not question or not _is_qualitative_residual(gold, candidate, deterministic):
         return deterministic, meta
     meta["judge_used"] = 1.0
     try:
@@ -383,10 +381,14 @@ async def answer_quality_with_judge(
         "judge_reason": judgment.get("reason", ""),
         "judge_numeric_ok": bool(judgment.get("numeric_ok", False)),
     })
-    if judgment.get("verdict") != "entailed" or float(judgment.get("confidence", 0.0)) < config.judge_confidence_threshold:
+    if judgment.get("verdict") == "contradicted" and float(judgment.get("confidence", 0.0)) >= config.judge_confidence_threshold:
         return 0.0, meta
-    gold_has_numbers = bool([x for x in hb._mentions_for_question(gold, question) if not hb._is_year(x[0])])
-    candidate_has_numbers = bool([x for x in hb._mentions_for_question(candidate, question) if not hb._is_year(x[0])])
+    if judgment.get("verdict") != "entailed" or float(judgment.get("confidence", 0.0)) < config.judge_confidence_threshold:
+        meta["judge_unresolved"] = True
+        # Legacy diagnostic only. Workshop training uses typed targets and excludes unresolved groups.
+        return deterministic, meta
+    gold_has_numbers = bool([x for x in hb._number_mentions(gold) if not hb._is_year(x[0])])
+    candidate_has_numbers = bool([x for x in hb._number_mentions(candidate) if not hb._is_year(x[0])])
     if gold_has_numbers and candidate_has_numbers and not bool(judgment.get("numeric_ok", False)):
         meta["hard_gate"] = "judge_numeric_not_ok"
         return 0.0, meta

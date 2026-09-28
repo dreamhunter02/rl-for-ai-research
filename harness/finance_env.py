@@ -1,22 +1,23 @@
 """Tinker RL environment for the structured FinanceBench harness."""
 from __future__ import annotations
 
-import hashlib
 import json
 import os
 import random
 import re
 from collections.abc import Sequence
-from typing import Annotated
+from typing import Annotated, Any
+import math
 
 import chz
 
 from tinker_cookbook import model_info, tokenizer_utils
 from tinker_cookbook.renderers import get_renderer
 from tinker_cookbook.renderers.base import Message, Renderer
-from tinker_cookbook.rl.types import Env, EnvGroupBuilder, RLDataset, RLDatasetBuilder
+from tinker_cookbook.rl.types import Env, EnvGroupBuilder, RLDataset, RLDatasetBuilder, InitialObservationOverflow
+from tinker_cookbook.tool_use.types import ToolInput
 from tinker_cookbook.rl.rollout_limits import ParseErrorPolicy
-from tinker_cookbook.tool_use import Tool, ToolInput, ToolResult, build_agent_tool_env, simple_tool_result, tool
+from tinker_cookbook.tool_use import Tool, ToolResult, build_agent_tool_env, simple_tool_result, tool
 
 
 def _as_list(value):
@@ -30,8 +31,6 @@ class CoercingTool:
 
     def __init__(self, tool: Tool):
         self._tool = tool
-        properties = (tool.to_spec().get("parameters") or {}).get("properties") or {}
-        self._list_fields = {name for name, spec in properties.items() if spec.get("type") == "array"}
 
     @property
     def name(self):
@@ -40,32 +39,28 @@ class CoercingTool:
     def to_spec(self):
         return self._tool.to_spec()
 
-    async def run(self, call: ToolInput):
-        arguments = dict(call.arguments)
-        coerced = dict(arguments)
-        for key in self._list_fields:
-            value = coerced.get(key)
-            if not isinstance(value, str):
+    async def run(self, call):
+        raw_arguments = call.arguments if hasattr(call, "arguments") else call
+        if not isinstance(raw_arguments, dict):
+            # Let the SDK's validation wrapper return a recoverable tool error.
+            return await self._tool.run(call)
+        arguments = dict(raw_arguments)
+        schema = self.to_spec().get("parameters", {}).get("properties", {})
+        for key, value in list(arguments.items()):
+            if schema.get(key, {}).get("type") != "array" or not isinstance(value, str):
                 continue
             try:
                 parsed = json.loads(value)
-            except (TypeError, json.JSONDecodeError):
-                parsed = None
-            if isinstance(parsed, list):
-                coerced[key] = parsed
-            elif value.strip():
-                coerced[key] = [value]
-        forwarded = ToolInput(arguments=coerced, call_id=call.call_id)
-        result = await self._tool.run(forwarded)
-        # A validated finish is terminal; the environment will grade once and
-        # stop sampling instead of allowing later text to obscure submission.
-        if self.name == "finish":
-            result.should_stop = True
-        return result
+            except ValueError:
+                parsed = value
+            arguments[key] = parsed if isinstance(parsed, list) else [value]
+        return await self._tool.run(ToolInput(arguments=arguments, call_id=getattr(call, "call_id", None)))
 
 import sys
 sys.path.insert(0, os.path.dirname(__file__))
 import financebench_harness as hb
+from observations import bounded_observation, compact_hits
+from workshop_reward import EpisodeState, validate_submission, validate_target, score_submission
 from reward_calculation import RewardConfig, answer_quality_with_judge, build_judge, reward_formula
 
 FINANCE_TASK_INSTRUCTIONS = """You are a financial-filings retrieval agent.
@@ -73,7 +68,7 @@ FINANCE_TASK_INSTRUCTIONS = """You are a financial-filings retrieval agent.
 Your job is to answer the user's question using the SEC filing corpus. Search
 before answering. Start with bm25_search to identify the likely document and
 passages, then use grep_document for exact accounting terms or regexes and
-read/read_table to inspect bounded evidence. Use calculate only for arithmetic.
+read/read_table to inspect bounded evidence. Any derived numeric answer must come from calculate using named, source-backed operands. Direct extraction needs no calculation.
 You may switch documents or issue refined searches when the evidence is not
 sufficient. Do not invent values or rely on outside knowledge.
 
@@ -85,83 +80,53 @@ Available tools:
 - read_table: retrieve a table candidate with neighboring headers and footnotes
 - calculate: safe arithmetic for ratios, changes, and unit conversions
 
-When you have enough evidence, call finish exactly once. Put the complete answer in answer_text/answer, set answer_type (text, decision, scalar, percentage, currency, date, or multipart) when known, include value/unit/scale for numeric answers, cite evidence_document/evidence_page and citations, and provide calc_id for derived results. Do not stop after a search hit unless it actually resolves the question.
+When you have enough evidence, call finish exactly once. For numeric answers use
+answer_type="numeric", value as a decimal string, unit and scale; leave answer_text
+empty. For yes/no-only answers use answer_type="boolean", decision="yes" or "no".
+For text or multipart answers use answer_type="text", answer_text with all requested
+facts. Cite receipt_id, document_id and one-based page from read/grep results.
+For arithmetic, calculate accepts an expression with named variables and an operands
+object mapping each variable to value, unit, scale, metric, period, receipt_id and an
+exact quote. Include its calc_id in finish. Do not use constant-only calculations as
+support. Read beyond snippets when needed. Use the final available turn to finish;
+never continue searching when only one turn remains.
 """
 
 
 OBS_CAP = 4000
-SEARCH_SNIPPET_CHARS = 300
-MAX_SEARCH_HITS = 5
-READ_VISIBLE_CHARS = 2800
-
-
-def _compact_text(value: object, limit: int = SEARCH_SNIPPET_CHARS) -> str:
-    text = str(value or "")
-    text = re.sub(r"\s+", " ", text).strip()
-    return text[:limit]
-
-
-def _compact_hit(hit: dict, *, kind: str) -> dict:
-    """Expose only retrieval fields the model can use and cite."""
-    keys = ["document_id", "page", "score", "section", "provenance", "start", "end"]
-    if kind == "table":
-        keys += ["table_id", "title", "statement_kind", "units"]
-    else:
-        keys += ["passage_id"]
-    out = {key: hit[key] for key in keys if key in hit and hit[key] not in (None, "")}
-    out["snippet"] = _compact_text(hit.get("text", hit.get("snippet", "")))
-    return out
-
-
-def _compact_matches(matches: list[dict], limit: int = MAX_SEARCH_HITS) -> list[dict]:
-    return [
-        {key: value for key, value in {
-            "document_id": item.get("document_id"),
-            "page": item.get("page"),
-            "line": item.get("line"),
-            "provenance": item.get("provenance"),
-            "snippet": _compact_text(item.get("text", "")),
-        }.items() if value not in (None, "")}
-        for item in matches[:limit]
-    ]
-
-
-def _bound_read_payload(payload: dict) -> dict:
-    """Keep read/table responses structured while exposing a continuation cursor."""
-    out = dict(payload)
-    text = str(out.get("text", ""))
-    start = int(out.get("start", 0) or 0)
-    visible = text[:READ_VISIBLE_CHARS]
-    out["text"] = visible
-    out["end"] = start + len(visible)
-    total = int(out.get("total_chars", start + len(text)) or 0)
-    out["total_chars"] = max(total, start + len(text))
-    out["has_more"] = bool(out["end"] < out["total_chars"] or out.get("has_more", False))
-    out["next_start"] = out["end"] if out["has_more"] else None
-    if "neighbor_context" in out:
-        out["neighbor_context"] = _compact_text(out["neighbor_context"], 450)
-    return out
 
 
 def _tool_result(payload: object) -> ToolResult:
-    """Bound every tool observation without returning malformed JSON."""
-    raw = payload if isinstance(payload, str) else json.dumps(payload, ensure_ascii=False)
-    if len(raw) <= OBS_CAP:
-        return simple_tool_result(raw)
-    envelope = {
-        "truncated": True,
-        "original_chars": len(raw),
-        "content": _compact_text(raw, OBS_CAP - 120),
-        "warning": "Use the tool's pagination fields or narrower query; content was bounded by OBS_CAP.",
-    }
-    return simple_tool_result(json.dumps(envelope, ensure_ascii=False))
+    return simple_tool_result(bounded_observation(payload))
 
 
 class Bm25Tool:
     """Structured retrieval tools backed by one deterministic corpus index."""
 
-    def __init__(self, index: hb.StructuredIndex):
+    def __init__(self, index: hb.StructuredIndex, max_turns: int = 8):
         self.index = index
+        self.max_turns = max_turns
+        self.state = EpisodeState()
+
+    def _result(self, payload, name="", should_stop=False):
+        payload = dict(payload)
+        remaining = max(0, self.max_turns - self.state.turn)
+        payload["turns_remaining"] = remaining
+        if remaining == 1: payload["next_action"] = "Next turn must be finish."
+        if name in ("read", "read_table") and "text" in payload:
+            payload["receipt_id"] = f"r{len(self.state.receipts)+1}"
+        if name == "grep_document":
+            for i, hit in enumerate(payload.get("matches", []), 1):
+                hit["receipt_id"] = f"r{len(self.state.receipts)+i}"
+                hit["text"] = hit.get("text", "")[:500]
+        raw = bounded_observation(payload)
+        delivered = json.loads(raw)
+        if name in ("read", "read_table") and delivered.get("receipt_id"):
+            self.state.record(name, delivered)
+        if name == "grep_document":
+            for hit in delivered.get("matches", []): self.state.record(name, hit)
+        self.state.observations.append({"name": name, "payload": delivered, "visible_chars": len(raw)})
+        return simple_tool_result(raw, should_stop=should_stop)
 
     @staticmethod
     async def build(max_docs: int | None = None, doc_names: list[str] | None = None) -> "Bm25Tool":
@@ -179,19 +144,18 @@ class Bm25Tool:
         top_k: Annotated[int, "Maximum results to return."] = 3,
     ) -> ToolResult:
         filters = {"company": company, "year": year, "filing_type": filing_type, "document_id": document_id}
-        top_k = max(1, min(int(top_k), 8))
+        top_k = max(1, min(int(top_k), 5))
         scope = (scope or "both").lower()
         out: dict[str, object] = {"queries": query_list, "filters": filters}
-        prose = self.index.search_prose(query_list, filters, top_k) if scope in ("prose", "both") else []
-        tables = self.index.search_tables(query_list, filters, top_k) if scope in ("tables", "table", "both") else []
-        ranked = [(float(item.get("score", 0.0)), "prose", item) for item in prose]
-        ranked += [(float(item.get("score", 0.0)), "table", item) for item in tables]
-        ranked.sort(key=lambda item: item[0], reverse=True)
-        selected = ranked[:MAX_SEARCH_HITS]
-        out["prose_hits"] = [_compact_hit(item, kind="prose") for _, kind, item in selected if kind == "prose"]
-        out["table_hits"] = [_compact_hit(item, kind="table") for _, kind, item in selected if kind == "table"]
-        out["returned_hits"] = len(selected)
-        return _tool_result(out)
+        if scope in ("prose", "both"):
+            out["prose_hits"] = self.index.search_prose(query_list, filters, top_k)
+        if scope in ("tables", "table", "both"):
+            out["table_hits"] = self.index.search_tables(query_list, filters, top_k)
+        combined = [(k, h) for k in ("prose_hits", "table_hits") for h in out.get(k, [])]
+        combined.sort(key=lambda x: x[1].get("score", 0), reverse=True)
+        for k in ("prose_hits", "table_hits"):
+            if k in out: out[k] = compact_hits([h for key, h in combined[:top_k] if key == k], query_list)
+        return self._result(out, "bm25_search")
 
     @tool
     async def grep_document(
@@ -204,7 +168,7 @@ class Bm25Tool:
         grep_type: Annotated[str, "Backend choice: text, pdfgrep, or rga."] = "text",
     ) -> ToolResult:
         result = self.index.grep_document(document_id, patterns, page_start, page_end, context_lines)
-        return _tool_result({"grep_type_requested": grep_type, "backend_used": "page_text", "matches": _compact_matches(result), "returned_matches": min(len(result), MAX_SEARCH_HITS)})
+        return self._result({"grep_type_requested": grep_type, "backend_used": "page_text", "matches": result}, "grep_document")
 
     @tool
     async def search_tables(
@@ -216,8 +180,8 @@ class Bm25Tool:
         top_k: Annotated[int, "Maximum table candidates."] = 3,
     ) -> ToolResult:
         filters = {"document_id": document_id, "company": company, "year": year}
-        hits = self.index.search_tables(query_list, filters, max(1, min(int(top_k), MAX_SEARCH_HITS)))
-        return _tool_result({"queries": query_list, "table_hits": [_compact_hit(item, kind="table") for item in hits[:MAX_SEARCH_HITS]], "returned_hits": min(len(hits), MAX_SEARCH_HITS)})
+        hits = self.index.search_tables(query_list, filters, max(1, min(int(top_k), 8)))
+        return self._result({"queries": query_list, "table_hits": compact_hits(hits, query_list)}, "search_tables")
 
     @tool
     async def read(
@@ -225,51 +189,56 @@ class Bm25Tool:
         document_id: Annotated[str, "Exact document_id."],
         page: Annotated[int, "One-based page number, or -1 when using passage_id."] = -1,
         start: Annotated[int, "Character start within the selected page/window."] = 0,
-        end: Annotated[int, "Character end; bounded by the harness."] = hb.MAX_READ,
+        end: Annotated[int, "Absolute character end, or -1 for the next bounded window."] = -1,
         passage_id: Annotated[str, "Optional passage_id returned by search."] = "",
     ) -> ToolResult:
-        return _tool_result(_bound_read_payload(self.index.read(document_id, page, start, end, passage_id)))
+        return self._result(self.index.read(document_id, page, start, None if end < 0 else end, passage_id), "read")
 
     @tool
     async def read_table(
         self,
         table_id: Annotated[str, "Exact table_id returned by search_tables."],
-        include_neighbors: Annotated[bool, "Include nearby page context for headers and footnotes."] = True,
-        start: Annotated[int, "Character start within the table body."] = 0,
-        end: Annotated[int, "Character end; bounded by the harness."] = hb.MAX_READ,
+        include_neighbors: Annotated[bool, "Return neighbor page identifiers for headers and footnotes."] = True,
+        start: Annotated[int, "Character offset within table page."] = 0,
+        end: Annotated[int, "Absolute end, or -1 for the next bounded table window."] = -1,
     ) -> ToolResult:
-        return _tool_result(_bound_read_payload(self.index.read_table(table_id, include_neighbors, start, end)))
+        return self._result(self.index.read_table(table_id, include_neighbors, start, None if end < 0 else end), "read_table")
 
     @tool
     async def calculate(
         self,
-        expression: Annotated[str, "Basic arithmetic expression using numbers and + - * / % **."],
+        expression: Annotated[str, "Arithmetic using named source-backed operands and + - * /."],
+        operands: Annotated[dict[str, Any], "Variable to value/unit/scale/metric/period/receipt_id/quote mapping."] = {},
     ) -> ToolResult:
         try:
-            value = hb.calculate(expression)
-            calc_id = hashlib.sha256(f"{expression}={value}".encode()).hexdigest()[:16]
-            return _tool_result({"expression": expression, "value": value, "calc_id": calc_id, "operands_source_backed": False})
+            return self._result(self.state.calculate(expression, operands), "calculate")
         except Exception as exc:
-            return _tool_result({"error": str(exc)})
-
+            return self._result({"error": str(exc)}, "calculate")
 
     @tool
     async def finish(
         self,
-        answer: Annotated[str, "Compatibility alias for the complete final answer."] = "",
-        evidence_document: Annotated[str, "Primary evidence document identifier, if known."] = "",
-        evidence_page: Annotated[int, "Primary evidence page, or -1 when unknown."] = -1,
-        answer_type: Annotated[str, "text, decision, scalar, percentage, currency, date, or multipart."] = "text",
-        value: Annotated[str, "Typed requested value, preserving zero and sign."] = "",
-        unit: Annotated[str, "Currency or measurement unit."] = "",
-        scale: Annotated[str, "thousand, million, billion, or empty."] = "",
-        decision: Annotated[str, "yes/no or other requested decision."] = "",
-        answer_text: Annotated[str, "Preferred complete final answer text."] = "",
-        citations: Annotated[list[str], "Exact provenance identifiers used in the answer."] = [],
-        calc_id: Annotated[str, "Calculation receipt identifier for derived results."] = "",
+        answer_type: Annotated[str, "numeric, boolean, or text"],
+        value: Annotated[str, "Single decimal numeric answer; no units here."] = "",
+        unit: Annotated[str, "USD, EUR, percent, ratio, shares, or number."] = "",
+        scale: Annotated[str, "ones, thousand, million, or billion."] = "",
+        decision: Annotated[str, "yes or no for boolean answers."] = "",
+        answer_text: Annotated[str, "Text/multipart answer; empty for numeric and boolean."] = "",
+        citations: Annotated[list[dict[str, Any]], "Each contains receipt_id, document_id and one-based page."] = [],
+        calc_id: Annotated[str, "Calculation record for a derived numeric result."] = "",
     ) -> ToolResult:
-        final_text = answer_text.strip() or answer.strip()
-        return _tool_result({"finish": True, "answer": final_text, "answer_text": final_text, "answer_type": answer_type, "value": value, "unit": unit, "scale": scale, "decision": decision, "evidence_document": evidence_document, "evidence_page": evidence_page, "citations": citations, "calc_id": calc_id})
+        if self.state.accepted is not None or self.state.terminal_ambiguous:
+            self.state.accepted = None
+            self.state.terminal_ambiguous = True
+            self.state.validation_errors += 1
+            return self._result({"error": "Multiple terminal submissions are ambiguous"}, "finish", True)
+        try:
+            self.state.accepted = validate_submission(dict(answer_type=answer_type, value=value, unit=unit,
+                scale=scale, decision=decision, answer_text=answer_text, citations=citations, calc_id=calc_id))
+        except ValueError as exc:
+            self.state.validation_errors += 1
+            return self._result({"error": str(exc)}, "finish")
+        return self._result({"finish": True, "accepted": self.state.accepted}, "finish", True)
 
 
 def _company_name(doc_name: str) -> str:
@@ -315,7 +284,11 @@ class FinanceAnswerReward:
         judge=None,
         reward_config: RewardConfig | None = None,
         require_finish: bool = True,
+        episode_state=None,
+        target=None,
     ):
+        self.episode_state = episode_state
+        self.target = target
         self.gold_answers = gold_answers
         self.question = question
         self.format_coef = format_coef
@@ -324,7 +297,7 @@ class FinanceAnswerReward:
         self.require_finish = require_finish
 
     @staticmethod
-    def _finish_submission(history: list[Message]) -> dict[str, Any]:
+    def _finish_answer(history: list[Message]) -> str:
         for msg in reversed(history):
             if msg.get("role") != "assistant":
                 continue
@@ -345,49 +318,10 @@ class FinanceAnswerReward:
                     args = json.loads(raw) if isinstance(raw, str) else raw
                 except (TypeError, json.JSONDecodeError):
                     args = {}
-                if not isinstance(args, dict):
-                    continue
-                answer = str(args.get("answer_text") or args.get("answer") or "").strip()
+                answer = str(args.get("answer", "")).strip() if isinstance(args, dict) else ""
                 if answer:
-                    try:
-                        evidence_page = int(args.get("evidence_page", -1) or -1)
-                    except (TypeError, ValueError):
-                        # Multiple alternatives or non-integral page fields are
-                        # validation failures, never a reason to crash rollout.
-                        continue
-                    return {
-                        "answer": answer,
-                        "answer_type": str(args.get("answer_type", "text")),
-                        "value": str(args.get("value", "")),
-                        "unit": str(args.get("unit", "")),
-                        "scale": str(args.get("scale", "")),
-                        "decision": str(args.get("decision", "")),
-                        "citations": args.get("citations", []),
-                        "calc_id": str(args.get("calc_id", "")),
-                        "evidence_document": str(args.get("evidence_document", "")).strip(),
-                        "evidence_page": evidence_page,
-                    }
-        return {}
-
-    @staticmethod
-    def _finish_answer(history: list[Message]) -> str:
-        return str(FinanceAnswerReward._finish_submission(history).get("answer", ""))
-
-    @staticmethod
-    def _citation_seen(trace: list[dict], document_id: str, page: int) -> bool:
-        if not document_id and page < 1:
-            return True
-        for item in trace:
-            if item.get("role") != "tool":
-                continue
-            content = str(item.get("content", ""))
-            if document_id and document_id.lower() not in content.lower():
-                continue
-            if page < 1:
-                return True
-            if re.search(rf"(?:page(?:_start|_end)?|pages)\s*[\"']?\s*[:=]\s*{page}(?:\D|$)", content, re.I) or re.search(rf"(?:page(?:_start|_end)?|pages)=?\s*[-:]?\s*{page}(?:\D|$)", content, re.I):
-                return True
-        return False
+                    return answer
+        return ""
 
     @staticmethod
     def _history_trace(history: list[Message]) -> list[dict]:
@@ -461,143 +395,55 @@ class FinanceAnswerReward:
             "judge_numeric_ok": 0.0,
             "judge_error_flag": 0.0,
             "hard_gate_veto": 0.0,
-            "citation_present": 0.0,
-            "citation_valid": 1.0,
         }
 
     async def __call__(self, history: list[Message]) -> tuple[float, dict[str, Any]]:
-        submission = self._finish_submission(history)
-        submitted = str(submission.get("answer", ""))
-        used_finish = 1.0 if submitted else 0.0
-        if self.require_finish and not submitted:
-            final = next((m for m in reversed(history) if m.get("role") == "assistant"), None)
-            nonempty = float(bool(_message_text(final).strip())) if final is not None else 0.0
-            return 0.0, self._empty_metrics(used_finish=used_finish, answer_nonempty=nonempty, finish_missing=1.0)
-        if submitted:
-            text = submitted
-            formatted = 1.0
-        else:
-            final = next((m for m in reversed(history) if m.get("role") == "assistant"), None)
-            text = _message_text(final) if final is not None else ""
-            formatted = float(bool(re.search(r"^\s*Answer:\s*", text, re.I | re.M)))
-        if not text.strip():
-            return 0.0, self._empty_metrics(used_finish=used_finish, answer_nonempty=0.0, finish_missing=0.0)
-
-        trace = self._history_trace(history)
-        strong_text, weak_text = hb._trace_evidence_text(trace)
-        judge_evidence = "\n".join(x for x in (strong_text, weak_text) if x)
-        candidates: list[dict[str, Any]] = []
-        for gold in self.gold_answers:
-            deterministic_quality, answer_parts = hb.score_answer(gold, text, question=self.question)
-            quality, judge_parts = await answer_quality_with_judge(
-                question=self.question,
-                gold=gold,
-                candidate=text,
-                evidence=judge_evidence,
-                judge=self.judge,
-                config=self.reward_config,
-            )
-            evidence, evidence_parts = hb.score_evidence(gold, text, trace, question=self.question)
-            citation_document = str(submission.get("evidence_document", ""))
-            citation_page = int(submission.get("evidence_page", -1) or -1)
-            citation_present = float(bool(citation_document or citation_page >= 1))
-            citation_valid = float(self._citation_seen(trace, citation_document, citation_page))
-            if citation_present and not citation_valid:
-                evidence = 0.0
-                evidence_parts["citation_valid"] = 0.0
-            else:
-                evidence_parts["citation_valid"] = 1.0
-            evidence_parts["citation_present"] = citation_present
-            citation_veto = bool(citation_present and not citation_valid)
-            grounded = 0.0 if citation_veto else reward_formula(quality, evidence)
-            candidates.append({
-                "quality": quality,
-                "deterministic_quality": deterministic_quality,
-                "answer_parts": answer_parts,
-                "judge_parts": judge_parts,
-                "evidence": evidence,
-                "evidence_parts": evidence_parts,
-                "grounded": grounded,
-                "citation_present": citation_present,
-                "citation_valid": citation_valid,
-                "citation_veto": float(citation_veto),
-            })
-        best = max(candidates, key=lambda item: item["grounded"], default={})
-        answer_parts = best.get("answer_parts", {})
-        judge_parts = best.get("judge_parts", {})
-        evidence_parts = best.get("evidence_parts", {})
-        trace_calls = sum(len(item.get("tool_calls") or []) for item in trace if item.get("role") == "assistant")
-        trace_tool_messages = sum(item.get("role") == "tool" for item in trace)
-        metrics: dict[str, Any] = {
-            "format": formatted,
-            "correct": float(best.get("quality", 0.0)),
-            "quality": float(best.get("grounded", 0.0)),
-            "answer_quality": float(best.get("quality", 0.0)),
-            "deterministic_answer_quality": float(best.get("deterministic_quality", 0.0)),
-            "evidence_quality": float(best.get("evidence", 0.0)),
-            "grounded_quality": float(best.get("grounded", 0.0)),
-            "conclusion": float(answer_parts.get("conclusion", 0.0)),
-            "details": float(answer_parts.get("details", 0.0)),
-            "strong_source": float(evidence_parts.get("strong_source", 0.0)),
-            "trace_messages": float(len(trace)),
-            "trace_tool_calls": float(trace_calls),
-            "trace_tool_messages": float(trace_tool_messages),
-            "trace_strong_chars": float(len(strong_text)),
-            "trace_weak_chars": float(len(weak_text)),
-            "used_finish": used_finish,
-            "finish_gate": 1.0,
-            "finish_missing": 0.0,
-            "finish_penalty": 0.0,
-            "answer_nonempty": 1.0,
-            "citation_present": float(evidence_parts.get("citation_present", 0.0)),
-            "citation_valid": float(evidence_parts.get("citation_valid", 1.0)),
-            "citation_veto": float(best.get("citation_veto", 0.0)),
-        }
-        for key, value in judge_parts.items():
-            if key.startswith("judge_") and isinstance(value, (int, float, bool)):
-                metrics[key] = float(value)
-            elif key == "semantic_length_factor" and isinstance(value, (int, float, bool)):
-                metrics[key] = float(value)
-        metrics["judge_entailment"] = float(judge_parts.get("judge_verdict") == "entailed")
-        metrics["judge_error_flag"] = float(bool(judge_parts.get("judge_error")))
-        metrics["hard_gate_veto"] = float(judge_parts.get("hard_gate", "pass") != "pass")
-        return float(best.get("grounded", 0.0)), metrics
-
-def _repaired_train_dev_rows(rows: list[dict]) -> tuple[list[dict], list[dict]]:
-    """Reserve 12 stable, document-diverse development questions from train."""
-    ordered = sorted(rows, key=lambda row: (str(row.get("doc_name", "")), str(row.get("financebench_id", ""))))
-    selected: list[dict] = []
-    seen_docs: set[str] = set()
-    for row in ordered:
-        doc = str(row.get("doc_name", ""))
-        if doc not in seen_docs:
-            selected.append(row)
-            seen_docs.add(doc)
-        if len(selected) == 12:
-            break
-    if len(selected) < 12:
-        selected_ids = {row.get("financebench_id") for row in selected}
-        selected.extend(row for row in ordered if row.get("financebench_id") not in selected_ids)[: 12 - len(selected)]
-    dev_ids = {row.get("financebench_id") for row in selected}
-    return [row for row in rows if row.get("financebench_id") not in dev_ids], selected
-
+        if self.target is not None:
+            state = self.episode_state
+            result = score_submission(self.target, state.accepted, state, float(os.environ.get("RETRIEVAL_WEIGHT", "0")))
+            if result["unresolved"] and self.judge is not None and state.accepted:
+                try:
+                    verdict = await self.judge.judge(question=self.question,
+                        gold=json.dumps(self.target.get("required_facts") or self.target.get("aliases", [])),
+                        candidate=state.accepted.get("answer_text", ""),
+                        evidence="\n".join(r.get("text", "") for r in state.receipts.values()))
+                    confidence = float(verdict.get("confidence", 0))
+                    if confidence >= self.reward_config.judge_confidence_threshold and (verdict.get("verdict") == "contradicted" or (verdict.get("verdict") == "entailed" and verdict.get("numeric_ok") is True)):
+                        result["A"] = float(verdict["verdict"] == "entailed")
+                        result["unresolved"] = False
+                        result["correct"] = int(result["A"] == 1)
+                        result["grounded_success"] = int(result["correct"] and result["G"] == 1)
+                        weight = float(os.environ.get("RETRIEVAL_WEIGHT", "0"))
+                        result["reward"] = 0.0 if result["fabricated_citation"] else (1-weight)*result["A"]*(0.5+0.5*result["G"])+weight*result["Ret"]
+                    result["judge_verdict"] = verdict.get("verdict", "ambiguous")
+                except Exception as exc:
+                    result["judge_error"] = type(exc).__name__
+            state.last_score = result
+            return result["reward"], {k: float(v) for k, v in result.items() if isinstance(v, (int, float, bool))}
+        raise ValueError("Reviewed target and per-episode state are required; use historical scorers only for diagnostics")
 
 def load_financebench(split_name: str = "train") -> list[dict]:
-    """Load frozen splits plus the deterministic repaired 96/12 train/dev split."""
-    split_path = hb.BASE / "split.json"
+    """Load the frozen split, keeping held-out eval isolated from training."""
+    split_path = __import__("pathlib").Path(os.environ.get("FINANCEBENCH_SPLIT", str(hb.BASE / "split.json")))
     if split_path.exists():
         split = json.loads(split_path.read_text())
-        rows = split.get("train", []) if split_name in {"train96", "dev"} else split.get(split_name, [])
+        split_name = "train" if split_name == "train96" else split_name
+        if split_name not in split:
+            raise ValueError(f"Split {split_name!r} missing from {split_path}")
+        rows = split[split_name]
     else:
-        rows = [json.loads(line) for line in (hb.DATA / "financebench_merged.jsonl").read_text().splitlines()]
-    if split_name in {"train96", "dev"}:
-        train_rows, dev_rows = _repaired_train_dev_rows(rows)
-        rows = train_rows if split_name == "train96" else dev_rows
+        raise FileNotFoundError(f"Frozen split required: {split_path}")
+    target_path = os.environ.get("FINANCEBENCH_TARGETS")
+    targets = json.loads(__import__("pathlib").Path(target_path).read_text()) if target_path else {}
     out = []
     for row in rows:
         answer = str(row.get("answer") or "").strip()
         if not answer:
             continue
+        qid = row.get("financebench_id", "")
+        if target_path:
+            if qid not in targets: raise ValueError(f"Missing reviewed target for {qid}")
+            validate_target(targets[qid])
         out.append({
             "question": _format_question(row),
             "answer": [answer],
@@ -605,6 +451,8 @@ def load_financebench(split_name: str = "train") -> list[dict]:
             "company": row.get("company", ""),
             "financebench_id": row.get("financebench_id", ""),
             "evidence": row.get("evidence", []),
+            "target": targets.get(qid),
+            "split": split_name,
         })
     return out
 
@@ -620,7 +468,7 @@ def _initial_messages(datum: dict, renderer: Renderer, tool_obj: Bm25Tool) -> li
 
 
 class FinanceSearchEnvGroupBuilder(EnvGroupBuilder):
-    def __init__(self, datum, model_name, renderer_name, max_turns, group_size, tool_obj, format_coef=0.0, max_trajectory_tokens=32 * 1024, max_generation_tokens=1024, judge=None, reward_config: RewardConfig | None = None):
+    def __init__(self, datum, model_name, renderer_name, max_turns, group_size, tool_obj, format_coef=0.0, max_trajectory_tokens=32 * 1024, judge=None, reward_config: RewardConfig | None = None):
         self.datum = datum
         self.model_name = model_name
         self.renderer_name = renderer_name
@@ -629,49 +477,118 @@ class FinanceSearchEnvGroupBuilder(EnvGroupBuilder):
         self.tool_obj = tool_obj
         self.format_coef = format_coef
         self.max_trajectory_tokens = max_trajectory_tokens
-        self.max_generation_tokens = max_generation_tokens
         self.judge = judge
         self.reward_config = reward_config or RewardConfig.from_env()
 
     async def make_envs(self) -> Sequence[Env]:
+        validate_target(self.datum.get("target") or {})
         tokenizer = tokenizer_utils.get_tokenizer(self.model_name)
         renderer_name = self.renderer_name or model_info.get_recommended_renderer_name(self.model_name)
         renderer = get_renderer(renderer_name, tokenizer)
-        initial_messages = _initial_messages(self.datum, renderer, self.tool_obj)
-        reward_fn = FinanceAnswerReward(gold_answers=self.datum["answer"], question=self.datum.get("question", ""), format_coef=self.format_coef, judge=self.judge, reward_config=self.reward_config, require_finish=self.reward_config.require_finish)
-        tools = [CoercingTool(t) for t in (self.tool_obj.bm25_search, self.tool_obj.grep_document, self.tool_obj.search_tables, self.tool_obj.read, self.tool_obj.read_table, self.tool_obj.calculate, self.tool_obj.finish)]
-        parse_policy = ParseErrorPolicy(max_consecutive=1, penalty_per_error=0.0, terminal_reward=0.0, mask_error_turns=True)
-        return [build_agent_tool_env(
-            renderer=renderer,
-            tools=tools,
-            initial_messages=initial_messages,
-            reward_fn=reward_fn,
-            model_name=self.model_name,
-            max_turns=self.max_turns,
-            max_trajectory_tokens=self.max_trajectory_tokens,
-            max_generation_tokens=self.max_generation_tokens,
-            failed_parse_reward=0.0,
-            terminate_on_parse_error=True,
-            parse_error_policy=parse_policy,
-        ) for _ in range(self.group_size)]
+        envs = []
+        for _ in range(self.group_size):
+            tool_obj = Bm25Tool(self.tool_obj.index, self.max_turns)
+            initial_messages = _initial_messages(self.datum, renderer, tool_obj)
+            reward_fn = FinanceAnswerReward(gold_answers=self.datum["answer"], question=self.datum.get("question", ""),
+                judge=self.judge, reward_config=self.reward_config, episode_state=tool_obj.state, target=self.datum.get("target"))
+            tools = [CoercingTool(getattr(tool_obj, name)) for name in ("bm25_search", "grep_document", "search_tables", "read", "read_table", "calculate", "finish")]
+            env = build_agent_tool_env(renderer=renderer, tools=tools, initial_messages=initial_messages,
+                reward_fn=reward_fn, model_name=self.model_name, max_turns=self.max_turns,
+                max_trajectory_tokens=self.max_trajectory_tokens, failed_parse_reward=0.0, context_overflow_reward=0.0,
+                parse_error_policy=ParseErrorPolicy(max_consecutive=1, mask_error_turns=True, terminal_reward=0.0))
+            env.message_env.tool_execution = "sequential"
+            env.message_env.example_id = self.datum.get("financebench_id", "")
+            env.example_id = self.datum.get("financebench_id", "")
+            envs.append(FinanceEpisodeEnv(env, tool_obj))
+        return envs
+
+    async def compute_group_rewards(self, trajectory_group, env_group):
+        unresolved = any(env.tool_obj.state.last_score.get("unresolved") for env in env_group)
+        totals = [sum(t.reward for t in trajectory.transitions) for trajectory in trajectory_group]
+        audit_path = os.environ.get("WORKSHOP_GROUP_AUDIT")
+        if audit_path:
+            from pathlib import Path
+            import uuid
+            import statistics
+            group_id = uuid.uuid4().hex
+            path = Path(audit_path)
+            trace_path = path.parent / "workshop_rollouts" / f"{group_id}.json"
+            trace_path.parent.mkdir(parents=True, exist_ok=True)
+            def encode(obj):
+                if hasattr(obj, "model_dump"): return obj.model_dump()
+                if hasattr(obj, "__dict__"): return vars(obj)
+                raise TypeError(type(obj).__name__)
+            trace_path.write_text(json.dumps({"question_id": self.datum.get("financebench_id"),
+                "episodes": [{"history": env.env.message_env.history, "state": vars(env.tool_obj.state),
+                              "stop_reason": trajectory.stop_reason,
+                              "total_reward_before_group_exclusion": total}
+                             for env, trajectory, total in zip(env_group, trajectory_group, totals)]}, default=encode))
+            record = {"group_id": group_id, "split": self.datum.get("split", "unknown"), "question_id": self.datum.get("financebench_id"),
+                "sampled_trajectories": len(totals), "rewards": totals, "unresolved_group": unresolved,
+                "all_zero": all(r == 0 for r in totals), "all_equal": len(set(totals)) <= 1,
+                "reward_variance": statistics.pvariance(totals) if totals else 0,
+                "retained": not unresolved and len(set(totals)) > 1, "trace_path": str(trace_path)}
+            with path.open("a") as f: f.write(json.dumps(record)+"\n")
+        if not unresolved: return [(0.0, {"unresolved_group": 0.0}) for _ in trajectory_group]
+        out = []
+        for trajectory in trajectory_group:
+            for transition in trajectory.transitions:
+                transition.metrics["parse_error_masked"] = 1.0
+            out.append((-sum(t.reward for t in trajectory.transitions), {"unresolved_group": 1.0}))
+        return out
 
     def logging_tags(self) -> list[str]:
         return ["financebench", "structured_sparse_agent"]
 
 
+class FinanceEpisodeEnv(Env):
+    """Count actual assistant turns, including parse retries, outside individual tools."""
+    def __init__(self, env, tool_obj):
+        self.env, self.tool_obj = env, tool_obj
+        self.example_id = getattr(env, "example_id", None)
+        self.rollout_limits = getattr(env, "rollout_limits", None)
+
+    async def initial_observation(self):
+        result = await self.env.initial_observation()
+        if isinstance(result, InitialObservationOverflow):
+            self._terminal_metrics(result.metrics)
+        return result
+
+    @staticmethod
+    def _terminal_metrics(metrics):
+        for key in ("F", "A", "G", "Ret", "correct", "grounded_success", "unresolved"):
+            metrics.setdefault(key, 0.0)
+        metrics.setdefault("used_finish", metrics["F"])
+        metrics.setdefault("finish_gate", metrics["F"])
+        metrics.setdefault("finish_missing", 1.0 - metrics["F"])
+        metrics.setdefault("answer_quality", metrics["A"])
+        metrics.setdefault("evidence_quality", metrics["G"])
+
+    async def step(self, action, *, extra=None):
+        self.tool_obj.state.turn += 1
+        result = await self.env.step(action, extra=extra)
+        if result.episode_done:
+            # Budget/parse exits can bypass reward_fn; keep evaluator denominators whole.
+            self._terminal_metrics(result.metrics)
+        return result
+
+
 class FinanceRLDataset(RLDataset):
-    def __init__(self, builders, batch_size):
-        self.builders = builders
-        self.batch_size = batch_size
+    def __init__(self, builders, batch_size, epochs=1, seed=0):
+        if batch_size < 1 or epochs < 1 or not builders: raise ValueError("Nonempty data and positive batch/epochs required")
+        self.builders, self.batch_size, self.epochs, self.seed = builders, batch_size, epochs, seed
+        self.per_epoch = math.ceil(len(builders)/batch_size)
 
     def get_batch(self, index):
-        s = index * self.batch_size
-        return self.builders[s:s + self.batch_size]
+        if not 0 <= index < len(self): raise IndexError(index)
+        epoch, batch = divmod(index, self.per_epoch)
+        order = list(self.builders)
+        random.Random(self.seed + epoch).shuffle(order)
+        start = batch * self.batch_size
+        return order[start:start + self.batch_size]
 
     def __len__(self):
-        if not self.builders:
-            return 0
-        return (len(self.builders) + self.batch_size - 1) // self.batch_size
+        return self.epochs * self.per_epoch
 
 
 @chz.chz
@@ -680,20 +597,19 @@ class FinanceDatasetBuilder(RLDatasetBuilder):
     batch_size: int
     group_size: int
     renderer_name: str | None = None
-    max_turns: int = 6
+    max_turns: int = 8
     format_coef: float = 0.0
     max_trajectory_tokens: int = 32 * 1024
-    max_generation_tokens: int = 1024
     seed: int = 0
     split_name: str = "train"
+    epochs: int = 1
 
     async def __call__(self):
         reward_config = RewardConfig.from_env()
         judge = build_judge(reward_config)
         data = load_financebench(self.split_name)
-        doc_names = sorted({str(item.get("doc", "")) for item in data if item.get("doc")})
-        tool_obj = await Bm25Tool.build(doc_names=doc_names)
+        tool_obj = await Bm25Tool.build(doc_names=sorted({d['doc'] for d in data}))
         rng = random.Random(self.seed)
         rng.shuffle(data)
-        builders = [FinanceSearchEnvGroupBuilder(d, self.model_name_for_tokenizer, self.renderer_name, self.max_turns, self.group_size, tool_obj, self.format_coef, self.max_trajectory_tokens, self.max_generation_tokens, judge=judge, reward_config=reward_config) for d in data]
-        return FinanceRLDataset(builders, self.batch_size), None
+        builders = [FinanceSearchEnvGroupBuilder(d, self.model_name_for_tokenizer, self.renderer_name, self.max_turns, self.group_size, tool_obj, self.format_coef, self.max_trajectory_tokens, judge=judge, reward_config=reward_config) for d in data]
+        return FinanceRLDataset(builders, self.batch_size, self.epochs, self.seed), None

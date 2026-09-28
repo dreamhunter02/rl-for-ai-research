@@ -1,40 +1,13 @@
-"""Deterministic E1 capability gates for the repaired FinanceBench protocol."""
-from __future__ import annotations
-import asyncio, json
+"""Run offline and SDK regression gates; absent SDK tests are a failing E1 gate."""
+import importlib.util
+import sys
+import unittest
 from pathlib import Path
-from finance_env import FinanceAnswerReward
 
-QUESTION = "What was the capital expenditure in USD millions?"
-GOLD = "$1577.00"
-
-def history(document: str = "TEST_2018_10K", page: int = 12, with_read: bool = True, finish: bool = True, citation_document: str | None = None, citation_page: int | None = None):
-    h = [{"role": "assistant", "content": "", "tool_calls": [{"name": "bm25_search", "arguments": {"query_list": ["capital expenditure"]}, "call_id": "s1"}]}, {"role": "tool", "name": "bm25_search", "call_id": "s1", "content": json.dumps({"results": [{"document_id": document, "page": page, "snippet": "capital expenditure"}]})}]
-    if with_read:
-        h += [{"role": "assistant", "content": "", "tool_calls": [{"name": "read", "arguments": {"document_id": document, "page": page}, "call_id": "r1"}]}, {"role": "tool", "name": "read", "call_id": "r1", "content": json.dumps({"document_id": document, "page": page, "text": "Capital expenditures were $1,577 million."})}]
-    if finish:
-        cited_doc = citation_document or document
-        cited_page = page if citation_page is None else citation_page
-        h += [{"role": "assistant", "content": "", "tool_calls": [{"name": "finish", "arguments": {"answer_text": "Capital expenditures were $1,577 million.", "answer_type": "currency", "value": "1577", "unit": "USD", "scale": "million", "evidence_document": cited_doc, "evidence_page": cited_page, "citations": [f"{cited_doc}:page:{cited_page}"], "calc_id": ""}, "call_id": "f1"}]}]
-    return h
-
-async def run():
-    cases = {}
-    reward = FinanceAnswerReward([GOLD], question=QUESTION)
-    value, metrics = await reward(history())
-    cases["terminal_finish_oracle_evidence"] = {"pass": value > 0.8 and metrics["finish_gate"] == 1 and metrics["citation_valid"] == 1, "reward": value, "metrics": metrics}
-    value, metrics = await reward(history(citation_document="NOT_SEEN", citation_page=99))
-    cases["nonexistent_citation_veto"] = {"pass": value == 0 and metrics["citation_veto"] == 1, "reward": value, "metrics": metrics}
-    value, metrics = await reward(history(with_read=False))
-    cases["calculator_or_search_without_evidence_not_full_credit"] = {"pass": value < 1 and metrics["evidence_quality"] == 0, "reward": value, "metrics": metrics}
-    value, metrics = await reward(history(finish=False))
-    cases["missing_finish_exit"] = {"pass": value == 0 and metrics["finish_missing"] == 1, "reward": value, "metrics": metrics}
-    malformed = history()
-    malformed[-1]["tool_calls"][0]["arguments"]["evidence_page"] = "33, 30, 32"
-    value, metrics = await reward(malformed)
-    cases["malformed_terminal_fields_do_not_crash"] = {"pass": value == 0 and metrics["finish_missing"] == 1, "reward": value, "metrics": metrics}
-    return {"protocol": "2026-09-27-repaired-v1", "cases": cases, "pass": all(x["pass"] for x in cases.values())}
-
-if __name__ == "__main__":
-    out = asyncio.run(run())
-    print(json.dumps(out, indent=2, sort_keys=True))
-    raise SystemExit(0 if out["pass"] else 1)
+if __name__ == '__main__':
+    suite = unittest.defaultTestLoader.discover(str(Path(__file__).resolve().parents[1] / 'tests'))
+    result = unittest.TextTestRunner(verbosity=2).run(suite)
+    sdk_missing = importlib.util.find_spec('tinker_cookbook') is None
+    if sdk_missing or result.skipped:
+        print('E1 BLOCKED: all SDK contract tests must execute on the training machine.', file=sys.stderr)
+    raise SystemExit(0 if result.wasSuccessful() and not result.skipped and not sdk_missing else 1)

@@ -2,7 +2,7 @@
   "experiment": "nemotron35_financebench_grpo_repaired_pilot",
   "model": "nvidia/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-BF16",
   "renderer": "nemotron3_ultra",
-  "split": "train96",
+  "split": "train",
   "dev_split": "dev",
   "steps": 10,
   "batch": 8,
@@ -15,7 +15,7 @@
   "seed": 0,
   "eval_every": 0,
   "save_every": 5,
-  "remove_constant_reward_groups": false,
+  "remove_constant_reward_groups": true,
   "zero_reward_on_limit": true,
   "require_finish": true,
   "judge_backend": "deepinfra",
@@ -23,5 +23,7 @@
   "judge_confidence_threshold": 0.85,
   "reward_contract": "R = F * A * (0.5 + 0.5 * G)",
   "optional_shaping": "disabled",
-  "notes": "E2 pilot; choose by dev grounded success, correctness tie-breaker; no eval tuning."
+  "notes": "Validated typed-target protocol; review labels first; cadence is nominal batches, actual updates logged separately; final checkpoint always evaluated on dev.",
+  "eval_split": "dev",
+  "epochs": 3
 }

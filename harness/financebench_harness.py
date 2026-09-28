@@ -17,7 +17,7 @@ from collections import Counter, defaultdict
 from pathlib import Path
 from typing import Any
 
-BASE = Path(os.environ.get("FINANCEBENCH_BASE", os.path.expanduser("~/Documents/Research/rl-for-ai-research"))).expanduser()
+BASE = Path(os.environ.get("FINANCEBENCH_ROOT", os.environ.get("FINANCEBENCH_BASE", Path(__file__).resolve().parents[1]))).expanduser()
 FILINGS = Path(os.environ.get("FINANCEBENCH_FILINGS", BASE / "filings")).expanduser()
 TEXTDIR = Path(os.environ.get("FINANCEBENCH_TEXT", BASE / "text")).expanduser()
 DATA = Path(os.environ.get("FINANCEBENCH_DATA", BASE / "data")).expanduser()
@@ -25,8 +25,7 @@ CACHE = Path(os.environ.get("FINANCEBENCH_CACHE", BASE / "artifacts" / "page_cac
 TOP_K = 5
 PASSAGE_LEN = 2200
 PASSAGE_OVERLAP = 300
-MAX_READ = 8000
-PAGE_CACHE_VERSION = 2
+MAX_READ = 2400
 
 _TOKEN_RE = re.compile(r"[A-Za-z0-9][A-Za-z0-9%$./-]*")
 _YEAR_RE = re.compile(r"(?<!\d)(20\d{2})(?!\d)")
@@ -100,45 +99,36 @@ def _extract_pages(pdf_path: Path) -> list[str]:
 
 
 def load_pages(doc_name: str, use_cache: bool = True, use_pdf_pages: bool | None = None) -> list[dict[str, Any]]:
-    """Load page text.
-
-    The default fast path uses the durable extracted text cache. Set
-    FINANCEBENCH_PDF_PAGES=1 to pay the pypdf cost and preserve true PDF page
-    boundaries; this is useful for a provenance-quality indexing pass, but is
-    not required for the first agent-training smoke tests.
-    """
+    """Load true PDF pages; legacy whole-filing caches are never reused."""
     CACHE.mkdir(parents=True, exist_ok=True)
-    cache_path = CACHE / f"{doc_name}.json"
-    if use_pdf_pages is None:
-        use_pdf_pages = os.environ.get("FINANCEBENCH_PDF_PAGES", "1") == "1"
     pdf_path = FILINGS / f"{doc_name}.pdf"
     txt_path = TEXTDIR / f"{doc_name}.txt"
-    source_mode = "pdf" if use_pdf_pages and pdf_path.exists() else "text"
+    strict = use_pdf_pages if use_pdf_pages is not None else os.environ.get("FINANCEBENCH_PDF_PAGES", "1") == "1"
+    source = pdf_path if pdf_path.exists() else txt_path
+    if not source.exists():
+        raise FileNotFoundError(f"Missing filing: {doc_name}")
+    stat = source.stat()
+    fingerprint = [str(source.resolve()), stat.st_size, stat.st_mtime_ns, strict]
+    cache_path = CACHE / f"{doc_name}.v2.json"
     if use_cache and cache_path.exists():
         try:
-            value = json.loads(cache_path.read_text())
-            if isinstance(value, dict) and value.get("version") == PAGE_CACHE_VERSION and value.get("source") == source_mode and isinstance(value.get("rows"), list) and value["rows"]:
-                return value["rows"]
-        except Exception:
+            cached = json.loads(cache_path.read_text())
+            if cached.get("version") == 2 and cached.get("source") == fingerprint:
+                return cached["pages"]
+        except (ValueError, KeyError):
             pass
-    pages = _extract_pages(pdf_path) if use_pdf_pages and pdf_path.exists() else []
-    if not pages and txt_path.exists():
-        pages = [_clean_text(txt_path.read_text(errors="ignore"))]
-    if not pages and pdf_path.exists():
-        pages = _extract_pages(pdf_path)
-    if not pages:
-        pages = [""]
-    rows = []
-    for i, text in enumerate(pages, start=1):
-        rows.append({
-            **document_metadata(doc_name),
-            "page": i,
-            "text": text,
-            "section": _section_hint(text),
-        })
-    if not any(row.get("text", "").strip() for row in rows):
-        raise FileNotFoundError(f"Missing or empty filing text for {doc_name}; checked {pdf_path} and {txt_path}")
-    cache_path.write_text(json.dumps({"version": PAGE_CACHE_VERSION, "source": source_mode, "rows": rows}, ensure_ascii=False))
+    pages = _extract_pages(pdf_path) if pdf_path.exists() else []
+    if not any(pages) and txt_path.exists():
+        raw = txt_path.read_text(errors="strict")
+        if strict and "\f" not in raw:
+            raise ValueError(f"{doc_name}: text has no PDF page boundaries; supply the PDF")
+        parts = raw.split("\f")
+        if parts and not parts[-1].strip(): parts.pop()
+        pages = [_clean_text(x) for x in parts]
+    if not any(pages):
+        raise ValueError(f"Empty/unreadable filing: {doc_name}")
+    rows = [{**document_metadata(doc_name), "page": i, "text": text, "section": _section_hint(text)} for i, text in enumerate(pages, 1)]
+    cache_path.write_text(json.dumps({"version": 2, "source": fingerprint, "pages": rows}, ensure_ascii=False))
     return rows
 
 
@@ -254,7 +244,11 @@ class StructuredIndex:
             return True
         for key in ("company", "document_id", "filing_type"):
             wanted = str(filters.get(key) or "").strip().lower()
-            if wanted and str(item.get(key, "")).lower() != wanted:
+            observed = str(item.get(key, "")).lower()
+            if key == "company":
+                wanted = re.sub(r"[^a-z0-9]", "", wanted)
+                observed = re.sub(r"[^a-z0-9]", "", observed)
+            if wanted and observed != wanted:
                 return False
         year = filters.get("year")
         if year not in (None, "", -1, 0) and item.get("year") != int(year):
@@ -332,63 +326,47 @@ class StructuredIndex:
                     })
         return results[:30]
 
-    def read(self, document_id: str, page: int = -1, start: int = 0, end: int = MAX_READ, passage_id: str = "") -> dict[str, Any]:
-        if passage_id and passage_id in self.passages_by_id:
-            item = self.passages_by_id[passage_id]
-            out = {k: v for k, v in item.items() if not k.startswith("_")}
-            out.update({"start": item.get("start", 0), "end": item.get("end", len(item.get("text", ""))), "has_more": False, "next_start": None})
-            return out
+    def read(self, document_id: str, page: int = -1, start: int = 0, end: int | None = None, passage_id: str = "") -> dict[str, Any]:
+        if passage_id:
+            item = self.passages_by_id.get(passage_id)
+            if not item or item["document_id"] != document_id:
+                return {"error": "Unknown passage or document mismatch"}
+            page = item["page"]
+            if start == 0: start = item.get("start", 0)
+            if end is None: end = start + MAX_READ
         pages = self.pages_by_doc.get(document_id, [])
-        selected = [x for x in pages if page < 1 or x["page"] == page]
-        if not selected:
+        selected = next((x for x in pages if page < 1 or x["page"] == page), None)
+        if selected is None:
             return {"error": f"Unknown document/page: {document_id}/{page}"}
-        text = "\n\n".join(x["text"] for x in selected)
-        start = max(0, int(start))
-        requested_end = max(start, int(end))
-        bounded_end = min(len(text), requested_end, start + MAX_READ)
-        return {
-            "document_id": document_id,
-            "page_start": selected[0]["page"],
-            "page_end": selected[-1]["page"],
-            "start": start,
-            "end": bounded_end,
-            "total_chars": len(text),
-            "has_more": bounded_end < len(text),
-            "next_start": bounded_end if bounded_end < len(text) else None,
-            "text": text[start:bounded_end],
-            "provenance": f"{document_id}:pages={selected[0]['page']}-{selected[-1]['page']}:chars={start}-{bounded_end}",
-        }
+        text = selected["text"]
+        start = min(len(text), max(0, int(start)))
+        end = min(len(text), max(start, int(end)) if end is not None else start + MAX_READ, start + MAX_READ)
+        return {"document_id": document_id, "page": selected["page"],
+                "page_start": selected["page"], "page_end": selected["page"],
+                "start": start, "end": end, "total_chars": len(text), "text": text[start:end],
+                "next_start": end if end < len(text) else None, "has_more": end < len(text)}
 
-    def read_table(self, table_id: str, include_neighbors: bool = True, start: int = 0, end: int = MAX_READ) -> dict[str, Any]:
+    def read_table(self, table_id: str, include_neighbors: bool = True, start: int = 0, end: int | None = None) -> dict[str, Any]:
         item = self.tables_by_id.get(table_id)
         if not item:
             return {"error": f"Unknown table_id: {table_id}"}
-        out = {k: v for k, v in item.items() if not k.startswith("_")}
-        text = str(out.get("text", ""))
-        start = max(0, int(start))
-        bounded_end = min(len(text), max(start, int(end)), start + MAX_READ)
-        out["start"] = start
-        out["end"] = bounded_end
-        out["total_chars"] = len(text)
-        out["has_more"] = bounded_end < len(text)
-        out["next_start"] = bounded_end if bounded_end < len(text) else None
-        out["text"] = text[start:bounded_end]
+        out = self.read(item["document_id"], item["page"], start, end)
+        out.update({k: item.get(k, "") for k in ("table_id", "title", "units")})
         if include_neighbors:
-            page = item["page"]
-            doc = item["document_id"]
-            pages = self.pages_by_doc.get(doc, [])
-            neighbors = [x["text"] for x in pages if abs(x["page"] - page) <= 1]
-            out["neighbor_context"] = "\n\n".join(neighbors)[:MAX_READ]
+            out["neighbor_pages"] = [p["page"] for p in self.pages_by_doc[item["document_id"]] if abs(p["page"]-item["page"]) == 1]
+            out["neighbor_hint"] = "Use read on neighbor_pages for headers/footnotes outside this page."
         return out
 
 
 def build_index(max_docs: int | None = None, doc_names: list[str] | None = None, use_cache: bool = True) -> StructuredIndex:
-    files = sorted(x.stem for x in FILINGS.glob("*.pdf"))
+    files = sorted({x.stem for x in FILINGS.glob("*.pdf")} | {x.stem for x in TEXTDIR.glob("*.txt")})
     if doc_names is not None:
         wanted = set(doc_names)
         files = [x for x in files if x in wanted]
     if max_docs:
         files = files[:max_docs]
+    if not files:
+        raise ValueError(f"No filings found under {FILINGS} or {TEXTDIR}")
     pages = []
     passages = []
     tables = []
@@ -521,81 +499,17 @@ def _number_mentions(text: str) -> list[tuple[float, bool, str]]:
 def _is_year(value: float) -> bool:
     return 1900 <= abs(value) <= 2100 and abs(value - round(value)) < 1e-9
 
-
-def _question_scale(question: str) -> float:
-    lower = (question or "").lower()
-    if re.search(r"\b(?:billion|billions|bn)\b", lower):
-        return 1e9
-    if re.search(r"\b(?:million|millions|mm)\b", lower):
-        return 1e6
-    if re.search(r"\b(?:thousand|thousands)\b", lower):
-        return 1e3
-    return 1.0
-
-
-def _local_scale_multiplier(text: str, token: str) -> float:
-    raw = text or ""
-    for match in re.finditer(re.escape(token), raw, re.I):
-        context = raw[max(0, match.start() - 40):match.end() + 40]
-        if re.search(r"\b(?:billion|billions|bn)\b", context, re.I):
-            return 1e9
-        if re.search(r"\b(?:million|millions|mm)\b", context, re.I):
-            return 1e6
-        if re.search(r"\b(?:thousand|thousands)\b", context, re.I):
-            return 1e3
-        if re.search(r"[0-9]B\b", token, re.I):
-            return 1e9
-        if re.search(r"[0-9]M\b", token, re.I):
-            return 1e6
-        if re.search(r"[0-9]K\b", token, re.I):
-            return 1e3
-    return 1.0
-
-
-def _mentions_for_question(text: str, question: str = "") -> list[tuple[float, bool, str]]:
-    mentions = _number_mentions(text)
-    scale = _question_scale(question)
-    if scale == 1.0:
-        return mentions
-    # FinanceBench gold answers often omit the unit while the question supplies
-    # it (e.g. "$1577.00" for a question asking for USD millions). Apply the
-    # question unit only to bare local numbers, never to explicitly scaled ones.
-    normalized = []
-    for value, percent, token in mentions:
-        if percent or _is_year(value):
-            normalized.append((value, percent, token))
-            continue
-        local_scale = _local_scale_multiplier(text, token)
-        # _number_mentions already normalizes immediately adjacent/nearby scale
-        # words; only apply the question's scale to genuinely bare numbers.
-        normalized.append((value if local_scale != 1.0 else value * scale, percent, token))
-    return normalized
-
-
-def _numbers_match(gold: str, candidate: str, question: str = "") -> tuple[bool, int]:
-    gold_mentions = [(v, pct) for v, pct, _ in _mentions_for_question(gold, question) if not _is_year(v)]
-    candidate_mentions = [(v, pct) for v, pct, _ in _mentions_for_question(candidate, question) if not _is_year(v)]
-    if not gold_mentions:
-        return False, 0
-    matched = 0
-    for gold_value, gold_pct in gold_mentions:
-        found = False
-        for candidate_value, candidate_pct in candidate_mentions:
-            # Scale is normalized only from explicit currency/scale markers;
-            # do not speculate by dividing arbitrary numbers by powers of ten.
-            comparable_value = candidate_value
-            if gold_value == 0:
-                close = abs(comparable_value) <= (0.005 if gold_pct else 0.01)
-            elif gold_pct or candidate_pct:
-                # Preserve the sign: -4.2% and +4.2% are contradictions.
-                close = abs(gold_value - comparable_value) <= max(0.01, abs(gold_value) * 0.005)
-            else:
-                close = abs(gold_value - comparable_value) <= max(0.01, abs(gold_value) * 0.005)
-            if close:
-                found = True
-                break
-        matched += int(found)
-    return matched == len(gold_mentions), matched
+def _numbers_match(gold: str, candidate: str) -> tuple[bool, int]:
+    from workshop_reward import numeric_equal, parse_number
+    try:
+        parse_number(gold)
+    except ValueError:
+        gold_mentions = _number_mentions(gold)
+        candidate_mentions = _number_mentions(candidate)
+        matched = sum(any(gp == cp and (gv < 0) == (cv < 0) and abs(gv-cv) <= max(1e-12, abs(gv)*1e-8) for cv, cp, _ in candidate_mentions) for gv, gp, _ in gold_mentions)
+        return bool(gold_mentions) and matched == len(gold_mentions), matched
+    ok = numeric_equal(gold, candidate)
+    return ok, int(ok)
 
 def _text_overlap(gold: str, candidate: str) -> tuple[float, float, int]:
     gold_tokens = _answer_tokens(gold)
@@ -628,6 +542,11 @@ def _explicit_contradiction(gold: str, candidate: str) -> bool:
     return False
 
 def score_answer(ground_truth: str, model_answer_text: str, question: str = "") -> tuple[float, dict[str, float]]:
+    """Legacy diagnostic only; authoritative runs use reviewed typed targets.
+
+    `question` is retained for API compatibility. Units must be explicit in
+    these diagnostic scalar strings; question-dependent units belong in targets.
+    """
     candidate = extract_answer_text(model_answer_text)
     if not candidate.strip():
         return 0.0, {"quality": 0.0, "conclusion": 0.0, "details": 0.0, "answer_nonempty": 0.0}
@@ -636,12 +555,20 @@ def score_answer(ground_truth: str, model_answer_text: str, question: str = "") 
         return 0.0, {"quality": 0.0, "conclusion": 0.0, "details": 0.0, "answer_nonempty": 1.0}
     if _norm(gold) == _norm(candidate):
         return 1.0, {"quality": 1.0, "conclusion": 1.0, "details": 1.0, "answer_nonempty": 1.0}
+    from workshop_reward import parse_number, numeric_equal
+    try:
+        parse_number(gold)
+    except ValueError:
+        pass
+    else:
+        q = float(numeric_equal(gold, candidate))
+        return q, {"quality": q, "conclusion": q, "details": q, "answer_nonempty": 1.0}
     gold_decision = _decision(gold)
     candidate_decision = _decision(candidate)
-    number_match, number_count = _numbers_match(gold, candidate, question)
+    number_match, number_count = _numbers_match(gold, candidate)
     recall, short_coverage, overlap = _text_overlap(gold, candidate)
-    has_gold_numbers = bool([x for x, _, _ in _mentions_for_question(gold, question) if not _is_year(x)])
-    candidate_has_numbers = bool([x for x, _, _ in _mentions_for_question(candidate, question) if not _is_year(x)])
+    has_gold_numbers = bool([x for x, _, _ in _number_mentions(gold) if not _is_year(x)])
+    candidate_has_numbers = bool([x for x, _, _ in _number_mentions(candidate) if not _is_year(x)])
     if _explicit_contradiction(gold, candidate):
         return 0.0, {"quality": 0.0, "conclusion": 0.0, "details": 0.0, "answer_nonempty": 1.0}
     numeric_conflict = has_gold_numbers and candidate_has_numbers and not number_match and number_count == 0
@@ -692,10 +619,13 @@ def _trace_evidence_text(trace: list[dict[str, Any]] | None) -> tuple[str, str]:
             continue
         for call in item.get("tool_calls") or []:
             if isinstance(call, dict):
-                call_names[str(call.get("call_id", call.get("id", "")))] = str(call.get("name", ""))
-                fn = call.get("function") or {}
-                if isinstance(fn, dict):
-                    call_names[str(call.get("id", ""))] = str(fn.get("name", ""))
+                fn = call.get("function")
+                name = fn.get("name", "") if isinstance(fn, dict) else call.get("name", "")
+                call_id = call.get("call_id") or call.get("id")
+                # Nemotron can omit IDs. Never create an empty-ID mapping that
+                # overwrites a tool name already resolved by the history adapter.
+                if call_id and name:
+                    call_names[str(call_id)] = str(name)
 
     def flatten(value: Any) -> str:
         if isinstance(value, str):
@@ -726,7 +656,7 @@ def _trace_evidence_text(trace: list[dict[str, Any]] | None) -> tuple[str, str]:
         text = flatten(item.get("content", ""))
         if not text:
             continue
-        name = call_names.get(str(item.get("call_id", "")), str(item.get("name", "")))
+        name = item.get("name") or call_names.get(str(item.get("call_id") or item.get("tool_call_id") or ""), "")
         if not name:
             # Tinker tool wrappers can lose call metadata while preserving the
             # structured result; infer the provenance class from stable result keys.
@@ -743,23 +673,13 @@ def _trace_evidence_text(trace: list[dict[str, Any]] | None) -> tuple[str, str]:
     return "\n".join(strong_parts), "\n".join(weak_parts)
 
 
-def _number_supported(mention: tuple[float, bool, str], evidence_text: str, question: str = "") -> bool:
+def _number_supported(mention: tuple[float, bool, str], evidence_text: str) -> bool:
     expected, expected_pct, _ = mention
-    for observed, observed_pct, _ in _mentions_for_question(evidence_text, question):
-        # Compare explicitly normalized units; do not infer scale by division.
-        value = observed
-        if expected_pct or observed_pct:
-            close = abs(expected - value) <= max(0.01, abs(expected) * 0.005)
-        elif expected == 0:
-            close = abs(value) <= 0.01
-        else:
-            close = abs(expected - value) <= max(0.01, abs(expected) * 0.005)
-        if close:
-            return True
-    return False
+    return any(expected_pct == pct and (expected < 0) == (value < 0) and abs(expected-value) <= max(1e-12, abs(expected)*1e-8)
+               for value, pct, _ in _number_mentions(evidence_text))
 
 
-def score_evidence(ground_truth: str, model_answer_text: str, trace: list[dict[str, Any]] | None, question: str = "") -> tuple[float, dict[str, float]]:
+def score_evidence(ground_truth: str, model_answer_text: str, trace: list[dict[str, Any]] | None) -> tuple[float, dict[str, float]]:
     """Score whether answer-bearing claims were actually encountered in tools.
 
     This is deliberately conservative: required gold numbers must appear in
@@ -774,11 +694,11 @@ def score_evidence(ground_truth: str, model_answer_text: str, trace: list[dict[s
     if not all_evidence:
         return 0.0, {"evidence": 0.0, "strong_source": 0.0, "gold_claim_support": 0.0, "candidate_claim_support": 0.0}
 
-    gold_numbers = [x for x in _mentions_for_question(ground_truth, question) if not _is_year(x[0])]
-    candidate_numbers = [x for x in _mentions_for_question(candidate, question) if not _is_year(x[0])]
-    gold_in_answer = (sum(_number_supported(x, candidate, question) for x in gold_numbers) / len(gold_numbers)) if gold_numbers else 1.0
-    gold_in_trace = (sum(_number_supported(x, all_evidence, question) for x in gold_numbers) / len(gold_numbers)) if gold_numbers else 1.0
-    candidate_in_trace = (sum(_number_supported(x, all_evidence, question) for x in candidate_numbers) / len(candidate_numbers)) if candidate_numbers else 1.0
+    gold_numbers = [x for x in _number_mentions(ground_truth) if not _is_year(x[0])]
+    candidate_numbers = [x for x in _number_mentions(candidate) if not _is_year(x[0])]
+    gold_in_answer = (sum(_number_supported(x, candidate) for x in gold_numbers) / len(gold_numbers)) if gold_numbers else 1.0
+    gold_in_trace = (sum(_number_supported(x, all_evidence) for x in gold_numbers) / len(gold_numbers)) if gold_numbers else 1.0
+    candidate_in_trace = (sum(_number_supported(x, all_evidence) for x in candidate_numbers) / len(candidate_numbers)) if candidate_numbers else 1.0
 
     if gold_numbers:
         claim_support = min(gold_in_answer, gold_in_trace)

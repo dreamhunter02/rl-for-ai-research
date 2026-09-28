@@ -1,0 +1,4 @@
+# Pin cookbook APIs; resolve dependencies once and archive pip freeze with every run.
+tinker-cookbook @ git+https://github.com/thinking-machines-lab/tinker-cookbook.git@5d6e1eb9ffb0328771bdec97a95eb509e84d43f1
+pypdf
+matplotlib
