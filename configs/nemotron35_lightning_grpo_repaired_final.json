@@ -1,0 +1,32 @@
+{
+  "experiment": "nemotron35_financebench_grpo_repaired_final",
+  "model": "nvidia/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-BF16",
+  "renderer": "nemotron3_ultra",
+  "split": "train96",
+  "dev_split": "dev",
+  "epochs": 3,
+  "steps": 36,
+  "batch": 8,
+  "group": 8,
+  "learning_rate": "selected_from_e2",
+  "max_turns": 8,
+  "max_tokens": 1024,
+  "lora_rank": 32,
+  "temperature": 1.0,
+  "seeds": [
+    0,
+    1
+  ],
+  "eval_every": 4,
+  "save_every": 4,
+  "remove_constant_reward_groups": false,
+  "zero_reward_on_limit": true,
+  "require_finish": true,
+  "judge_backend": "deepinfra",
+  "judge_model": "deepseek-ai/DeepSeek-V4.1-Flash",
+  "judge_confidence_threshold": 0.85,
+  "reward_contract": "R = F * A * (0.5 + 0.5 * G)",
+  "optional_shaping": "after_core_only",
+  "eval_split": "eval",
+  "notes": "E3 final comparison; actual updates and skipped updates must be recorded."
+}
