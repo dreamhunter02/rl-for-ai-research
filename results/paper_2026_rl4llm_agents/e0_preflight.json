@@ -1,0 +1,53 @@
+{
+  "protocol": "2026-09-27-repaired-v1",
+  "python": "3.12.3",
+  "base": "/home/dreamhunter/Documents/Research/rl-for-ai-research",
+  "pdf_pages": "1",
+  "split_counts": {
+    "train96": 96,
+    "dev12": 12,
+    "eval42": 42
+  },
+  "split_disjoint": true,
+  "index_probe": {
+    "pages": 158,
+    "passages": 385,
+    "tables": 49
+  },
+  "numeric_regressions": {
+    "negative_zero": true,
+    "scale_equivalent": true,
+    "scale_mismatch": true
+  },
+  "source_hashes": {
+    "harness/financebench_harness.py": "bbed234bfd2ac7317c07e7273d5d57c91b79b699d2e2872f15289999f1cd042b",
+    "harness/finance_env.py": "bb78445e6088aae4bcb0b52b6d905ae7f596b61a9ae035e9e220327fb359943c",
+    "harness/reward_calculation.py": "dd9ca95ef44f4d9f738fa025b67390aa2dff0d5dc833c08ab713306ed3b4939d",
+    "configs/nemotron35_lightning_grpo_reward_v2.json": "1c6fb863708470a4dc37038f485096cf5970acf169964c6d6213b3c573ca9666"
+  },
+  "tool_checks": {
+    "tool_array_fields": {
+      "bm25_search": [
+        "query_list"
+      ],
+      "grep_document": [
+        "patterns"
+      ],
+      "search_tables": [
+        "query_list"
+      ],
+      "read": [],
+      "read_table": [],
+      "calculate": [],
+      "finish": []
+    },
+    "search_chars": 2716,
+    "search_valid_json": true,
+    "search_returned_hits": 5,
+    "max_search_snippet_chars": 300,
+    "read_chars": 3100,
+    "read_valid_json": true,
+    "read_has_more": true,
+    "read_next_start": 2800
+  }
+}

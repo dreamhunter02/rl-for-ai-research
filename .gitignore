@@ -27,3 +27,7 @@ client_secret*.json
 # Temporary outputs
 *.tmp
 *.bak
+
+# Evaluator-only gold targets and local execution logs
+results/paper_2026_rl4llm_agents/targets_*.jsonl
+results/paper_2026_rl4llm_agents/*.log

@@ -5,6 +5,7 @@ from pathlib import Path
 import financebench_harness as hb
 
 from reward_calculation import _numeric_or_decision_hard_veto
+from typed_targets import infer_target
 
 
 class RewardDesignTests(unittest.TestCase):
@@ -82,6 +83,17 @@ class RewardDesignTests(unittest.TestCase):
         self.assertEqual(hb._numbers_match("Margin was -4.2%.", "Margin was 4.2%."), (False, 0))
         self.assertEqual(hb._numbers_match("Revenue was $4.2B.", "Revenue was $4200M."), (True, 1))
         self.assertEqual(hb._numbers_match("Revenue was $4.2B.", "Revenue was $4.2M."), (False, 0))
+
+
+    def test_typed_target_preserves_numeric_zero_and_provenance(self):
+        target = infer_target({
+            "financebench_id": "q0", "question": "Was the change zero?", "answer": "0",
+            "doc_name": "DOC_2024_10K", "evidence": [{"doc_name": "DOC_2024_10K", "evidence_page_num": 7, "evidence_text": "The change was 0."}],
+        })
+        self.assertEqual(target["answer_type"], "scalar")
+        self.assertEqual(target["value"], 0.0)
+        self.assertEqual(target["unit"], "")
+        self.assertEqual(target["supporting_spans"][0]["page"], 7)
 
     def test_adversarial_wrong_answers_do_not_pass(self):
         self.assertLessEqual(hb.reward("No. quick ratio was 0.54 for Verizon.", "Answer: No, quick ratio was 0.64"), 0.5)

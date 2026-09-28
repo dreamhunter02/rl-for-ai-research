@@ -33,8 +33,8 @@ def openai_key() -> str:
     return ""
 
 
-def rows_for_eval(limit: int) -> list[dict[str, Any]]:
-    rows = fe.load_financebench("eval")
+def rows_for_eval(limit: int, split: str = "eval") -> list[dict[str, Any]]:
+    rows = fe.load_financebench(split)
     return rows[:limit] if limit else rows
 
 
@@ -68,28 +68,35 @@ def bounded_tool_text(payload: object) -> str:
 
 
 def execute_local(index: hb.StructuredIndex, name: str, args: dict[str, Any]) -> str:
+    """Execute the same compact, paginated local tools used during training."""
     if name == "bm25_search":
         query_list = _arg_list(args, "query_list")
         filters = {"company": args.get("company", ""), "year": args.get("year", -1), "filing_type": args.get("filing_type", ""), "document_id": args.get("document_id", "")}
         scope = str(args.get("scope", "both")).lower()
-        top_k = max(1, min(int(args.get("top_k", 3)), 8))
-        out: dict[str, Any] = {"queries": query_list, "filters": filters}
-        if scope in ("prose", "both"):
-            out["prose_hits"] = index.search_prose(query_list, filters, top_k)
-        if scope in ("tables", "table", "both"):
-            out["table_hits"] = index.search_tables(query_list, filters, top_k)
-        return bounded_tool_text(out)
+        top_k = max(1, min(int(args.get("top_k", 3)), fe.MAX_SEARCH_HITS))
+        prose = index.search_prose(query_list, filters, top_k) if scope in ("prose", "both") else []
+        tables = index.search_tables(query_list, filters, top_k) if scope in ("tables", "table", "both") else []
+        ranked = [(float(x.get("score", 0.0)), "prose", x) for x in prose] + [(float(x.get("score", 0.0)), "table", x) for x in tables]
+        ranked.sort(key=lambda x: x[0], reverse=True)
+        selected = ranked[:fe.MAX_SEARCH_HITS]
+        return bounded_tool_text({
+            "queries": query_list,
+            "filters": filters,
+            "prose_hits": [fe._compact_hit(x, kind="prose") for _, kind, x in selected if kind == "prose"],
+            "table_hits": [fe._compact_hit(x, kind="table") for _, kind, x in selected if kind == "table"],
+            "returned_hits": len(selected),
+        })
     if name == "grep_document":
         out = index.grep_document(args["document_id"], _arg_list(args, "patterns"), int(args.get("page_start", -1)), int(args.get("page_end", -1)), int(args.get("context_lines", 2)))
-        return bounded_tool_text({"grep_type_requested": args.get("grep_type", "text"), "backend_used": "page_text", "matches": out})
+        return bounded_tool_text({"grep_type_requested": args.get("grep_type", "text"), "backend_used": "page_text", "matches": fe._compact_matches(out), "returned_matches": min(len(out), fe.MAX_SEARCH_HITS)})
     if name == "search_tables":
         filters = {"document_id": args.get("document_id", ""), "company": args.get("company", ""), "year": args.get("year", -1)}
-        out = index.search_tables(_arg_list(args, "query_list"), filters, max(1, min(int(args.get("top_k", 3)), 8)))
-        return bounded_tool_text({"queries": _arg_list(args, "query_list"), "table_hits": out})
+        out = index.search_tables(_arg_list(args, "query_list"), filters, max(1, min(int(args.get("top_k", 3)), fe.MAX_SEARCH_HITS)))
+        return bounded_tool_text({"queries": _arg_list(args, "query_list"), "table_hits": [fe._compact_hit(x, kind="table") for x in out[:fe.MAX_SEARCH_HITS]], "returned_hits": min(len(out), fe.MAX_SEARCH_HITS)})
     if name == "read":
-        return bounded_tool_text(index.read(args["document_id"], int(args.get("page", -1)), int(args.get("start", 0)), int(args.get("end", hb.MAX_READ)), args.get("passage_id", "")))
+        return bounded_tool_text(fe._bound_read_payload(index.read(args["document_id"], int(args.get("page", -1)), int(args.get("start", 0)), int(args.get("end", hb.MAX_READ)), args.get("passage_id", ""))))
     if name == "read_table":
-        return bounded_tool_text(index.read_table(args["table_id"], bool(args.get("include_neighbors", True))))
+        return bounded_tool_text(fe._bound_read_payload(index.read_table(args["table_id"], bool(args.get("include_neighbors", True)), int(args.get("start", 0)), int(args.get("end", hb.MAX_READ)))))
     if name == "calculate":
         try:
             return bounded_tool_text({"expression": args["expression"], "value": hb.calculate(args["expression"])})
@@ -238,12 +245,13 @@ def main() -> None:
     ap.add_argument("--renderer", default="", help="Renderer override, for example nemotron3_ultra.")
     ap.add_argument("--project", default="5485278b-9573-47cd-816c-9e380e84461f")
     ap.add_argument("--limit", type=int, default=5)
-    ap.add_argument("--max-turns", type=int, default=6)
+    ap.add_argument("--split", choices=["dev", "eval"], default="eval")
+    ap.add_argument("--max-turns", type=int, default=8)
     ap.add_argument("--out", required=True)
     args = ap.parse_args()
     if args.backend == "openai" and not openai_key():
         raise SystemExit("OPENAI_API_KEY is not available in the environment or Hermes .env")
-    rows = rows_for_eval(args.limit)
+    rows = rows_for_eval(args.limit, args.split)
     index = hb.build_index()
     Path(args.out).parent.mkdir(parents=True, exist_ok=True)
     records = []
@@ -251,7 +259,7 @@ def main() -> None:
     for i, row in enumerate(rows, 1):
         try:
             rec = runner(index, row, args.model, args.max_turns) if args.backend == "openai" else runner(index, row, args.model, args.project, args.max_turns, model_path=args.model_path, renderer_name=args.renderer or None)
-            rec.update({"financebench_id": row["financebench_id"], "question": row["question"], "gold": row["answer"][0], "reward": answer_reward(rec.get("answer_text", ""), row["answer"][0])})
+            rec.update({"financebench_id": row["financebench_id"], "question": row["question"], "gold": row["answer"][0], "split": args.split, "reward": answer_reward(rec.get("answer_text", ""), row["answer"][0])})
         except Exception as exc:
             rec = {"backend": args.backend, "model": args.model, "financebench_id": row["financebench_id"], "question": row["question"], "gold": row["answer"][0], "error": repr(exc), "reward": 0.0}
         records.append(rec)
