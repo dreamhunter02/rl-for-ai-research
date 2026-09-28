@@ -200,15 +200,28 @@ def run_openai(index: hb.StructuredIndex, row: dict[str, Any], model: str, max_t
     return {"backend": "openai", "model": model, "answer_text": final, "tool_calls": calls, "messages": [{"role": "assistant", "content": final, "tool_calls": calls}], "openai_response_id": response.id}
 
 
-def run_tinker(index: hb.StructuredIndex, row: dict[str, Any], model: str, project: str, max_turns: int, model_path: str | None = None, renderer_name: str | None = None) -> dict[str, Any]:
-    from tinker import SamplingParams, ServiceClient
+_TINKER_RUNTIME: dict[tuple[str, str, str | None, str], tuple[Any, Any, Any]] = {}
+
+
+def _get_tinker_runtime(model: str, project: str, model_path: str | None, renderer_name: str | None):
+    from tinker import ServiceClient
     from tinker_cookbook import tokenizer_utils
     from tinker_cookbook.renderers import get_renderer
-    tokenizer = tokenizer_utils.get_tokenizer(model)
-    renderer = get_renderer(renderer_name or ("nemotron3_ultra" if model.startswith("nvidia/NVIDIA-Nemotron-3.5") else "qwen3_5"), tokenizer)
+    renderer_key = renderer_name or ("nemotron3_ultra" if model.startswith("nvidia/NVIDIA-Nemotron-3.5") else "qwen3_5")
+    key = (model, project, model_path, renderer_key)
+    if key not in _TINKER_RUNTIME:
+        tokenizer = tokenizer_utils.get_tokenizer(model)
+        renderer = get_renderer(renderer_key, tokenizer)
+        client = ServiceClient(project_id=project, api_key=load_tinker_key()).create_sampling_client(model_path=model_path, base_model=None if model_path else model)
+        _TINKER_RUNTIME[key] = (tokenizer, renderer, client)
+    return _TINKER_RUNTIME[key]
+
+
+def run_tinker(index: hb.StructuredIndex, row: dict[str, Any], model: str, project: str, max_turns: int, model_path: str | None = None, renderer_name: str | None = None) -> dict[str, Any]:
+    from tinker import SamplingParams
+    tokenizer, renderer, client = _get_tinker_runtime(model, project, model_path, renderer_name)
     tool_obj = fe.Bm25Tool(index)
     messages = fe._initial_messages(row, renderer, tool_obj)
-    client = ServiceClient(project_id=project, api_key=load_tinker_key()).create_sampling_client(model_path=model_path, base_model=None if model_path else model)
     params = SamplingParams(temperature=0.2, top_p=0.95, max_tokens=1024)
     calls = []
     trace = []
