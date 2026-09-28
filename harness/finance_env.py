@@ -14,7 +14,8 @@ from tinker_cookbook import model_info, tokenizer_utils
 from tinker_cookbook.renderers import get_renderer
 from tinker_cookbook.renderers.base import Message, Renderer
 from tinker_cookbook.rl.types import Env, EnvGroupBuilder, RLDataset, RLDatasetBuilder
-from tinker_cookbook.tool_use import Tool, ToolResult, build_agent_tool_env, simple_tool_result, tool
+from tinker_cookbook.rl.rollout_limits import ParseErrorPolicy
+from tinker_cookbook.tool_use import Tool, ToolInput, ToolResult, build_agent_tool_env, simple_tool_result, tool
 
 
 def _as_list(value):
@@ -28,6 +29,8 @@ class CoercingTool:
 
     def __init__(self, tool: Tool):
         self._tool = tool
+        properties = (tool.to_spec().get("parameters") or {}).get("properties") or {}
+        self._list_fields = {name for name, spec in properties.items() if spec.get("type") == "array"}
 
     @property
     def name(self):
@@ -36,22 +39,28 @@ class CoercingTool:
     def to_spec(self):
         return self._tool.to_spec()
 
-    async def run(self, call):
-        arguments = dict(call.arguments) if hasattr(call, "arguments") else dict(call)
-        coerced = {}
-        for key, value in arguments.items():
-            if isinstance(value, str):
-                try:
-                    parsed = json.loads(value)
-                except Exception:
-                    parsed = value
-                if isinstance(parsed, list):
-                    value = parsed
-            coerced[key] = value
-        call.__dict__.update(coerced)
-        if hasattr(call, "model_copy"):
-            call = call.model_copy(update=coerced)
-        return await self._tool.run(call)
+    async def run(self, call: ToolInput):
+        arguments = dict(call.arguments)
+        coerced = dict(arguments)
+        for key in self._list_fields:
+            value = coerced.get(key)
+            if not isinstance(value, str):
+                continue
+            try:
+                parsed = json.loads(value)
+            except (TypeError, json.JSONDecodeError):
+                parsed = None
+            if isinstance(parsed, list):
+                coerced[key] = parsed
+            elif value.strip():
+                coerced[key] = [value]
+        forwarded = ToolInput(arguments=coerced, call_id=call.call_id)
+        result = await self._tool.run(forwarded)
+        # A validated finish is terminal; the environment will grade once and
+        # stop sampling instead of allowing later text to obscure submission.
+        if self.name == "finish":
+            result.should_stop = True
+        return result
 
 import sys
 sys.path.insert(0, os.path.dirname(__file__))
@@ -80,14 +89,70 @@ When you have enough evidence, call finish(answer, evidence_document, evidence_p
 
 
 OBS_CAP = 4000
+SEARCH_SNIPPET_CHARS = 300
+MAX_SEARCH_HITS = 5
+READ_VISIBLE_CHARS = 2800
+
+
+def _compact_text(value: object, limit: int = SEARCH_SNIPPET_CHARS) -> str:
+    text = str(value or "")
+    text = re.sub(r"\s+", " ", text).strip()
+    return text[:limit]
+
+
+def _compact_hit(hit: dict, *, kind: str) -> dict:
+    """Expose only retrieval fields the model can use and cite."""
+    keys = ["document_id", "page", "score", "section", "provenance", "start", "end"]
+    if kind == "table":
+        keys += ["table_id", "title", "statement_kind", "units"]
+    else:
+        keys += ["passage_id"]
+    out = {key: hit[key] for key in keys if key in hit and hit[key] not in (None, "")}
+    out["snippet"] = _compact_text(hit.get("text", hit.get("snippet", "")))
+    return out
+
+
+def _compact_matches(matches: list[dict], limit: int = MAX_SEARCH_HITS) -> list[dict]:
+    return [
+        {key: value for key, value in {
+            "document_id": item.get("document_id"),
+            "page": item.get("page"),
+            "line": item.get("line"),
+            "provenance": item.get("provenance"),
+            "snippet": _compact_text(item.get("text", "")),
+        }.items() if value not in (None, "")}
+        for item in matches[:limit]
+    ]
+
+
+def _bound_read_payload(payload: dict) -> dict:
+    """Keep read/table responses structured while exposing a continuation cursor."""
+    out = dict(payload)
+    text = str(out.get("text", ""))
+    start = int(out.get("start", 0) or 0)
+    visible = text[:READ_VISIBLE_CHARS]
+    out["text"] = visible
+    out["end"] = start + len(visible)
+    total = int(out.get("total_chars", start + len(text)) or 0)
+    out["total_chars"] = max(total, start + len(text))
+    out["has_more"] = bool(out["end"] < out["total_chars"] or out.get("has_more", False))
+    out["next_start"] = out["end"] if out["has_more"] else None
+    if "neighbor_context" in out:
+        out["neighbor_context"] = _compact_text(out["neighbor_context"], 450)
+    return out
 
 
 def _tool_result(payload: object) -> ToolResult:
-    """Bound every tool observation so one search cannot overflow context."""
+    """Bound every tool observation without returning malformed JSON."""
     raw = payload if isinstance(payload, str) else json.dumps(payload, ensure_ascii=False)
     if len(raw) <= OBS_CAP:
         return simple_tool_result(raw)
-    envelope = {"truncated": True, "original_chars": len(raw), "content": raw[: OBS_CAP - 96]}
+    envelope = {
+        "truncated": True,
+        "original_chars": len(raw),
+        "content": _compact_text(raw, OBS_CAP - 120),
+        "warning": "Use the tool's pagination fields or narrower query; content was bounded by OBS_CAP.",
+    }
     return simple_tool_result(json.dumps(envelope, ensure_ascii=False))
 
 
@@ -116,10 +181,15 @@ class Bm25Tool:
         top_k = max(1, min(int(top_k), 8))
         scope = (scope or "both").lower()
         out: dict[str, object] = {"queries": query_list, "filters": filters}
-        if scope in ("prose", "both"):
-            out["prose_hits"] = self.index.search_prose(query_list, filters, top_k)
-        if scope in ("tables", "table", "both"):
-            out["table_hits"] = self.index.search_tables(query_list, filters, top_k)
+        prose = self.index.search_prose(query_list, filters, top_k) if scope in ("prose", "both") else []
+        tables = self.index.search_tables(query_list, filters, top_k) if scope in ("tables", "table", "both") else []
+        ranked = [(float(item.get("score", 0.0)), "prose", item) for item in prose]
+        ranked += [(float(item.get("score", 0.0)), "table", item) for item in tables]
+        ranked.sort(key=lambda item: item[0], reverse=True)
+        selected = ranked[:MAX_SEARCH_HITS]
+        out["prose_hits"] = [_compact_hit(item, kind="prose") for _, kind, item in selected if kind == "prose"]
+        out["table_hits"] = [_compact_hit(item, kind="table") for _, kind, item in selected if kind == "table"]
+        out["returned_hits"] = len(selected)
         return _tool_result(out)
 
     @tool
@@ -133,7 +203,7 @@ class Bm25Tool:
         grep_type: Annotated[str, "Backend choice: text, pdfgrep, or rga."] = "text",
     ) -> ToolResult:
         result = self.index.grep_document(document_id, patterns, page_start, page_end, context_lines)
-        return _tool_result({"grep_type_requested": grep_type, "backend_used": "page_text", "matches": result})
+        return _tool_result({"grep_type_requested": grep_type, "backend_used": "page_text", "matches": _compact_matches(result), "returned_matches": min(len(result), MAX_SEARCH_HITS)})
 
     @tool
     async def search_tables(
@@ -145,8 +215,8 @@ class Bm25Tool:
         top_k: Annotated[int, "Maximum table candidates."] = 3,
     ) -> ToolResult:
         filters = {"document_id": document_id, "company": company, "year": year}
-        hits = self.index.search_tables(query_list, filters, max(1, min(int(top_k), 8)))
-        return _tool_result({"queries": query_list, "table_hits": hits})
+        hits = self.index.search_tables(query_list, filters, max(1, min(int(top_k), MAX_SEARCH_HITS)))
+        return _tool_result({"queries": query_list, "table_hits": [_compact_hit(item, kind="table") for item in hits[:MAX_SEARCH_HITS]], "returned_hits": min(len(hits), MAX_SEARCH_HITS)})
 
     @tool
     async def read(
@@ -157,15 +227,17 @@ class Bm25Tool:
         end: Annotated[int, "Character end; bounded by the harness."] = hb.MAX_READ,
         passage_id: Annotated[str, "Optional passage_id returned by search."] = "",
     ) -> ToolResult:
-        return _tool_result(self.index.read(document_id, page, start, end, passage_id))
+        return _tool_result(_bound_read_payload(self.index.read(document_id, page, start, end, passage_id)))
 
     @tool
     async def read_table(
         self,
         table_id: Annotated[str, "Exact table_id returned by search_tables."],
         include_neighbors: Annotated[bool, "Include nearby page context for headers and footnotes."] = True,
+        start: Annotated[int, "Character start within the table body."] = 0,
+        end: Annotated[int, "Character end; bounded by the harness."] = hb.MAX_READ,
     ) -> ToolResult:
-        return _tool_result(self.index.read_table(table_id, include_neighbors))
+        return _tool_result(_bound_read_payload(self.index.read_table(table_id, include_neighbors, start, end)))
 
     @tool
     async def calculate(
@@ -421,14 +493,36 @@ class FinanceAnswerReward:
         metrics["hard_gate_veto"] = float(judge_parts.get("hard_gate", "pass") != "pass")
         return float(best.get("grounded", 0.0)), metrics
 
+def _repaired_train_dev_rows(rows: list[dict]) -> tuple[list[dict], list[dict]]:
+    """Reserve 12 stable, document-diverse development questions from train."""
+    ordered = sorted(rows, key=lambda row: (str(row.get("doc_name", "")), str(row.get("financebench_id", ""))))
+    selected: list[dict] = []
+    seen_docs: set[str] = set()
+    for row in ordered:
+        doc = str(row.get("doc_name", ""))
+        if doc not in seen_docs:
+            selected.append(row)
+            seen_docs.add(doc)
+        if len(selected) == 12:
+            break
+    if len(selected) < 12:
+        selected_ids = {row.get("financebench_id") for row in selected}
+        selected.extend(row for row in ordered if row.get("financebench_id") not in selected_ids)[: 12 - len(selected)]
+    dev_ids = {row.get("financebench_id") for row in selected}
+    return [row for row in rows if row.get("financebench_id") not in dev_ids], selected
+
+
 def load_financebench(split_name: str = "train") -> list[dict]:
-    """Load the frozen split, keeping held-out eval isolated from training."""
+    """Load frozen splits plus the deterministic repaired 96/12 train/dev split."""
     split_path = hb.BASE / "split.json"
     if split_path.exists():
         split = json.loads(split_path.read_text())
-        rows = split.get(split_name, [])
+        rows = split.get("train", []) if split_name in {"train96", "dev"} else split.get(split_name, [])
     else:
         rows = [json.loads(line) for line in (hb.DATA / "financebench_merged.jsonl").read_text().splitlines()]
+    if split_name in {"train96", "dev"}:
+        train_rows, dev_rows = _repaired_train_dev_rows(rows)
+        rows = train_rows if split_name == "train96" else dev_rows
     out = []
     for row in rows:
         answer = str(row.get("answer") or "").strip()
@@ -456,7 +550,7 @@ def _initial_messages(datum: dict, renderer: Renderer, tool_obj: Bm25Tool) -> li
 
 
 class FinanceSearchEnvGroupBuilder(EnvGroupBuilder):
-    def __init__(self, datum, model_name, renderer_name, max_turns, group_size, tool_obj, format_coef=0.0, max_trajectory_tokens=32 * 1024, judge=None, reward_config: RewardConfig | None = None):
+    def __init__(self, datum, model_name, renderer_name, max_turns, group_size, tool_obj, format_coef=0.0, max_trajectory_tokens=32 * 1024, max_generation_tokens=1024, judge=None, reward_config: RewardConfig | None = None):
         self.datum = datum
         self.model_name = model_name
         self.renderer_name = renderer_name
@@ -465,6 +559,7 @@ class FinanceSearchEnvGroupBuilder(EnvGroupBuilder):
         self.tool_obj = tool_obj
         self.format_coef = format_coef
         self.max_trajectory_tokens = max_trajectory_tokens
+        self.max_generation_tokens = max_generation_tokens
         self.judge = judge
         self.reward_config = reward_config or RewardConfig.from_env()
 
@@ -475,7 +570,20 @@ class FinanceSearchEnvGroupBuilder(EnvGroupBuilder):
         initial_messages = _initial_messages(self.datum, renderer, self.tool_obj)
         reward_fn = FinanceAnswerReward(gold_answers=self.datum["answer"], question=self.datum.get("question", ""), format_coef=self.format_coef, judge=self.judge, reward_config=self.reward_config, require_finish=self.reward_config.require_finish)
         tools = [CoercingTool(t) for t in (self.tool_obj.bm25_search, self.tool_obj.grep_document, self.tool_obj.search_tables, self.tool_obj.read, self.tool_obj.read_table, self.tool_obj.calculate, self.tool_obj.finish)]
-        return [build_agent_tool_env(renderer=renderer, tools=tools, initial_messages=initial_messages, reward_fn=reward_fn, model_name=self.model_name, max_turns=self.max_turns, max_trajectory_tokens=self.max_trajectory_tokens) for _ in range(self.group_size)]
+        parse_policy = ParseErrorPolicy(max_consecutive=1, penalty_per_error=0.0, terminal_reward=0.0, mask_error_turns=True)
+        return [build_agent_tool_env(
+            renderer=renderer,
+            tools=tools,
+            initial_messages=initial_messages,
+            reward_fn=reward_fn,
+            model_name=self.model_name,
+            max_turns=self.max_turns,
+            max_trajectory_tokens=self.max_trajectory_tokens,
+            max_generation_tokens=self.max_generation_tokens,
+            failed_parse_reward=0.0,
+            terminate_on_parse_error=True,
+            parse_error_policy=parse_policy,
+        ) for _ in range(self.group_size)]
 
     def logging_tags(self) -> list[str]:
         return ["financebench", "structured_sparse_agent"]
@@ -491,7 +599,9 @@ class FinanceRLDataset(RLDataset):
         return self.builders[s:s + self.batch_size]
 
     def __len__(self):
-        return len(self.builders) // self.batch_size
+        if not self.builders:
+            return 0
+        return (len(self.builders) + self.batch_size - 1) // self.batch_size
 
 
 @chz.chz
@@ -503,6 +613,7 @@ class FinanceDatasetBuilder(RLDatasetBuilder):
     max_turns: int = 6
     format_coef: float = 0.0
     max_trajectory_tokens: int = 32 * 1024
+    max_generation_tokens: int = 1024
     seed: int = 0
     split_name: str = "train"
 
@@ -513,5 +624,5 @@ class FinanceDatasetBuilder(RLDatasetBuilder):
         data = load_financebench(self.split_name)
         rng = random.Random(self.seed)
         rng.shuffle(data)
-        builders = [FinanceSearchEnvGroupBuilder(d, self.model_name_for_tokenizer, self.renderer_name, self.max_turns, self.group_size, tool_obj, self.format_coef, self.max_trajectory_tokens, judge=judge, reward_config=reward_config) for d in data]
+        builders = [FinanceSearchEnvGroupBuilder(d, self.model_name_for_tokenizer, self.renderer_name, self.max_turns, self.group_size, tool_obj, self.format_coef, self.max_trajectory_tokens, self.max_generation_tokens, judge=judge, reward_config=reward_config) for d in data]
         return FinanceRLDataset(builders, self.batch_size), None

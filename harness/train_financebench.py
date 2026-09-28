@@ -40,7 +40,8 @@ def tinker_evaluator_builder(split_name: str = "eval"):
                 batch_size=1,
                 group_size=1,
                 renderer_name=os.environ.get("RENDERER", "nemotron3_ultra"),
-                max_turns=6,
+                max_turns=int(os.environ.get("EVAL_MAX_TURNS", os.environ.get("MAX_TURNS", "8"))),
+                max_generation_tokens=int(os.environ.get("MAX_TOKENS", "1024")),
                 split_name=split_name,
                 seed=0,
             ),
@@ -55,8 +56,12 @@ async def main():
     batch = int(os.environ.get("BATCH", "4"))
     group = int(os.environ.get("GROUP", "8"))
     lr = float(os.environ.get("LR", "2e-5"))
-    max_turns = int(os.environ.get("MAX_TURNS", "6"))
-    split_name = os.environ.get("SPLIT_NAME", "train")
+    max_turns = int(os.environ.get("MAX_TURNS", "8"))
+    max_tokens = int(os.environ.get("MAX_TOKENS", "1024"))
+    lora_rank = int(os.environ.get("LORA_RANK", "32"))
+    temperature = float(os.environ.get("TEMPERATURE", "1.0"))
+    compute_post_kl = os.environ.get("COMPUTE_POST_KL", "false").strip().lower() in {"1", "true", "yes", "on"}
+    split_name = os.environ.get("SPLIT_NAME", "train96")
     renderer = os.environ.get("RENDERER", "nemotron3_ultra")
     seed = int(os.environ.get("SEED", "0"))
     remove_constant_reward_groups = os.environ.get("REMOVE_CONSTANT_REWARD_GROUPS", "false").strip().lower() in {"1", "true", "yes", "on"}
@@ -70,6 +75,7 @@ async def main():
         group_size=group,
         renderer_name=renderer,
         max_turns=max_turns,
+        max_generation_tokens=max_tokens,
         format_coef=0.0,
         seed=seed,
         split_name=split_name,
@@ -83,6 +89,10 @@ async def main():
         "group": group,
         "learning_rate": lr,
         "max_turns": max_turns,
+        "max_tokens": max_tokens,
+        "lora_rank": lora_rank,
+        "temperature": temperature,
+        "compute_post_kl": compute_post_kl,
         "seed": seed,
         "harness": "structured_sparse_agent_v2_grounded_reward",
         "reward_contract": {"answer_primary": True, "evidence_grounding": True, "finish_bonus": False, "format_penalty": False, "finish_required": finance_env.RewardConfig.from_env().require_finish},
@@ -101,8 +111,10 @@ async def main():
         log_path=log_path,
         dataset_builder=builder,
         learning_rate=lr,
-        max_tokens=1024,
-        lora_rank=32,
+        max_tokens=max_tokens,
+        lora_rank=lora_rank,
+        temperature=temperature,
+        compute_post_kl=compute_post_kl,
         max_steps=steps,
         remove_constant_reward_groups=remove_constant_reward_groups,
         eval_every=int(os.environ.get("EVAL_EVERY", "0")),

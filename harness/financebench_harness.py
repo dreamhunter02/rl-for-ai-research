@@ -17,15 +17,16 @@ from collections import Counter, defaultdict
 from pathlib import Path
 from typing import Any
 
-BASE = Path(os.path.expanduser("~/Documents/Research/rl-for-ai-research"))
-FILINGS = BASE / "filings"
-TEXTDIR = BASE / "text"
-DATA = BASE / "data"
-CACHE = BASE / "artifacts" / "page_cache"
+BASE = Path(os.environ.get("FINANCEBENCH_BASE", os.path.expanduser("~/Documents/Research/rl-for-ai-research"))).expanduser()
+FILINGS = Path(os.environ.get("FINANCEBENCH_FILINGS", BASE / "filings")).expanduser()
+TEXTDIR = Path(os.environ.get("FINANCEBENCH_TEXT", BASE / "text")).expanduser()
+DATA = Path(os.environ.get("FINANCEBENCH_DATA", BASE / "data")).expanduser()
+CACHE = Path(os.environ.get("FINANCEBENCH_CACHE", BASE / "artifacts" / "page_cache")).expanduser()
 TOP_K = 5
 PASSAGE_LEN = 2200
 PASSAGE_OVERLAP = 300
 MAX_READ = 8000
+PAGE_CACHE_VERSION = 2
 
 _TOKEN_RE = re.compile(r"[A-Za-z0-9][A-Za-z0-9%$./-]*")
 _YEAR_RE = re.compile(r"(?<!\d)(20\d{2})(?!\d)")
@@ -109,16 +110,17 @@ def load_pages(doc_name: str, use_cache: bool = True, use_pdf_pages: bool | None
     CACHE.mkdir(parents=True, exist_ok=True)
     cache_path = CACHE / f"{doc_name}.json"
     if use_pdf_pages is None:
-        use_pdf_pages = os.environ.get("FINANCEBENCH_PDF_PAGES", "0") == "1"
+        use_pdf_pages = os.environ.get("FINANCEBENCH_PDF_PAGES", "1") == "1"
+    pdf_path = FILINGS / f"{doc_name}.pdf"
+    txt_path = TEXTDIR / f"{doc_name}.txt"
+    source_mode = "pdf" if use_pdf_pages and pdf_path.exists() else "text"
     if use_cache and cache_path.exists():
         try:
             value = json.loads(cache_path.read_text())
-            if isinstance(value, list) and value:
-                return value
+            if isinstance(value, dict) and value.get("version") == PAGE_CACHE_VERSION and value.get("source") == source_mode and isinstance(value.get("rows"), list) and value["rows"]:
+                return value["rows"]
         except Exception:
             pass
-    pdf_path = FILINGS / f"{doc_name}.pdf"
-    txt_path = TEXTDIR / f"{doc_name}.txt"
     pages = _extract_pages(pdf_path) if use_pdf_pages and pdf_path.exists() else []
     if not pages and txt_path.exists():
         pages = [_clean_text(txt_path.read_text(errors="ignore"))]
@@ -134,7 +136,9 @@ def load_pages(doc_name: str, use_cache: bool = True, use_pdf_pages: bool | None
             "text": text,
             "section": _section_hint(text),
         })
-    cache_path.write_text(json.dumps(rows, ensure_ascii=False))
+    if not any(row.get("text", "").strip() for row in rows):
+        raise FileNotFoundError(f"Missing or empty filing text for {doc_name}; checked {pdf_path} and {txt_path}")
+    cache_path.write_text(json.dumps({"version": PAGE_CACHE_VERSION, "source": source_mode, "rows": rows}, ensure_ascii=False))
     return rows
 
 
@@ -331,29 +335,44 @@ class StructuredIndex:
     def read(self, document_id: str, page: int = -1, start: int = 0, end: int = MAX_READ, passage_id: str = "") -> dict[str, Any]:
         if passage_id and passage_id in self.passages_by_id:
             item = self.passages_by_id[passage_id]
-            return {k: v for k, v in item.items() if not k.startswith("_")}
+            out = {k: v for k, v in item.items() if not k.startswith("_")}
+            out.update({"start": item.get("start", 0), "end": item.get("end", len(item.get("text", ""))), "has_more": False, "next_start": None})
+            return out
         pages = self.pages_by_doc.get(document_id, [])
         selected = [x for x in pages if page < 1 or x["page"] == page]
         if not selected:
             return {"error": f"Unknown document/page: {document_id}/{page}"}
         text = "\n\n".join(x["text"] for x in selected)
         start = max(0, int(start))
-        end = min(len(text), max(start, int(end)), start + MAX_READ)
+        requested_end = max(start, int(end))
+        bounded_end = min(len(text), requested_end, start + MAX_READ)
         return {
             "document_id": document_id,
             "page_start": selected[0]["page"],
             "page_end": selected[-1]["page"],
             "start": start,
-            "end": end,
-            "text": text[start:end],
-            "provenance": f"{document_id}:pages={selected[0]['page']}-{selected[-1]['page']}:chars={start}-{end}",
+            "end": bounded_end,
+            "total_chars": len(text),
+            "has_more": bounded_end < len(text),
+            "next_start": bounded_end if bounded_end < len(text) else None,
+            "text": text[start:bounded_end],
+            "provenance": f"{document_id}:pages={selected[0]['page']}-{selected[-1]['page']}:chars={start}-{bounded_end}",
         }
 
-    def read_table(self, table_id: str, include_neighbors: bool = True) -> dict[str, Any]:
+    def read_table(self, table_id: str, include_neighbors: bool = True, start: int = 0, end: int = MAX_READ) -> dict[str, Any]:
         item = self.tables_by_id.get(table_id)
         if not item:
             return {"error": f"Unknown table_id: {table_id}"}
         out = {k: v for k, v in item.items() if not k.startswith("_")}
+        text = str(out.get("text", ""))
+        start = max(0, int(start))
+        bounded_end = min(len(text), max(start, int(end)), start + MAX_READ)
+        out["start"] = start
+        out["end"] = bounded_end
+        out["total_chars"] = len(text)
+        out["has_more"] = bounded_end < len(text)
+        out["next_start"] = bounded_end if bounded_end < len(text) else None
+        out["text"] = text[start:bounded_end]
         if include_neighbors:
             page = item["page"]
             doc = item["document_id"]
@@ -511,18 +530,18 @@ def _numbers_match(gold: str, candidate: str) -> tuple[bool, int]:
     for gold_value, gold_pct in gold_mentions:
         found = False
         for candidate_value, candidate_pct in candidate_mentions:
-            variants = [candidate_value] if candidate_pct else [candidate_value, candidate_value / 1e3, candidate_value / 1e6, candidate_value / 1e9]
-            for comparable_value in variants:
-                if gold_value == 0:
-                    close = abs(comparable_value) <= (0.005 if gold_pct else 0.01)
-                elif gold_pct or candidate_pct:
-                    close = abs(abs(gold_value) - abs(comparable_value)) <= max(0.01, abs(gold_value) * 0.005)
-                else:
-                    close = abs(gold_value - comparable_value) <= max(0.01, abs(gold_value) * (0.02 if abs(gold_value) >= 1e6 else 0.005))
-                if close:
-                    found = True
-                    break
-            if found:
+            # Scale is normalized only from explicit currency/scale markers;
+            # do not speculate by dividing arbitrary numbers by powers of ten.
+            comparable_value = candidate_value
+            if gold_value == 0:
+                close = abs(comparable_value) <= (0.005 if gold_pct else 0.01)
+            elif gold_pct or candidate_pct:
+                # Preserve the sign: -4.2% and +4.2% are contradictions.
+                close = abs(gold_value - comparable_value) <= max(0.01, abs(gold_value) * 0.005)
+            else:
+                close = abs(gold_value - comparable_value) <= max(0.01, abs(gold_value) * 0.005)
+            if close:
+                found = True
                 break
         matched += int(found)
     return matched == len(gold_mentions), matched
@@ -639,7 +658,7 @@ def _trace_evidence_text(trace: list[dict[str, Any]] | None) -> tuple[str, str]:
         if isinstance(value, dict):
             parts = []
             for key, child in value.items():
-                if key in {"text", "content", "neighbor_context", "title", "section", "document_id", "provenance"}:
+                if key in {"text", "snippet", "content", "neighbor_context", "title", "section", "document_id", "provenance"}:
                     parts.append(flatten(child))
                 elif key in {"prose_hits", "table_hits", "matches", "read", "table"}:
                     parts.append(flatten(child))
@@ -676,16 +695,16 @@ def _trace_evidence_text(trace: list[dict[str, Any]] | None) -> tuple[str, str]:
 def _number_supported(mention: tuple[float, bool, str], evidence_text: str) -> bool:
     expected, expected_pct, _ = mention
     for observed, observed_pct, _ in _number_mentions(evidence_text):
-        candidates = [observed] if observed_pct else [observed, observed / 1e3, observed / 1e6, observed / 1e9]
-        for value in candidates:
-            if expected_pct or observed_pct:
-                close = abs(abs(expected) - abs(value)) <= max(0.01, abs(expected) * 0.005)
-            elif expected == 0:
-                close = abs(value) <= 0.01
-            else:
-                close = abs(expected - value) <= max(0.01, abs(expected) * (0.02 if abs(expected) >= 1e6 else 0.005))
-            if close:
-                return True
+        # Compare explicitly normalized units; do not infer scale by division.
+        value = observed
+        if expected_pct or observed_pct:
+            close = abs(expected - value) <= max(0.01, abs(expected) * 0.005)
+        elif expected == 0:
+            close = abs(value) <= 0.01
+        else:
+            close = abs(expected - value) <= max(0.01, abs(expected) * 0.005)
+        if close:
+            return True
     return False
 
 

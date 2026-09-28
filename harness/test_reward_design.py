@@ -3,6 +3,7 @@ import unittest
 from pathlib import Path
 
 import financebench_harness as hb
+
 from reward_calculation import _numeric_or_decision_hard_veto
 
 
@@ -36,6 +37,20 @@ class RewardDesignTests(unittest.TestCase):
         )
         self.assertGreaterEqual(hb.reward("Operating margin decreased by 1.7% due to litigation and PFAS exit costs.", answer), 0.9)
 
+
+    def test_read_exposes_pagination_and_preserves_page_provenance(self):
+        index = hb.StructuredIndex(
+            [{"document_id": "doc", "page": 1, "text": "x" * 9000, "company": "Co", "year": 2024, "filing_type": "10-K", "section": ""}],
+            [],
+            [],
+        )
+        result = index.read("doc", page=1, start=0, end=8000)
+        self.assertEqual(result["page_start"], 1)
+        self.assertEqual(result["start"], 0)
+        self.assertEqual(result["end"], 8000)
+        self.assertTrue(result["has_more"])
+        self.assertEqual(result["next_start"], 8000)
+
     def test_missing_required_numeric_claim_fails_grounding(self):
         trace = [
             {"role": "assistant", "tool_calls": [{"name": "bm25_search", "call_id": "c1"}]},
@@ -61,6 +76,12 @@ class RewardDesignTests(unittest.TestCase):
             _numeric_or_decision_hard_veto("No. quick ratio was 0.54.", "No. quick ratio was 0.64"),
             (True, "numeric_mismatch"),
         )
+
+
+    def test_numeric_comparison_preserves_sign_and_declared_scale(self):
+        self.assertEqual(hb._numbers_match("Margin was -4.2%.", "Margin was 4.2%."), (False, 0))
+        self.assertEqual(hb._numbers_match("Revenue was $4.2B.", "Revenue was $4200M."), (True, 1))
+        self.assertEqual(hb._numbers_match("Revenue was $4.2B.", "Revenue was $4.2M."), (False, 0))
 
     def test_adversarial_wrong_answers_do_not_pass(self):
         self.assertLessEqual(hb.reward("No. quick ratio was 0.54 for Verizon.", "Answer: No, quick ratio was 0.64"), 0.5)
