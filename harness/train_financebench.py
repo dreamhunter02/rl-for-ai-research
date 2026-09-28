@@ -124,6 +124,7 @@ async def main():
         compute_post_kl=compute_post_kl,
         max_steps=steps,
         remove_constant_reward_groups=remove_constant_reward_groups,
+        termination=TerminationRewardPolicy(zero_reward_on_limit=True, skip_grading_on_timeout=True),
         eval_every=eval_every,
         save_every=int(os.environ.get("SAVE_EVERY", "0")),
         evaluator_builders=[tinker_evaluator_builder(eval_split, eval_dataset)] if eval_every > 0 and eval_dataset is not None else [],
