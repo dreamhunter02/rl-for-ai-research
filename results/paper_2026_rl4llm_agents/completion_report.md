@@ -30,7 +30,9 @@ These 12-question dev measurements show no controlled improvement over the initi
 
 ## Baselines and evaluation boundary
 
-The one-question repaired-base smoke is in `b1_base_dev1.json`; the 12-question repaired-base run used for the E2 initial comparison is preserved in the E2 iteration-000000 evaluation summaries. The fixed 42-question evaluation split was previously inspected and is therefore not described as untouched. The current repaired-base eval42 job is recorded separately when complete.
+The one-question repaired-base smoke is in `b1_base_dev1.json`; the 12-question repaired-base run used for the E2 initial comparison is preserved in the E2 iteration-000000 evaluation summaries. The fixed 42-question evaluation split was previously inspected and is therefore not described as untouched. The completed repaired-base B1 eval42 result is recorded in `b1_base_eval42.json` and summarized in `B1_EVAL42_SUMMARY.json`: mean reward `0.26146`, accepted finish rate `18/42` (`42.86%`), mean answer quality `0.35476`, mean evidence quality `0.19271`, and correct-and-finished grounded accuracy `5/42` (`11.90%`). There were 24 missing finishes, zero infrastructure errors, zero semantic-judge calls, and one hard-gate veto.
+
+The B1 result is a repaired-base measurement, not evidence that GRPO improved the model. The E2 dev trajectory returned to its initial `0.16458` mean at update 2 after falling to `0.11458` at update 1, so the protocol gate correctly blocks a large R1 run. No unsupported R1 or B0 improvement claim is made.
 
 The old `results/local_eval/nemotron35_base_eval42_corrected_v1.json` is legacy diagnostic evidence from the earlier harness and is not used as a causal B0/B1 comparison. B0 under the repaired fixed-question protocol requires a separate execution from the original harness; no unsupported B0 number is substituted.
 
@@ -39,7 +41,7 @@ The old `results/local_eval/nemotron35_base_eval42_corrected_v1.json` is legacy 
 - `protocol.md`, `split_manifest.json`, `e0_preflight.json`
 - `e1_capability_tests.json`
 - `E2_SUMMARY.json`, exact Tinker config, checkpoints, metrics, raw rollout summaries, trace events, and log trees under the E2 run directory
-- `b1_base_dev1.json` and the repaired-base dev artifacts
+- `b1_base_dev1.json`, `b1_base_eval42.json`, `B1_EVAL42_SUMMARY.json`, and the repaired-base dev artifacts
 - source implementation under `harness/`
 
 All result files are intended to be reproducible artifacts; credentials, API keys, tokens, and connection strings are not included.
