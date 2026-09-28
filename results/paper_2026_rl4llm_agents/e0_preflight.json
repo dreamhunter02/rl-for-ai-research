@@ -21,7 +21,7 @@
   },
   "source_hashes": {
     "harness/financebench_harness.py": "bbed234bfd2ac7317c07e7273d5d57c91b79b699d2e2872f15289999f1cd042b",
-    "harness/finance_env.py": "bb78445e6088aae4bcb0b52b6d905ae7f596b61a9ae035e9e220327fb359943c",
+    "harness/finance_env.py": "e61af8f0cd8674a53e46495094009d129bbd571c0733ae3f212ea649092f6369",
     "harness/reward_calculation.py": "dd9ca95ef44f4d9f738fa025b67390aa2dff0d5dc833c08ab713306ed3b4939d",
     "configs/nemotron35_lightning_grpo_reward_v2.json": "1c6fb863708470a4dc37038f485096cf5970acf169964c6d6213b3c573ca9666"
   },
@@ -39,7 +39,9 @@
       "read": [],
       "read_table": [],
       "calculate": [],
-      "finish": []
+      "finish": [
+        "citations"
+      ]
     },
     "search_chars": 2716,
     "search_valid_json": true,
