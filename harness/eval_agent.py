@@ -267,7 +267,7 @@ def main() -> None:
     if args.backend == "openai" and not openai_key():
         raise SystemExit("OPENAI_API_KEY is not available in the environment or Hermes .env")
     rows = rows_for_eval(args.limit, args.split)
-    index = hb.build_index()
+    index = hb.build_index(doc_names=sorted({str(row.get("doc", "")) for row in rows if row.get("doc")}))
     judge = fe.build_judge(fe.RewardConfig.from_env())
     Path(args.out).parent.mkdir(parents=True, exist_ok=True)
     records = []

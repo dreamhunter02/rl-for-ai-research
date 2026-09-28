@@ -682,10 +682,11 @@ class FinanceDatasetBuilder(RLDatasetBuilder):
     split_name: str = "train"
 
     async def __call__(self):
-        tool_obj = await Bm25Tool.build()
         reward_config = RewardConfig.from_env()
         judge = build_judge(reward_config)
         data = load_financebench(self.split_name)
+        doc_names = sorted({str(item.get("doc", "")) for item in data if item.get("doc")})
+        tool_obj = await Bm25Tool.build(doc_names=doc_names)
         rng = random.Random(self.seed)
         rng.shuffle(data)
         builders = [FinanceSearchEnvGroupBuilder(d, self.model_name_for_tokenizer, self.renderer_name, self.max_turns, self.group_size, tool_obj, self.format_coef, self.max_trajectory_tokens, self.max_generation_tokens, judge=judge, reward_config=reward_config) for d in data]
