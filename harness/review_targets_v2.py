@@ -6,7 +6,19 @@ from workshop_reward import EpisodeState, numbers_equal, typed_number, validate_
 import financebench_harness as hb
 _PAGE_CACHE={}
 SCHEMA_VERSION='financebench-workshop-targets-v2'
-RUBRIC_VERSION='workshop-rubric-v2-derived-provenance'
+RUBRIC_VERSION='workshop-rubric-v3-source-rounding'
+# FinanceBench sometimes formats a rounded answer with trailing zeroes that do
+# not represent the requested/source precision.  These direct-extraction
+# targets were checked against their cited statements; preserve the benchmark
+# value while grading at the precision used to produce it.
+DIRECT_PRECISION={
+ '05718':('0.4',1),
+ '07661':('382',0),
+ '03882':('1616',0),
+ '04171':('303',0),
+ '03282':('5466',0),
+ '04980':('4.6',1),
+}
 # value, metric token, period, page, source label
 D={
 '07966':('((-c17)/r17+(-c18)/r18+(-c19)/r19)/3*100',{'c17':(-155,'capital','2017',73,'Capital expenditures'),'c18':(-131,'capital','2018',73,'Capital expenditures'),'c19':(-116,'capital','2019',73,'Capital expenditures'),'r17':(7017,'revenue','2017',70,'Total net revenues'),'r18':(7500,'revenue','2018',70,'Total net revenues'),'r19':(6489,'revenue','2019',70,'Total net revenues')}),
@@ -114,6 +126,8 @@ def build(split,old):
    elif '%' in r['answer']:t['unit'],t['scale']='percent','ones'
    elif any(x in z for x in ('ratio','roa','margin','turnover','dpo','ccc','working capital ratio')):t['unit'],t['scale']='number','ones'
   dk=q.rsplit('_',1)[-1]
+  if dk in DIRECT_PRECISION:
+   t['value'],t['precision']=DIRECT_PRECISION[dk]
   if dk in D:
    ex,ss=D[dk]; t['derived']=True;t['expression']=ex;ops={};sup=[]
    for name,(val,met,per,pg,lab) in ss.items():

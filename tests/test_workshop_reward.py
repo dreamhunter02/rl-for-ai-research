@@ -97,6 +97,24 @@ class ProvenanceAttackTests(unittest.TestCase):
             state.calculate('x*1',{'x':{'value':'100','unit':'USD','scale':'million','metric':'Profit','period':'2023','receipt_id':receipt,'quote':'Profit in 2023 was USD 100 million.'}})
 
 class ReviewRegressionTests(unittest.TestCase):
+    def test_direct_source_values_match_benchmark_rounding_precision(self):
+        cases = [
+            ('0.4', 1, '0.389', 'billion'),
+            ('382', 0, '381.603', 'million'),
+            ('1616', 0, '1615.9', 'million'),
+            ('303', 0, '302.578', 'million'),
+            ('5466', 0, '5466.312', 'million'),
+            ('4.6', 1, '4.625', 'billion'),
+        ]
+        for gold, precision, source_value, scale in cases:
+            target={'reviewed':True,'answer_type':'numeric','value':gold,
+                    'unit':'USD','scale':scale,'precision':precision}
+            for candidate in (gold, source_value):
+                answer={'answer_type':'numeric','value':candidate,
+                        'unit':'USD','scale':scale}
+                with self.subTest(gold=gold,candidate=candidate):
+                    self.assertEqual(score_submission(target,answer,EpisodeState())['A'],1)
+
     def test_unhashable_citation_ids_fail_validation(self):
         target={'reviewed':True,'answer_type':'numeric','value':'1','unit':'USD','scale':'ones','precision':0}
         for field in ('receipt_id','document_id'):

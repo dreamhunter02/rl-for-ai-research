@@ -23,7 +23,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance"
+    "rubric_version": "workshop-rubric-v3-source-rounding"
   },
   "financebench_id_01226": {
     "reviewed": true,
@@ -54,7 +54,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance"
+    "rubric_version": "workshop-rubric-v3-source-rounding"
   },
   "financebench_id_01865": {
     "reviewed": true,
@@ -82,7 +82,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance"
+    "rubric_version": "workshop-rubric-v3-source-rounding"
   },
   "financebench_id_00941": {
     "reviewed": true,
@@ -113,7 +113,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance"
+    "rubric_version": "workshop-rubric-v3-source-rounding"
   },
   "financebench_id_01858": {
     "reviewed": true,
@@ -141,7 +141,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance"
+    "rubric_version": "workshop-rubric-v3-source-rounding"
   },
   "financebench_id_07966": {
     "reviewed": true,
@@ -196,7 +196,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance",
+    "rubric_version": "workshop-rubric-v3-source-rounding",
     "expression": "((-c17)/r17+(-c18)/r18+(-c19)/r19)/3*100",
     "operands": {
       "c17": {
@@ -323,7 +323,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance"
+    "rubric_version": "workshop-rubric-v3-source-rounding"
   },
   "financebench_id_01319": {
     "reviewed": true,
@@ -349,7 +349,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance"
+    "rubric_version": "workshop-rubric-v3-source-rounding"
   },
   "financebench_id_10420": {
     "reviewed": true,
@@ -386,7 +386,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance",
+    "rubric_version": "workshop-rubric-v3-source-rounding",
     "expression": "ni22/((a21+a22)/2)",
     "operands": {
       "ni22": {
@@ -468,7 +468,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance",
+    "rubric_version": "workshop-rubric-v3-source-rounding",
     "expression": "(r17-r16)/r16*100",
     "operands": {
       "r17": {
@@ -531,7 +531,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance"
+    "rubric_version": "workshop-rubric-v3-source-rounding"
   },
   "financebench_id_01079": {
     "reviewed": true,
@@ -564,7 +564,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance"
+    "rubric_version": "workshop-rubric-v3-source-rounding"
   },
   "financebench_id_01148": {
     "reviewed": true,
@@ -592,7 +592,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance"
+    "rubric_version": "workshop-rubric-v3-source-rounding"
   },
   "financebench_id_00222": {
     "reviewed": true,
@@ -621,7 +621,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance"
+    "rubric_version": "workshop-rubric-v3-source-rounding"
   },
   "financebench_id_00995": {
     "reviewed": true,
@@ -652,7 +652,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance"
+    "rubric_version": "workshop-rubric-v3-source-rounding"
   },
   "financebench_id_01198": {
     "reviewed": true,
@@ -680,7 +680,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance"
+    "rubric_version": "workshop-rubric-v3-source-rounding"
   },
   "financebench_id_00917": {
     "reviewed": true,
@@ -708,7 +708,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance"
+    "rubric_version": "workshop-rubric-v3-source-rounding"
   },
   "financebench_id_01279": {
     "reviewed": true,
@@ -736,7 +736,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance"
+    "rubric_version": "workshop-rubric-v3-source-rounding"
   },
   "financebench_id_00563": {
     "reviewed": true,
@@ -764,7 +764,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance"
+    "rubric_version": "workshop-rubric-v3-source-rounding"
   },
   "financebench_id_00757": {
     "reviewed": true,
@@ -792,7 +792,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance"
+    "rubric_version": "workshop-rubric-v3-source-rounding"
   },
   "financebench_id_00476": {
     "reviewed": true,
@@ -820,7 +820,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance"
+    "rubric_version": "workshop-rubric-v3-source-rounding"
   },
   "financebench_id_01028": {
     "reviewed": true,
@@ -848,7 +848,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance"
+    "rubric_version": "workshop-rubric-v3-source-rounding"
   },
   "financebench_id_00723": {
     "reviewed": true,
@@ -876,7 +876,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance"
+    "rubric_version": "workshop-rubric-v3-source-rounding"
   },
   "financebench_id_00720": {
     "reviewed": true,
@@ -904,7 +904,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance"
+    "rubric_version": "workshop-rubric-v3-source-rounding"
   },
   "financebench_id_01351": {
     "reviewed": true,
@@ -932,7 +932,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance"
+    "rubric_version": "workshop-rubric-v3-source-rounding"
   },
   "financebench_id_01964": {
     "reviewed": true,
@@ -960,7 +960,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance"
+    "rubric_version": "workshop-rubric-v3-source-rounding"
   },
   "financebench_id_01981": {
     "reviewed": true,
@@ -988,7 +988,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance"
+    "rubric_version": "workshop-rubric-v3-source-rounding"
   },
   "financebench_id_05718": {
     "reviewed": true,
@@ -1006,15 +1006,15 @@
     ],
     "review_notes": "Automated source-span audit completed; no human semantic review claimed. Target typing/value/precision follows the recorded FinanceBench answer and must be treated as a conservative frozen rubric.",
     "answer_type": "numeric",
-    "value": "0.40",
+    "value": "0.4",
     "unit": "USD",
     "scale": "billions",
-    "precision": 2,
+    "precision": 1,
     "reviewed_by": "JARVIS",
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance"
+    "rubric_version": "workshop-rubric-v3-source-rounding"
   },
   "financebench_id_00070": {
     "reviewed": true,
@@ -1049,7 +1049,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance"
+    "rubric_version": "workshop-rubric-v3-source-rounding"
   },
   "financebench_id_02608": {
     "reviewed": true,
@@ -1104,7 +1104,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance",
+    "rubric_version": "workshop-rubric-v3-source-rounding",
     "expression": "((n17/r17+n16/r16+n15/r15)/3)*100",
     "operands": {
       "n17": {
@@ -1231,7 +1231,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance"
+    "rubric_version": "workshop-rubric-v3-source-rounding"
   },
   "financebench_id_01077": {
     "reviewed": true,
@@ -1259,7 +1259,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance"
+    "rubric_version": "workshop-rubric-v3-source-rounding"
   },
   "financebench_id_01275": {
     "reviewed": true,
@@ -1287,7 +1287,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance"
+    "rubric_version": "workshop-rubric-v3-source-rounding"
   },
   "financebench_id_03838": {
     "reviewed": true,
@@ -1318,7 +1318,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance",
+    "rubric_version": "workshop-rubric-v3-source-rounding",
     "expression": "(r20-r19)/r19*100",
     "operands": {
       "r20": {
@@ -1371,15 +1371,15 @@
     ],
     "review_notes": "Automated source-span audit completed; no human semantic review claimed. Target typing/value/precision follows the recorded FinanceBench answer and must be treated as a conservative frozen rubric.",
     "answer_type": "numeric",
-    "value": "382.00",
+    "value": "382",
     "unit": "USD",
     "scale": "millions",
-    "precision": 2,
+    "precision": 0,
     "reviewed_by": "JARVIS",
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance"
+    "rubric_version": "workshop-rubric-v3-source-rounding"
   },
   "financebench_id_00517": {
     "reviewed": true,
@@ -1409,7 +1409,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance"
+    "rubric_version": "workshop-rubric-v3-source-rounding"
   },
   "financebench_id_01091": {
     "reviewed": true,
@@ -1438,7 +1438,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance"
+    "rubric_version": "workshop-rubric-v3-source-rounding"
   },
   "financebench_id_00678": {
     "reviewed": true,
@@ -1469,7 +1469,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance"
+    "rubric_version": "workshop-rubric-v3-source-rounding"
   },
   "financebench_id_01290": {
     "reviewed": true,
@@ -1512,7 +1512,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance"
+    "rubric_version": "workshop-rubric-v3-source-rounding"
   },
   "financebench_id_00464": {
     "reviewed": true,
@@ -1540,7 +1540,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance"
+    "rubric_version": "workshop-rubric-v3-source-rounding"
   },
   "financebench_id_00494": {
     "reviewed": true,
@@ -1568,7 +1568,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance"
+    "rubric_version": "workshop-rubric-v3-source-rounding"
   },
   "financebench_id_00585": {
     "reviewed": true,
@@ -1596,7 +1596,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance"
+    "rubric_version": "workshop-rubric-v3-source-rounding"
   },
   "financebench_id_03473": {
     "reviewed": true,
@@ -1633,7 +1633,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance",
+    "rubric_version": "workshop-rubric-v3-source-rounding",
     "expression": "ni17/((a16+a17)/2)",
     "operands": {
       "ni17": {
@@ -1715,7 +1715,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance",
+    "rubric_version": "workshop-rubric-v3-source-rounding",
     "expression": "-d22/ni22",
     "operands": {
       "d22": {
@@ -1805,7 +1805,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance",
+    "rubric_version": "workshop-rubric-v3-source-rounding",
     "expression": "((oi19/r19+oi20/r20+oi21/r21)/3)*100",
     "operands": {
       "oi19": {
@@ -1932,7 +1932,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance"
+    "rubric_version": "workshop-rubric-v3-source-rounding"
   },
   "financebench_id_00005": {
     "reviewed": true,
@@ -1962,7 +1962,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance"
+    "rubric_version": "workshop-rubric-v3-source-rounding"
   },
   "financebench_id_04209": {
     "reviewed": true,
@@ -1988,7 +1988,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance"
+    "rubric_version": "workshop-rubric-v3-source-rounding"
   },
   "financebench_id_00790": {
     "reviewed": true,
@@ -2023,7 +2023,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance"
+    "rubric_version": "workshop-rubric-v3-source-rounding"
   },
   "financebench_id_01107": {
     "reviewed": true,
@@ -2068,7 +2068,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance"
+    "rubric_version": "workshop-rubric-v3-source-rounding"
   },
   "financebench_id_01244": {
     "reviewed": true,
@@ -2096,7 +2096,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance"
+    "rubric_version": "workshop-rubric-v3-source-rounding"
   },
   "financebench_id_00822": {
     "reviewed": true,
@@ -2125,7 +2125,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance"
+    "rubric_version": "workshop-rubric-v3-source-rounding"
   },
   "financebench_id_03471": {
     "reviewed": true,
@@ -2156,7 +2156,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance",
+    "rubric_version": "workshop-rubric-v3-source-rounding",
     "expression": "ca20/cl20",
     "operands": {
       "ca20": {
@@ -2222,7 +2222,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance",
+    "rubric_version": "workshop-rubric-v3-source-rounding",
     "expression": "ocf20+capex20",
     "operands": {
       "ocf20": {
@@ -2288,7 +2288,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance",
+    "rubric_version": "workshop-rubric-v3-source-rounding",
     "expression": "1+d22/ni22",
     "operands": {
       "d22": {
@@ -2351,7 +2351,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance"
+    "rubric_version": "workshop-rubric-v3-source-rounding"
   },
   "financebench_id_00669": {
     "reviewed": true,
@@ -2379,7 +2379,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance"
+    "rubric_version": "workshop-rubric-v3-source-rounding"
   },
   "financebench_id_00711": {
     "reviewed": true,
@@ -2414,7 +2414,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance"
+    "rubric_version": "workshop-rubric-v3-source-rounding"
   },
   "financebench_id_00651": {
     "reviewed": true,
@@ -2442,7 +2442,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance"
+    "rubric_version": "workshop-rubric-v3-source-rounding"
   },
   "financebench_id_01484": {
     "reviewed": true,
@@ -2470,7 +2470,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance"
+    "rubric_version": "workshop-rubric-v3-source-rounding"
   },
   "financebench_id_00299": {
     "reviewed": true,
@@ -2499,7 +2499,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance"
+    "rubric_version": "workshop-rubric-v3-source-rounding"
   },
   "financebench_id_02119": {
     "reviewed": true,
@@ -2527,7 +2527,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance"
+    "rubric_version": "workshop-rubric-v3-source-rounding"
   },
   "financebench_id_00206": {
     "reviewed": true,
@@ -2555,7 +2555,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance"
+    "rubric_version": "workshop-rubric-v3-source-rounding"
   },
   "financebench_id_10499": {
     "reviewed": true,
@@ -2592,7 +2592,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance",
+    "rubric_version": "workshop-rubric-v3-source-rounding",
     "expression": "c19/((i18+i19)/2)",
     "operands": {
       "c19": {
@@ -2680,7 +2680,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance",
+    "rubric_version": "workshop-rubric-v3-source-rounding",
     "expression": "r20/((a19+a20)/2)",
     "operands": {
       "r20": {
@@ -2762,7 +2762,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance",
+    "rubric_version": "workshop-rubric-v3-source-rounding",
     "expression": "((r22/r20)**(1/2)-1)*100",
     "operands": {
       "r22": {
@@ -2852,7 +2852,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance",
+    "rubric_version": "workshop-rubric-v3-source-rounding",
     "expression": "((-c18)/r18+(-c19)/r19+(-c20)/r20)/3*100",
     "operands": {
       "c18": {
@@ -2979,7 +2979,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance"
+    "rubric_version": "workshop-rubric-v3-source-rounding"
   },
   "financebench_id_01911": {
     "reviewed": true,
@@ -3007,7 +3007,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance"
+    "rubric_version": "workshop-rubric-v3-source-rounding"
   },
   "financebench_id_01912": {
     "reviewed": true,
@@ -3050,7 +3050,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance"
+    "rubric_version": "workshop-rubric-v3-source-rounding"
   },
   "financebench_id_00407": {
     "reviewed": true,
@@ -3078,7 +3078,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance"
+    "rubric_version": "workshop-rubric-v3-source-rounding"
   },
   "financebench_id_04700": {
     "reviewed": true,
@@ -3104,7 +3104,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance"
+    "rubric_version": "workshop-rubric-v3-source-rounding"
   },
   "financebench_id_04458": {
     "reviewed": true,
@@ -3141,7 +3141,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance",
+    "rubric_version": "workshop-rubric-v3-source-rounding",
     "expression": "(oi15+da15)/r15*100",
     "operands": {
       "oi15": {
@@ -3247,7 +3247,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance",
+    "rubric_version": "workshop-rubric-v3-source-rounding",
     "expression": "((c16/r16+c17/r17+c18/r18)/3)*100",
     "operands": {
       "c16": {
@@ -3383,7 +3383,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance",
+    "rubric_version": "workshop-rubric-v3-source-rounding",
     "expression": "c21/((i20+i21)/2)",
     "operands": {
       "c21": {
@@ -3463,7 +3463,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance"
+    "rubric_version": "workshop-rubric-v3-source-rounding"
   },
   "financebench_id_01009": {
     "reviewed": true,
@@ -3498,7 +3498,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance"
+    "rubric_version": "workshop-rubric-v3-source-rounding"
   },
   "financebench_id_00735": {
     "reviewed": true,
@@ -3526,7 +3526,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance"
+    "rubric_version": "workshop-rubric-v3-source-rounding"
   },
   "financebench_id_01328": {
     "reviewed": true,
@@ -3554,7 +3554,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance"
+    "rubric_version": "workshop-rubric-v3-source-rounding"
   },
   "financebench_id_03620": {
     "reviewed": true,
@@ -3591,7 +3591,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance",
+    "rubric_version": "workshop-rubric-v3-source-rounding",
     "expression": "oi22+da22+capex22",
     "operands": {
       "oi22": {
@@ -3679,7 +3679,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance",
+    "rubric_version": "workshop-rubric-v3-source-rounding",
     "expression": "(oi22+da22)/r22*100",
     "operands": {
       "oi22": {
@@ -3758,7 +3758,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance"
+    "rubric_version": "workshop-rubric-v3-source-rounding"
   },
   "financebench_id_00705": {
     "reviewed": true,
@@ -3786,7 +3786,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance"
+    "rubric_version": "workshop-rubric-v3-source-rounding"
   },
   "financebench_id_00882": {
     "reviewed": true,
@@ -3814,7 +3814,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance"
+    "rubric_version": "workshop-rubric-v3-source-rounding"
   },
   "financebench_id_00302": {
     "reviewed": true,
@@ -3842,7 +3842,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance"
+    "rubric_version": "workshop-rubric-v3-source-rounding"
   },
   "financebench_id_00702": {
     "reviewed": true,
@@ -3870,7 +3870,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance"
+    "rubric_version": "workshop-rubric-v3-source-rounding"
   },
   "financebench_id_02416": {
     "reviewed": true,
@@ -3905,7 +3905,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance"
+    "rubric_version": "workshop-rubric-v3-source-rounding"
   },
   "financebench_id_00601": {
     "reviewed": true,
@@ -3934,7 +3934,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance"
+    "rubric_version": "workshop-rubric-v3-source-rounding"
   },
   "financebench_id_00603": {
     "reviewed": true,
@@ -3963,7 +3963,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance"
+    "rubric_version": "workshop-rubric-v3-source-rounding"
   },
   "financebench_id_00605": {
     "reviewed": true,
@@ -3992,7 +3992,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance"
+    "rubric_version": "workshop-rubric-v3-source-rounding"
   },
   "financebench_id_00606": {
     "reviewed": true,
@@ -4021,7 +4021,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance"
+    "rubric_version": "workshop-rubric-v3-source-rounding"
   },
   "financebench_id_00216": {
     "reviewed": true,
@@ -4051,7 +4051,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance"
+    "rubric_version": "workshop-rubric-v3-source-rounding"
   },
   "financebench_id_00215": {
     "reviewed": true,
@@ -4088,7 +4088,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance"
+    "rubric_version": "workshop-rubric-v3-source-rounding"
   },
   "financebench_id_00566": {
     "reviewed": true,
@@ -4117,7 +4117,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance"
+    "rubric_version": "workshop-rubric-v3-source-rounding"
   },
   "financebench_id_06247": {
     "reviewed": true,
@@ -4166,7 +4166,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance",
+    "rubric_version": "workshop-rubric-v3-source-rounding",
     "expression": "365*((ap17+ap18)/2)/(c18+i18-i17)",
     "operands": {
       "ap17": {
@@ -4322,7 +4322,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance",
+    "rubric_version": "workshop-rubric-v3-source-rounding",
     "expression": "(((oi18+da18)/r18+(oi19+da19)/r19+(oi20+da20)/r20)/3)*100",
     "operands": {
       "oi18": {
@@ -4495,7 +4495,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance"
+    "rubric_version": "workshop-rubric-v3-source-rounding"
   },
   "financebench_id_00499": {
     "reviewed": true,
@@ -4540,7 +4540,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance"
+    "rubric_version": "workshop-rubric-v3-source-rounding"
   },
   "financebench_id_00807": {
     "reviewed": true,
@@ -4569,7 +4569,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance"
+    "rubric_version": "workshop-rubric-v3-source-rounding"
   },
   "financebench_id_02987": {
     "reviewed": true,
@@ -4606,7 +4606,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance",
+    "rubric_version": "workshop-rubric-v3-source-rounding",
     "expression": "r19/((ppe18+ppe19)/2)",
     "operands": {
       "r19": {
@@ -4688,7 +4688,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance",
+    "rubric_version": "workshop-rubric-v3-source-rounding",
     "expression": "ocf15/cl15",
     "operands": {
       "ocf15": {
@@ -4754,7 +4754,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance",
+    "rubric_version": "workshop-rubric-v3-source-rounding",
     "expression": "(oi16-oi15)/oi15*100",
     "operands": {
       "oi16": {
@@ -4818,7 +4818,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance"
+    "rubric_version": "workshop-rubric-v3-source-rounding"
   },
   "financebench_id_00540": {
     "reviewed": true,
@@ -4853,7 +4853,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance"
+    "rubric_version": "workshop-rubric-v3-source-rounding"
   },
   "financebench_id_06655": {
     "reviewed": true,
@@ -4902,7 +4902,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance",
+    "rubric_version": "workshop-rubric-v3-source-rounding",
     "expression": "365*((ap16+ap17)/2)/(c17+i17-i16)",
     "operands": {
       "ap16": {
@@ -5003,15 +5003,15 @@
     ],
     "review_notes": "Automated source-span audit completed; no human semantic review claimed. Target typing/value/precision follows the recorded FinanceBench answer and must be treated as a conservative frozen rubric.",
     "answer_type": "numeric",
-    "value": "1616.00",
+    "value": "1616",
     "unit": "USD",
     "scale": "millions",
-    "precision": 2,
+    "precision": 0,
     "reviewed_by": "JARVIS",
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance"
+    "rubric_version": "workshop-rubric-v3-source-rounding"
   },
   "financebench_id_01936": {
     "reviewed": true,
@@ -5039,7 +5039,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance"
+    "rubric_version": "workshop-rubric-v3-source-rounding"
   },
   "financebench_id_00684": {
     "reviewed": true,
@@ -5068,7 +5068,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance"
+    "rubric_version": "workshop-rubric-v3-source-rounding"
   },
   "financebench_id_03856": {
     "reviewed": true,
@@ -5099,7 +5099,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance",
+    "rubric_version": "workshop-rubric-v3-source-rounding",
     "expression": "ocf17/cl17",
     "operands": {
       "ocf17": {
@@ -5160,7 +5160,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance"
+    "rubric_version": "workshop-rubric-v3-source-rounding"
   },
   "financebench_id_01935": {
     "reviewed": true,
@@ -5191,7 +5191,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance"
+    "rubric_version": "workshop-rubric-v3-source-rounding"
   },
   "financebench_id_01928": {
     "reviewed": true,
@@ -5220,7 +5220,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance"
+    "rubric_version": "workshop-rubric-v3-source-rounding"
   },
   "financebench_id_01930": {
     "reviewed": true,
@@ -5248,7 +5248,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance"
+    "rubric_version": "workshop-rubric-v3-source-rounding"
   },
   "financebench_id_03069": {
     "reviewed": true,
@@ -5279,7 +5279,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance",
+    "rubric_version": "workshop-rubric-v3-source-rounding",
     "expression": "da15/r15*100",
     "operands": {
       "da15": {
@@ -5345,7 +5345,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance",
+    "rubric_version": "workshop-rubric-v3-source-rounding",
     "expression": "oi21+da21",
     "operands": {
       "oi21": {
@@ -5406,7 +5406,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance"
+    "rubric_version": "workshop-rubric-v3-source-rounding"
   },
   "financebench_id_00288": {
     "reviewed": true,
@@ -5434,7 +5434,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance"
+    "rubric_version": "workshop-rubric-v3-source-rounding"
   },
   "financebench_id_00460": {
     "reviewed": true,
@@ -5462,7 +5462,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance"
+    "rubric_version": "workshop-rubric-v3-source-rounding"
   },
   "financebench_id_01902": {
     "reviewed": true,
@@ -5490,7 +5490,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance"
+    "rubric_version": "workshop-rubric-v3-source-rounding"
   },
   "financebench_id_04660": {
     "reviewed": true,
@@ -5521,7 +5521,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance",
+    "rubric_version": "workshop-rubric-v3-source-rounding",
     "expression": "ca16/cl16",
     "operands": {
       "ca16": {
@@ -5582,7 +5582,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance"
+    "rubric_version": "workshop-rubric-v3-source-rounding"
   },
   "financebench_id_09724": {
     "reviewed": true,
@@ -5613,7 +5613,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance",
+    "rubric_version": "workshop-rubric-v3-source-rounding",
     "expression": "c21/r21*100",
     "operands": {
       "c21": {
@@ -5697,7 +5697,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance",
+    "rubric_version": "workshop-rubric-v3-source-rounding",
     "expression": "365*((ap19+ap20)/2)/(c20+i20-i19)",
     "operands": {
       "ap19": {
@@ -5817,7 +5817,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance",
+    "rubric_version": "workshop-rubric-v3-source-rounding",
     "expression": "r18/((ppe17+ppe18)/2)",
     "operands": {
       "r18": {
@@ -5898,7 +5898,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance"
+    "rubric_version": "workshop-rubric-v3-source-rounding"
   },
   "financebench_id_04103": {
     "reviewed": true,
@@ -5965,7 +5965,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance",
+    "rubric_version": "workshop-rubric-v3-source-rounding",
     "expression": "365*((i18+i19)/2)/c19+365*((ar18+ar19)/2)/r19-365*((ap18+ap19)/2)/(c19+i19-i18)",
     "operands": {
       "i18": {
@@ -6124,7 +6124,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance"
+    "rubric_version": "workshop-rubric-v3-source-rounding"
   },
   "financebench_id_01490": {
     "reviewed": true,
@@ -6152,7 +6152,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance"
+    "rubric_version": "workshop-rubric-v3-source-rounding"
   },
   "financebench_id_01491": {
     "reviewed": true,
@@ -6180,7 +6180,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance"
+    "rubric_version": "workshop-rubric-v3-source-rounding"
   },
   "financebench_id_01487": {
     "reviewed": true,
@@ -6208,7 +6208,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance"
+    "rubric_version": "workshop-rubric-v3-source-rounding"
   },
   "financebench_id_00394": {
     "reviewed": true,
@@ -6237,7 +6237,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance"
+    "rubric_version": "workshop-rubric-v3-source-rounding"
   },
   "financebench_id_02049": {
     "reviewed": true,
@@ -6266,7 +6266,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance"
+    "rubric_version": "workshop-rubric-v3-source-rounding"
   },
   "financebench_id_03031": {
     "reviewed": true,
@@ -6297,7 +6297,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance",
+    "rubric_version": "workshop-rubric-v3-source-rounding",
     "expression": "ca21-cl21",
     "operands": {
       "ca21": {
@@ -6350,15 +6350,15 @@
     ],
     "review_notes": "Automated source-span audit completed; no human semantic review claimed. Target typing/value/precision follows the recorded FinanceBench answer and must be treated as a conservative frozen rubric.",
     "answer_type": "numeric",
-    "value": "303.00",
+    "value": "303",
     "unit": "USD",
     "scale": "millions",
-    "precision": 2,
+    "precision": 0,
     "reviewed_by": "JARVIS",
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance"
+    "rubric_version": "workshop-rubric-v3-source-rounding"
   },
   "financebench_id_01254": {
     "reviewed": true,
@@ -6387,7 +6387,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance"
+    "rubric_version": "workshop-rubric-v3-source-rounding"
   },
   "financebench_id_00552": {
     "reviewed": true,
@@ -6416,7 +6416,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance"
+    "rubric_version": "workshop-rubric-v3-source-rounding"
   },
   "financebench_id_03282": {
     "reviewed": true,
@@ -6434,15 +6434,15 @@
     ],
     "review_notes": "Automated source-span audit completed; no human semantic review claimed. Target typing/value/precision follows the recorded FinanceBench answer and must be treated as a conservative frozen rubric.",
     "answer_type": "numeric",
-    "value": "5466.00",
+    "value": "5466",
     "unit": "USD",
     "scale": "millions",
-    "precision": 2,
+    "precision": 0,
     "reviewed_by": "JARVIS",
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance"
+    "rubric_version": "workshop-rubric-v3-source-rounding"
   },
   "financebench_id_03531": {
     "reviewed": true,
@@ -6468,7 +6468,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance"
+    "rubric_version": "workshop-rubric-v3-source-rounding"
   },
   "financebench_id_01163": {
     "reviewed": true,
@@ -6496,7 +6496,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance"
+    "rubric_version": "workshop-rubric-v3-source-rounding"
   },
   "financebench_id_04980": {
     "reviewed": true,
@@ -6514,15 +6514,15 @@
     ],
     "review_notes": "Automated source-span audit completed; no human semantic review claimed. Target typing/value/precision follows the recorded FinanceBench answer and must be treated as a conservative frozen rubric.",
     "answer_type": "numeric",
-    "value": "4.60",
+    "value": "4.6",
     "unit": "USD",
     "scale": "billions",
-    "precision": 2,
+    "precision": 1,
     "reviewed_by": "JARVIS",
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance"
+    "rubric_version": "workshop-rubric-v3-source-rounding"
   },
   "financebench_id_01474": {
     "reviewed": true,
@@ -6550,7 +6550,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance"
+    "rubric_version": "workshop-rubric-v3-source-rounding"
   },
   "financebench_id_01476": {
     "reviewed": true,
@@ -6578,7 +6578,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance"
+    "rubric_version": "workshop-rubric-v3-source-rounding"
   },
   "financebench_id_00283": {
     "reviewed": true,
@@ -6604,7 +6604,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance"
+    "rubric_version": "workshop-rubric-v3-source-rounding"
   },
   "financebench_id_00724": {
     "reviewed": true,
@@ -6632,7 +6632,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance"
+    "rubric_version": "workshop-rubric-v3-source-rounding"
   },
   "financebench_id_02419": {
     "reviewed": true,
@@ -6660,7 +6660,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance"
+    "rubric_version": "workshop-rubric-v3-source-rounding"
   },
   "financebench_id_00746": {
     "reviewed": true,
@@ -6688,7 +6688,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance"
+    "rubric_version": "workshop-rubric-v3-source-rounding"
   },
   "financebench_id_00521": {
     "reviewed": true,
@@ -6716,7 +6716,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance"
+    "rubric_version": "workshop-rubric-v3-source-rounding"
   },
   "financebench_id_00859": {
     "reviewed": true,
@@ -6745,7 +6745,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance"
+    "rubric_version": "workshop-rubric-v3-source-rounding"
   },
   "financebench_id_02024": {
     "reviewed": true,
@@ -6780,7 +6780,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance"
+    "rubric_version": "workshop-rubric-v3-source-rounding"
   },
   "financebench_id_04784": {
     "reviewed": true,
@@ -6823,7 +6823,7 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v2-derived-provenance",
+    "rubric_version": "workshop-rubric-v3-source-rounding",
     "expression": "(oi19/r19-oi18/r18)*100",
     "operands": {
       "oi19": {

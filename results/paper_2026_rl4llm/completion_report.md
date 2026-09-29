@@ -16,6 +16,7 @@
 
 - The DeepInfra semantic judge is unavailable because no `DEEPINFRA_API_KEY` credential can be loaded on SparkyOne. `judge_credential_test.json` records that the test failed before making a network request. Text-answer residuals must remain unresolved until this is fixed.
 - Target-v2 generation and replay improve typing, argument coercion, numeric parsing, and calculation handling, but the resulting target audit is automated. It must not be described as human or independent semantic review.
+- The direct-numeric audit found six valid benchmark roundings whose display zeroes had been misread as scoring precision. Rubric v3 corrects those precision fields and has passing regression tests; it does not alter the frozen split.
 - At least one official target conflict was found: `q04672` cites 3M PP&E of 8,738 million while the stored target is 8.70 billion. The target/rubric set therefore needs a question-by-question semantic review before paper-scale training or evaluation.
 
 ## Work deliberately withheld
