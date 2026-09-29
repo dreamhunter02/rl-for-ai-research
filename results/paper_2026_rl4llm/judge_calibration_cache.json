@@ -1,0 +1,146 @@
+{
+  "354f20999e7c2d72828e2308379b5acc6d6aef5edb7ea71f55cfcbd1072ecb0a": {
+    "verdict": "entailed",
+    "confidence": 0.95,
+    "numeric_ok": true,
+    "reason_code": "same_industry",
+    "reason": "Candidate identifies packaging industry, matching gold's packaging production focus; extra details are consistent.",
+    "model": "deepseek-ai/DeepSeek-V4.1-Flash",
+    "cache_hit": false
+  },
+  "d37257a6a1c8b59a257006884b0700974430834d26c71d3577fed6a72a357eef": {
+    "verdict": "entailed",
+    "confidence": 1.0,
+    "numeric_ok": true,
+    "reason_code": "same_answer_and_amount",
+    "reason": "Candidate matches gold: answers No and states debt decreased by $229 million, consistent with evidence total debt 150,639 vs 150,868.",
+    "model": "deepseek-ai/DeepSeek-V4.1-Flash",
+    "cache_hit": false
+  },
+  "935849115e2df284b3d930ff0303291b3c0a6b1b9872951f4deb2cb14d3a1876": {
+    "verdict": "entailed",
+    "confidence": 0.97,
+    "numeric_ok": true,
+    "reason_code": "same_industry",
+    "reason": "Candidate identifies packaging industry, matching gold's packaging production description; extra product details are consistent and grounded.",
+    "model": "deepseek-ai/DeepSeek-V4.1-Flash",
+    "cache_hit": false
+  },
+  "bb838a92aa9b9f615cff6c49559d456c3ac36639bd5b035c6239a9771f49cd98": {
+    "verdict": "entailed",
+    "confidence": 0.98,
+    "numeric_ok": true,
+    "reason_code": "correct_negative_working_capital",
+    "reason": "Candidate correctly states negative working capital of -$1,561M for FY2022, matching gold, and adds valid context on metric relevance.",
+    "model": "deepseek-ai/DeepSeek-V4.1-Flash",
+    "cache_hit": false
+  },
+  "e63f94b23399692c4e7afdb09073d631c84af8d56504d6b0f493649e9633a3f0": {
+    "verdict": "entailed",
+    "confidence": 0.98,
+    "numeric_ok": true,
+    "reason_code": "same_material_fact",
+    "reason": "Candidate states gross margin is not relevant for JPM because it is a bank, matching GOLD; supporting details and numbers are accurate.",
+    "model": "deepseek-ai/DeepSeek-V4.1-Flash",
+    "cache_hit": false
+  },
+  "b4d0ed86b4ae9601e87f2cf556accc1537ec12e9aff6fd190a2e652953ec1f9b": {
+    "verdict": "entailed",
+    "confidence": 0.98,
+    "numeric_ok": true,
+    "reason_code": "same_conclusion_and_ratio",
+    "reason": "Candidate agrees quick ratio ~0.54, says liquidity not healthy, and correctly states quick ratio is relevant, matching gold.",
+    "model": "deepseek-ai/DeepSeek-V4.1-Flash",
+    "cache_hit": false
+  },
+  "136a2175ca2b7d8726d89a116ec5e297f151ebd3d7c5ce82fe63e75efe0903bf": {
+    "verdict": "entailed",
+    "confidence": 0.98,
+    "numeric_ok": true,
+    "reason_code": "same_answer_and_ratio",
+    "reason": "Candidate agrees quick ratio ~1.57x, healthy liquidity, and relevance; matches gold's calculation and conclusion.",
+    "model": "deepseek-ai/DeepSeek-V4.1-Flash",
+    "cache_hit": false
+  },
+  "c72d35ed69a52c0cbbd12753d51a7a3b09d137c7fc0378495f06fae57b838f97": {
+    "verdict": "entailed",
+    "confidence": 0.98,
+    "numeric_ok": true,
+    "reason_code": "correct_direction_and_values",
+    "reason": "Candidate confirms PP&E grew from $13.745B FY20 to $14.882B FY21, matching gold's positive year-over-year change.",
+    "model": "deepseek-ai/DeepSeek-V4.1-Flash",
+    "cache_hit": false
+  },
+  "5303618ec7a50073271ff01ab2987d7b7c23cfc23a7762393b7e4ffb441f788b": {
+    "verdict": "entailed",
+    "confidence": 0.95,
+    "numeric_ok": true,
+    "reason_code": "same_region",
+    "reason": "Candidate names Las Vegas Strip Resorts, matching gold's Las Vegas resorts as highest EBITDAR contributor in FY2022.",
+    "model": "deepseek-ai/DeepSeek-V4.1-Flash",
+    "cache_hit": false
+  },
+  "39900d621c8fdb4ec2ebbac1f2b9d610a8c7f922211654d445f6b74b06486d6a": {
+    "verdict": "entailed",
+    "confidence": 0.97,
+    "numeric_ok": true,
+    "reason_code": "same_debt_type",
+    "reason": "Candidate identifies corporate bonds as largest short-term investment, matching gold; supporting figure is consistent and correct.",
+    "model": "deepseek-ai/DeepSeek-V4.1-Flash",
+    "cache_hit": false
+  },
+  "233792bf1562819e135997e88824512ddf2888cbb8fcb71960f3b736106aec80": {
+    "verdict": "entailed",
+    "confidence": 0.95,
+    "numeric_ok": true,
+    "reason_code": "same_material_facts",
+    "reason": "Candidate agrees operating margin declined from 36.8% to 34.6% in FY2022 and states it remains a useful metric, matching gold's answer.",
+    "model": "deepseek-ai/DeepSeek-V4.1-Flash",
+    "cache_hit": false
+  },
+  "0a1c4f1a5d7ffc1da1395f41e0f1f6c30d4d8f6f5d11cfa4c3a53571fc1f5e8e": {
+    "verdict": "entailed",
+    "confidence": 0.95,
+    "numeric_ok": true,
+    "reason_code": "same_yes_direction",
+    "reason": "Candidate affirms cyclicality, consistent with gold's yes; adds commercial/defense markets detail supported by evidence.",
+    "model": "deepseek-ai/DeepSeek-V4.1-Flash",
+    "cache_hit": false
+  },
+  "989cee872c4cf040f04eed3c065a1c56d110b19608239c0df8d60a871ec06737": {
+    "verdict": "entailed",
+    "confidence": 0.95,
+    "numeric_ok": true,
+    "reason_code": "same_material_facts",
+    "reason": "Candidate matches gold: 787 rise to 5/month, 777X resume, 737 gradual increase from 31/month.",
+    "model": "deepseek-ai/DeepSeek-V4.1-Flash",
+    "cache_hit": false
+  },
+  "bc5828b6a8eacb5bc3e9aca9ecb61ae1ca7a3a0a028aea956b2cb48e2e66fb2a": {
+    "verdict": "entailed",
+    "confidence": 0.95,
+    "numeric_ok": true,
+    "reason_code": "same_conclusion_and_metrics",
+    "reason": "Candidate agrees 3M is not heavily capital-intensive, matching gold's CAPEX/revenue ~5.1% and fixed assets/total assets ~20%.",
+    "model": "deepseek-ai/DeepSeek-V4.1-Flash",
+    "cache_hit": false
+  },
+  "7c9bce6b21a3cc6a52209f7633eaccecdf51089ad319f6a4336098da37a7f4e3": {
+    "verdict": "entailed",
+    "confidence": 0.98,
+    "numeric_ok": true,
+    "reason_code": "same_segments_and_percentages",
+    "reason": "Candidate identifies the same three segments exceeding 20% of FY2022 revenue with matching percentages and total revenue.",
+    "model": "deepseek-ai/DeepSeek-V4.1-Flash",
+    "cache_hit": false
+  },
+  "fccfb667ae4e4ca60ae62018f3db9f80cdf84fb5b529550e0576f746b8ec0d4c": {
+    "verdict": "entailed",
+    "confidence": 0.95,
+    "numeric_ok": true,
+    "reason_code": "same_material_facts",
+    "reason": "Candidate gives ~9.5x turnover matching gold, and adds correct caveat that conventional inventory turnover is not meaningful for AES as a utility.",
+    "model": "deepseek-ai/DeepSeek-V4.1-Flash",
+    "cache_hit": false
+  }
+}

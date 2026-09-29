@@ -1,0 +1,68 @@
+{
+  "backend": "deepinfra",
+  "credential_value": "[REDACTED]",
+  "secret_persisted": false,
+  "network_request_made": true,
+  "cases": [
+    {
+      "label": "correct_verizon",
+      "question_id": "financebench_id_00216",
+      "episode_index": 0,
+      "expected": "entailed",
+      "verdict": "entailed",
+      "confidence": 0.95,
+      "numeric_ok": true,
+      "reason_code": "correct_quick_ratio_and_conclusion",
+      "model": "deepseek-ai/DeepSeek-V4.1-Flash",
+      "cache_hit": false
+    },
+    {
+      "label": "correct_boeing",
+      "question_id": "financebench_id_01290",
+      "episode_index": 7,
+      "expected": "entailed",
+      "verdict": "entailed",
+      "confidence": 0.95,
+      "numeric_ok": true,
+      "reason_code": "same_customers",
+      "model": "deepseek-ai/DeepSeek-V4.1-Flash",
+      "cache_hit": false
+    },
+    {
+      "label": "incomplete_boeing",
+      "question_id": "financebench_id_01290",
+      "episode_index": 0,
+      "expected": "insufficient",
+      "verdict": "contradicted",
+      "confidence": 0.9,
+      "numeric_ok": false,
+      "reason_code": "omits_us_government_customer",
+      "model": "deepseek-ai/DeepSeek-V4.1-Flash",
+      "cache_hit": false
+    },
+    {
+      "label": "wrong_sign_boeing_tax",
+      "question_id": "financebench_id_00585",
+      "episode_index": 1,
+      "expected": "contradicted",
+      "verdict": "contradicted",
+      "confidence": 0.99,
+      "numeric_ok": false,
+      "reason_code": "wrong_sign_and_value",
+      "model": "deepseek-ai/DeepSeek-V4.1-Flash",
+      "cache_hit": false
+    },
+    {
+      "label": "wrong_jnj_turnover",
+      "question_id": "financebench_id_00711",
+      "episode_index": 7,
+      "expected": "contradicted_or_insufficient",
+      "verdict": "contradicted",
+      "confidence": 0.95,
+      "numeric_ok": false,
+      "reason_code": "wrong_numeric_answer",
+      "model": "deepseek-ai/DeepSeek-V4.1-Flash",
+      "cache_hit": false
+    }
+  ]
+}

@@ -1,0 +1,47 @@
+{
+  "3906dc87b1c15a2e1c1b6d5a2b007cf9f93818c797ddfc83ec6ec03c16acc400": {
+    "verdict": "entailed",
+    "confidence": 0.95,
+    "numeric_ok": true,
+    "reason_code": "correct_quick_ratio_and_conclusion",
+    "reason": "Candidate gives same quick ratio ~0.54 and concludes liquidity not healthy, matching gold.",
+    "model": "deepseek-ai/DeepSeek-V4.1-Flash",
+    "cache_hit": false
+  },
+  "91d800e26c548f05d8b0c2ad9a8d18779fdd26a8e32fae10d755fe80ee1a616d": {
+    "verdict": "entailed",
+    "confidence": 0.95,
+    "numeric_ok": true,
+    "reason_code": "same_customers",
+    "reason": "Candidate identifies US government and commercial airlines as primary customers, matching gold; omitted 40% revenue figure is acceptable.",
+    "model": "deepseek-ai/DeepSeek-V4.1-Flash",
+    "cache_hit": false
+  },
+  "12b35c123c5b42604ef26fb54f067e53ea99564a926abbe3bb10146e1242a7cb": {
+    "verdict": "contradicted",
+    "confidence": 0.9,
+    "numeric_ok": false,
+    "reason_code": "omits_us_government_customer",
+    "reason": "Candidate omits the US government as a primary customer and the 40% revenue share, contradicting the gold answer.",
+    "model": "deepseek-ai/DeepSeek-V4.1-Flash",
+    "cache_hit": false
+  },
+  "932654f3b78da5862f90623b4bbcad9c9788f40ab1396d63015e3ef232d29e60": {
+    "verdict": "contradicted",
+    "confidence": 0.99,
+    "numeric_ok": false,
+    "reason_code": "wrong_sign_and_value",
+    "reason": "Candidate gives FY2021 rate as 14.7% instead of -14.76%, reversing the sign and misstating the comparison.",
+    "model": "deepseek-ai/DeepSeek-V4.1-Flash",
+    "cache_hit": false
+  },
+  "1a782a2951059748fc98a5383a1ab8d3610b7fe67cd843dfe1d3a93a495600f9": {
+    "verdict": "contradicted",
+    "confidence": 0.95,
+    "numeric_ok": false,
+    "reason_code": "wrong_numeric_answer",
+    "reason": "Gold states 2.7 times; candidate says cannot compute and estimates 8-9 times, contradicting the required numeric answer.",
+    "model": "deepseek-ai/DeepSeek-V4.1-Flash",
+    "cache_hit": false
+  }
+}

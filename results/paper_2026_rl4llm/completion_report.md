@@ -16,14 +16,14 @@
 - The two source/answer conflicts, `q04672` and `q00283`, are explicitly marked unresolved. Training removes their groups; evaluation keeps them in the frozen denominator as unresolved.
 - Offline rubric-v3 replay of the original 64 trajectories still retains 0/8 groups. This confirms that the old batch cannot be rescued by label repair alone.
 - A deterministic 50-trajectory audit found 41 episodes without an accepted finish, 4 incorrect/incomplete finishes, and 5 semantically correct finishes conservatively left unresolved. It also identified and repaired one overly restrictive Boeing fact and two valid alternate evidence spans.
-- SparkyOne now supports a permission-checked headless judge credential file. A 0600 placeholder exists at `~/.config/financebench/deepinfra.key`; the loader was verified without retaining the diagnostic secret.
+- SparkyOne now supports a permission-checked headless judge credential file. The 0600 credential at `~/.config/financebench/deepinfra.key` passed a live DeepInfra request without printing or retaining the secret.
+- The frozen DeepSeek V4.1 Flash judge passed the saved-case calibration: two correct Verizon/Boeing answers were entailed at 0.95 confidence, while incomplete Boeing, wrong-sign Boeing tax, and wrong J&J turnover answers were rejected at 0.90--0.99 confidence. The redacted evidence is in `judge_credential_test.json` and `judge_saved_case_calibration.json`.
 
 ## Validity gates still open
 
-- The DeepInfra semantic judge is unavailable because no `DEEPINFRA_API_KEY` credential can be loaded on SparkyOne. `judge_credential_test.json` records that the test failed before making a network request. Text-answer residuals must remain unresolved until this is fixed.
-- The 98 text `required_facts` were produced by deterministic answer segmentation. They still need semantic adjudication or a working frozen judge; no human review is claimed.
-- The 50 saved-trajectory audit is complete, but fresh text decisions cannot be calibrated until the semantic judge works.
+- The 98 text `required_facts` were produced by deterministic answer segmentation. The live frozen judge is now calibrated for residual answers, but this is not human semantic review of every target.
+- The one-update capability smoke is not evidence of learning. LR selection still requires bounded matched pilots and dev evaluation.
 
 ## Work deliberately withheld
 
-The optimizer capability gate is no longer the blocker. The 10-batch learning-rate pilots, final R1 training, checkpoint selection, corrected eval42, paired bootstrap effects, learning curve, and final B0/B1/R1 tables remain paused until the judge credential works and the text-rubric/trajectory audit is complete. No positive GRPO-learning claim is made from the one-update smoke.
+The optimizer and semantic-judge gates are now open. The 10-batch learning-rate pilots may proceed; final R1 training, checkpoint selection, corrected eval42, paired bootstrap effects, learning curve, and final B0/B1/R1 tables remain withheld until the pilots produce valid dev evidence. No positive GRPO-learning claim is made from the one-update smoke.
