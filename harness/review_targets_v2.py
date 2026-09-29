@@ -104,6 +104,34 @@ def quote(text,label,period,value):
 def facts(a):
  x=[z.strip(' \t-*\r') for z in re.split(r'\n+|(?<=[.!?])\s+|;',a) if z.strip()]
  return x or [a.strip()]
+def bounded_slice(text,start,end=None):
+ s=text.index(start);e=text.index(end,s) if end else len(text)
+ q=text[s:e].strip()
+ if len(q)>hb.MAX_READ: raise ValueError(f'compact support still exceeds read window: {len(q)}')
+ return q
+def repair_text_support(q,t):
+ # Four source spans exceed the 2,400-character read receipt. Split or trim
+ # them only at exact source-text boundaries, retaining every required claim.
+ if q=='financebench_id_01079':
+  base=t['support'][0];text=base['quote'];starts=['On August 1, 2022','On March 17, 2023','On May 31, 2023']
+  chunks=[bounded_slice(text,starts[i],starts[i+1] if i+1<len(starts) else None) for i in range(len(starts))]
+  t['support']=[{**base,'quote':chunk,'claim':f'acquisition_{i+1}'} for i,chunk in enumerate(chunks)]
+ elif q=='financebench_id_01009':
+  t['support'][0]['quote']=bounded_slice(t['support'][0]['quote'],'Our Operations')
+ elif q=='financebench_id_00882':
+  base=t['support'][0];text=base['quote'];needle='On May 26, 2023, PepsiCo entered into a new $4,200,000,000';starts=[m.start() for m in re.finditer(re.escape(needle),text)]
+  if len(starts)!=2: raise ValueError('expected two PepsiCo revolving-credit spans')
+  chunks=[]
+  for start in starts:
+   end=text.index('PepsiCo may also',start)
+   chunks.append(text[start:end].strip())
+  t['support']=[{**base,'quote':chunk,'claim':f'credit_facility_{i+1}'} for i,chunk in enumerate(chunks)]
+ elif q=='financebench_id_00288':
+  t['support'][0]['quote']=bounded_slice(t['support'][0]['quote'],'Cash and cash equivalents were as follows')
+ for i,sp in enumerate(t.get('support',[])):
+  if len(sp['quote'])>hb.MAX_READ: raise ValueError(f'{q} support exceeds read window')
+  if len(t['support'])>1 and not sp.get('claim','').startswith(('acquisition_','credit_facility_')):
+   sp['claim']=f'answer_evidence_{i+1}'
 def build(split,old):
  rows={r['financebench_id']:r for gs in split.values() for r in gs}; out=copy.deepcopy(old)
  for q,t in out.items():
@@ -117,8 +145,12 @@ def build(split,old):
     try:
      src=page(r,int(sp['page']))
      oldq=sp.get('quote','')
-     sp['quote']=(oldq if oldq in src else src)[:1800]
+     if t.get('answer_type')=='text' and oldq in src:
+      sp['quote']=oldq
+     else:
+      sp['quote']=(oldq if oldq in src else src)[:1800]
     except Exception: pass
+  if t.get('answer_type')=='text':repair_text_support(q,t)
   if t.get('answer_type')=='numeric':
    z=r['question'].lower()
    if 'usd billions' in z:t['scale']='billions'
