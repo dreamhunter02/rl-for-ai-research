@@ -5,7 +5,7 @@
 - Corrected implementation frozen at commit `61cd93a8048cb8d944d1da0ac1d27aaa592547fc` with review history `5ded6ac` and `61cd93a`.
 - Protocol conflicts are documented in `protocol_conflicts.md`. The frozen 96/12/42 question IDs remain unchanged in `split_frozen.json`; train/dev document overlap is disclosed in `protocol.md`.
 - The original automated audit found all 189 indexed support spans for 150 targets. This establishes source-span presence only; no human semantic review is claimed.
-- Rubric-v3 corpus/target preflight passed for all 150 questions and 12,013 indexed pages. The provider-capable suite now passes 62 tests with zero skips; its repeated root tests are not counted as an independent suite.
+- Rubric-v3 corpus/target preflight passed for all 150 questions and 12,013 indexed pages. The provider-capable suite now passes 63 tests with zero skips; its repeated root tests are not counted as an independent suite.
 - The B1 development smoke completed all 12 questions. It produced 2/12 accepted finishes, 0/12 correct-and-finished answers, 0/12 grounded successes, mean answer correctness `0.0000`, and mean grounding `0.0833`.
 - Offline diagnosis of the initial 64 saved training trajectories is preserved in `provider_smoke_lr1e5_v3/offline_diagnosis.md`: 35 hit the turn limit, 15 hit the token limit, 13 attempted `finish`, and the batch retained no groups or updates.
 - Focused sampling probes then established that Nemotron 3.5 Lightning can produce mixed, correct, source-grounded outcomes on the source-verified direct-numeric training question `q04209`.
@@ -15,12 +15,13 @@
 - All 117 text support spans now fit a single read receipt (maximum 2,387 characters), and multi-span answers use distinct required claim IDs. This repairs evidence visibility but is not human semantic review.
 - The two source/answer conflicts, `q04672` and `q00283`, are explicitly marked unresolved. Training removes their groups; evaluation keeps them in the frozen denominator as unresolved.
 - Offline rubric-v3 replay of the original 64 trajectories still retains 0/8 groups. This confirms that the old batch cannot be rescued by label repair alone.
+- A deterministic 50-trajectory audit found 41 episodes without an accepted finish, 4 incorrect/incomplete finishes, and 5 semantically correct finishes conservatively left unresolved. It also identified and repaired one overly restrictive Boeing fact and two valid alternate evidence spans.
 
 ## Validity gates still open
 
 - The DeepInfra semantic judge is unavailable because no `DEEPINFRA_API_KEY` credential can be loaded on SparkyOne. `judge_credential_test.json` records that the test failed before making a network request. Text-answer residuals must remain unresolved until this is fixed.
 - The 98 text `required_facts` were produced by deterministic answer segmentation. They still need semantic adjudication or a working frozen judge; no human review is claimed.
-- Approximately 50 fresh training trajectories must be audited for agreement between rubric decisions and source evidence before freezing the paper-scale reward.
+- The 50 saved-trajectory audit is complete, but fresh text decisions cannot be calibrated until the semantic judge works.
 
 ## Work deliberately withheld
 
