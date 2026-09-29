@@ -10,9 +10,10 @@ The reward contract is deliberately layered:
 5. Evidence grounding remains deterministic and gates the final reward.
 
 The DeepInfra judge is opt-in through ``JUDGE_BACKEND=deepinfra``. Credentials are
-read only from ``DEEPINFRA_API_KEY`` at runtime and are never written to caches or
-logs. Provider failures fall back to the deterministic score and are surfaced in
-metrics; they are not converted into a legitimate zero-reward example.
+read from ``DEEPINFRA_API_KEY``, a permission-checked
+``DEEPINFRA_API_KEY_FILE``, or GNOME Keyring at runtime and are never written to
+caches or logs. Provider failures fall back to the deterministic score and are
+surfaced in metrics; they are not converted into a legitimate zero-reward example.
 """
 from __future__ import annotations
 
@@ -21,6 +22,7 @@ import hashlib
 import json
 import os
 import re
+import stat
 import tempfile
 import time
 import urllib.error
@@ -55,6 +57,7 @@ class RewardConfig:
     max_answer_to_gold_ratio: float = 3.0
     keyring_service: str = "DEEPINFRA_API_KEY"
     keyring_username: str = field(default_factory=lambda: os.environ.get("USER", ""))
+    api_key_file: str = ""
 
     @classmethod
     def from_env(cls) -> "RewardConfig":
@@ -72,6 +75,7 @@ class RewardConfig:
             max_answer_to_gold_ratio=float(os.environ.get("JUDGE_MAX_ANSWER_TO_GOLD_RATIO", "3.0")),
             keyring_service=os.environ.get("JUDGE_KEYRING_SERVICE", "DEEPINFRA_API_KEY"),
             keyring_username=os.environ.get("JUDGE_KEYRING_USERNAME", os.environ.get("USER", "")),
+            api_key_file=os.environ.get("DEEPINFRA_API_KEY_FILE", ""),
         )
 
     def summary(self) -> dict[str, Any]:
@@ -95,6 +99,36 @@ def _env_bool(name: str, default: bool) -> bool:
     if value is None:
         return default
     return value.strip().lower() in {"1", "true", "yes", "on"}
+
+
+def _read_secret_file(path: str) -> str:
+    """Read a small, owner-only regular file without following symlinks."""
+    expanded = Path(path).expanduser()
+    flags = os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0)
+    try:
+        descriptor = os.open(expanded, flags)
+    except OSError as exc:
+        raise RuntimeError(f"cannot open DEEPINFRA_API_KEY_FILE: {exc.strerror}") from exc
+    try:
+        metadata = os.fstat(descriptor)
+        if not stat.S_ISREG(metadata.st_mode):
+            raise RuntimeError("DEEPINFRA_API_KEY_FILE must be a regular file")
+        if metadata.st_uid != os.getuid():
+            raise RuntimeError("DEEPINFRA_API_KEY_FILE must be owned by the current user")
+        if stat.S_IMODE(metadata.st_mode) & 0o077:
+            raise RuntimeError("DEEPINFRA_API_KEY_FILE permissions must be 0600 or stricter")
+        with os.fdopen(descriptor, "r", encoding="utf-8") as handle:
+            descriptor = -1
+            value = handle.read(16385)
+    finally:
+        if descriptor >= 0:
+            os.close(descriptor)
+    if len(value) > 16384:
+        raise RuntimeError("DEEPINFRA_API_KEY_FILE is unexpectedly large")
+    value = value.strip()
+    if not value:
+        raise RuntimeError("DEEPINFRA_API_KEY_FILE is empty")
+    return value
 
 
 def _clip(value: float, low: float = 0.0, high: float = 1.0) -> float:
@@ -157,7 +191,7 @@ class DeepSeekJudge:
             cached = self.cache.get(key)
         if cached is not None:
             return {**cached, "cache_hit": True}
-        api_key = self.api_key or await self._load_keyring_secret()
+        api_key = await self._load_api_key()
         result = await asyncio.to_thread(self._request, question, gold, candidate, evidence, api_key)
         # Do not retain a key fetched from the keyring after the request.
         if not self.api_key:
@@ -169,6 +203,13 @@ class DeepSeekJudge:
             # keep them off the event loop while the lock prevents concurrent writes.
             await asyncio.to_thread(self._write_cache)
         return result
+
+    async def _load_api_key(self) -> str:
+        if self.api_key:
+            return self.api_key
+        if self.config.api_key_file:
+            return await asyncio.to_thread(_read_secret_file, self.config.api_key_file)
+        return await self._load_keyring_secret()
 
     def _write_cache(self) -> None:
         self.cache_path.parent.mkdir(parents=True, exist_ok=True)

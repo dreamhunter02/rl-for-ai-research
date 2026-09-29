@@ -58,7 +58,18 @@ The root contains `filings/`, `text/` and the original split/data. Strict page l
 
 ## 3. Measure the corrected base and run controlled training
 
-Set `TINKER_API_KEY` securely in the environment or use the existing local key file. Set `JUDGE_BACKEND=deepinfra` and supply the judge credential through the existing environment/keyring mechanism if judging text paraphrases. Freeze the judge model/config/cache and audit approximately 50 training trajectories. With no judge, non-exact text answers remain unresolved. Training excludes the entire unresolved group with masked tokens and zeroed group totals; evaluation preserves its denominator and reports uncertainty bounds. Provider failures are unresolved, not negative labels.
+Set `TINKER_API_KEY` securely in the environment or use the existing local key file. Set `JUDGE_BACKEND=deepinfra` and supply the judge credential through `DEEPINFRA_API_KEY`, GNOME Keyring, or `DEEPINFRA_API_KEY_FILE`. The key-file path is intended for headless hosts: the loader rejects symlinks, non-regular files, files not owned by the current user, and any group/world permission bits. Create it without putting the key in shell history:
+
+```bash
+umask 077
+mkdir -p "$HOME/.config/financebench"
+read -rsp "DeepInfra API key: " DEEPINFRA_SECRET; echo
+printf '%s' "$DEEPINFRA_SECRET" > "$HOME/.config/financebench/deepinfra.key"
+unset DEEPINFRA_SECRET
+export DEEPINFRA_API_KEY_FILE="$HOME/.config/financebench/deepinfra.key"
+```
+
+Never commit the key file. Freeze the judge model/config/cache and audit approximately 50 training trajectories. With no judge, non-exact text answers remain unresolved. Training excludes the entire unresolved group with masked tokens and zeroed group totals; evaluation preserves its denominator and reports uncertainty bounds. Provider failures are unresolved, not negative labels.
 
 ```bash
 python harness/workshop_eval.py --condition B1 --run-id B1-dev --split dev --out results/paper_2026_rl4llm/B1-dev
