@@ -20,6 +20,10 @@ PRECISION_OVERRIDES={
  '06272':('0.80',2),
  '04103':('-3.70',2),
 }
+UNRESOLVED_TARGETS={
+ '04672':'Cited 3M PP&E is 8,738 million (8.738 billion); frozen 8.70 billion is not a supported rounding.',
+ '00283':'Cited Pfizer text implies approximately 70 million remaining (10% of 700 million); frozen 77.78 and unit are unsupported.',
+}
 # value, metric token, period, page, source label
 D={
 '07966':('((-c17)/r17+(-c18)/r18+(-c19)/r19)/3*100',{'c17':(-155,'capital','2017',73,'Capital expenditures'),'c18':(-131,'capital','2018',73,'Capital expenditures'),'c19':(-116,'capital','2019',73,'Capital expenditures'),'r17':(7017,'revenue','2017',70,'Total net revenues'),'r18':(7500,'revenue','2018',70,'Total net revenues'),'r19':(6489,'revenue','2019',70,'Total net revenues')}),
@@ -161,6 +165,8 @@ def build(split,old):
   dk=q.rsplit('_',1)[-1]
   if dk in PRECISION_OVERRIDES:
    t['value'],t['precision']=PRECISION_OVERRIDES[dk]
+  if dk in UNRESOLVED_TARGETS:
+   t['adjudication_status']='unresolved';t['adjudication_reason']=UNRESOLVED_TARGETS[dk]
   if dk in D:
    ex,ss=D[dk]; t['derived']=True;t['expression']=ex;ops={};sup=[]
    for name,(val,met,per,pg,lab) in ss.items():

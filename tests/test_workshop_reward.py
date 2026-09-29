@@ -76,6 +76,20 @@ class ProvenanceTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             score_submission({**self.target, "reviewed": False}, {}, self.state)
 
+    def test_unresolved_target_fails_closed_without_scoring_negative(self):
+        target={"reviewed":True,"answer_type":"numeric","value":"8.70","unit":"USD",
+                "scale":"billion","precision":2,"adjudication_status":"unresolved",
+                "adjudication_reason":"source and recorded answer conflict"}
+        answer={"answer_type":"numeric","value":"8.738","unit":"USD","scale":"billion"}
+        result=score_submission(target,answer,self.state)
+        self.assertEqual((result['unresolved'],result['A'],result['reward']),(True,0,0))
+
+    def test_unresolved_target_requires_reason(self):
+        target={"reviewed":True,"answer_type":"numeric","value":"1","unit":"USD",
+                "scale":"ones","precision":0,"adjudication_status":"unresolved"}
+        with self.assertRaises(ValueError):
+            score_submission(target,None,self.state)
+
     def test_text_overlap_is_not_verified(self):
         result = score_submission({"answer_type": "text", "reviewed": True, "aliases": ["Packaging industry"]},
             {"answer_type": "text", "answer_text": "Packaging industry and oil exploration"}, self.state)

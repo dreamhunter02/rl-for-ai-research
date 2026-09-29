@@ -7,7 +7,7 @@ import re
 from dataclasses import dataclass, field
 from decimal import Decimal, InvalidOperation, ROUND_HALF_UP, localcontext
 
-SCORER_VERSION = "workshop-rubric-v2-derived-provenance"
+SCORER_VERSION = "workshop-rubric-v3-source-rounding"
 SCALES = {"ones": Decimal(1), "thousand": Decimal(1000), "million": Decimal(1000000), "billion": Decimal(1000000000)}
 SCALE_ALIASES = {"": "ones", "1": "ones", "k": "thousand", "thousands": "thousand", "m": "million", "mm": "million", "millions": "million", "b": "billion", "bn": "billion", "billions": "billion"}
 UNIT_ALIASES = {"$": "USD", "usd": "USD", "dollars": "USD", "€": "EUR", "eur": "EUR", "£": "GBP", "gbp": "GBP", "%": "percent", "percentage": "percent", "percent": "percent", "ratio": "ratio", "": "number", "number": "number"}
@@ -81,6 +81,11 @@ def numeric_equal(gold, candidate):
 def validate_target(target):
     if target.get('reviewed') is not True:
         raise ValueError('Target must be source-reviewed before training/evaluation')
+    adjudication = target.get('adjudication_status', 'resolved')
+    if adjudication not in ('resolved', 'unresolved'):
+        raise ValueError('Target adjudication_status must be resolved or unresolved')
+    if adjudication == 'unresolved' and not str(target.get('adjudication_reason', '')).strip():
+        raise ValueError('Unresolved target requires an adjudication_reason')
     kind = target.get('answer_type')
     if kind == 'numeric':
         typed_number(target['value'], target['unit'], target['scale'])
@@ -220,6 +225,9 @@ def score_submission(target, submission, state, retrieval_weight=0.0):
     validate_target(target)
     result = dict(F=0.0, A=0.0, G=0.0, Ret=0.0, reward=0.0, correct=0, grounded_success=0,
                   unresolved=False, fabricated_citation=False, grader_version=SCORER_VERSION)
+    if target.get('adjudication_status') == 'unresolved':
+        result['unresolved'] = True
+        return result
     if not submission: return result
     try: submission = validate_submission(submission)
     except (ValueError, KeyError): return result
