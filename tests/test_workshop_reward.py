@@ -115,6 +115,19 @@ class ReviewRegressionTests(unittest.TestCase):
                 with self.subTest(gold=gold,candidate=candidate):
                     self.assertEqual(score_submission(target,answer,EpisodeState())['A'],1)
 
+    def test_question_requested_precision_applies_to_derived_values(self):
+        cases = [
+            ('0.80', '0.798156'),
+            ('-3.70', '-3.70061'),
+        ]
+        for gold, calculated in cases:
+            target={'reviewed':True,'answer_type':'numeric','value':gold,
+                    'unit':'number','scale':'ones','precision':2}
+            answer={'answer_type':'numeric','value':calculated,
+                    'unit':'number','scale':'ones'}
+            with self.subTest(gold=gold,calculated=calculated):
+                self.assertEqual(score_submission(target,answer,EpisodeState())['A'],1)
+
     def test_unhashable_citation_ids_fail_validation(self):
         target={'reviewed':True,'answer_type':'numeric','value':'1','unit':'USD','scale':'ones','precision':0}
         for field in ('receipt_id','document_id'):

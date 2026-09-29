@@ -7,17 +7,18 @@ import financebench_harness as hb
 _PAGE_CACHE={}
 SCHEMA_VERSION='financebench-workshop-targets-v2'
 RUBRIC_VERSION='workshop-rubric-v3-source-rounding'
-# FinanceBench sometimes formats a rounded answer with trailing zeroes that do
-# not represent the requested/source precision.  These direct-extraction
-# targets were checked against their cited statements; preserve the benchmark
-# value while grading at the precision used to produce it.
-DIRECT_PRECISION={
+# FinanceBench display formatting does not always represent the precision
+# requested by the question or used to produce a rounded answer. These targets
+# were checked against their cited statements and reviewed calculations.
+PRECISION_OVERRIDES={
  '05718':('0.4',1),
  '07661':('382',0),
  '03882':('1616',0),
  '04171':('303',0),
  '03282':('5466',0),
  '04980':('4.6',1),
+ '06272':('0.80',2),
+ '04103':('-3.70',2),
 }
 # value, metric token, period, page, source label
 D={
@@ -126,8 +127,8 @@ def build(split,old):
    elif '%' in r['answer']:t['unit'],t['scale']='percent','ones'
    elif any(x in z for x in ('ratio','roa','margin','turnover','dpo','ccc','working capital ratio')):t['unit'],t['scale']='number','ones'
   dk=q.rsplit('_',1)[-1]
-  if dk in DIRECT_PRECISION:
-   t['value'],t['precision']=DIRECT_PRECISION[dk]
+  if dk in PRECISION_OVERRIDES:
+   t['value'],t['precision']=PRECISION_OVERRIDES[dk]
   if dk in D:
    ex,ss=D[dk]; t['derived']=True;t['expression']=ex;ops={};sup=[]
    for name,(val,met,per,pg,lab) in ss.items():
