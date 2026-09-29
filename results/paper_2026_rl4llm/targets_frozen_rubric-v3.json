@@ -23,7 +23,9 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v3-source-rounding"
+    "rubric_version": "workshop-rubric-v3-source-rounding",
+    "adjudication_status": "unresolved",
+    "adjudication_reason": "Cited 3M PP&E is 8,738 million (8.738 billion); frozen 8.70 billion is not a supported rounding."
   },
   "financebench_id_01226": {
     "reviewed": true,
@@ -6625,7 +6627,9 @@
     "review_method": "Independent schema audit: source spans, units/scales, target typing, and derived arithmetic checked against frozen FinanceBench records.",
     "review_date": "2026-09-28",
     "schema_version": "financebench-workshop-targets-v2",
-    "rubric_version": "workshop-rubric-v3-source-rounding"
+    "rubric_version": "workshop-rubric-v3-source-rounding",
+    "adjudication_status": "unresolved",
+    "adjudication_reason": "Cited Pfizer text implies approximately 70 million remaining (10% of 700 million); frozen 77.78 and unit are unsupported."
   },
   "financebench_id_00724": {
     "reviewed": true,
