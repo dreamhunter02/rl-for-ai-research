@@ -1,0 +1,37 @@
+{
+  "rubric_version": "workshop-rubric-v2-derived-provenance",
+  "target_schema_version": "financebench-workshop-targets-v2",
+  "prior_rubric_version": "workshop-v1",
+  "split_counts": {
+    "train": 96,
+    "dev": 12,
+    "eval": 42
+  },
+  "split_sha256": "3c311997ae8f7bc01cadcc771dc7ff843d3cc2b56a9e8d3a96b2d3eae64f5810",
+  "prior_targets_sha256": "2240675065568faa711b9c1a4d915a4f9f301be13e2bd85039f4ccc08198df74",
+  "revised_targets_sha256": "c7c9bee37a49eef4b3af2e5551cff8362b78cd180dfa177aaa3e10a8f9485101",
+  "target_count": 150,
+  "derived_numeric_targets": 36,
+  "text_targets_with_required_facts": 98,
+  "document_counts": {
+    "train": 48,
+    "dev": 12,
+    "eval": 32
+  },
+  "document_overlap": {
+    "train_x_dev": [
+      "3M_2018_10K",
+      "3M_2022_10K",
+      "3M_2023Q2_10Q",
+      "ACTIVISIONBLIZZARD_2019_10K",
+      "ADOBE_2022_10K",
+      "AES_2022_10K",
+      "AMAZON_2017_10K",
+      "AMCOR_2023_10K"
+    ],
+    "train_x_eval": [],
+    "dev_x_eval": []
+  },
+  "support_quote_policy": "Exact substrings of indexed read-page text; direct-answer spans bounded to 1800 characters; derived operand spans retain statement headers when necessary.",
+  "prior_zero_update_run": "results/paper_2026_rl4llm/provider_smoke_lr1e5_v3 (immutable measured failure)"
+}

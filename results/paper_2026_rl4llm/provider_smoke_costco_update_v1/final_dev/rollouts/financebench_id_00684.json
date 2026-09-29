@@ -1,0 +1,433 @@
+{
+  "history": [
+    {
+      "role": "system",
+      "content": "You are a financial-filings retrieval agent.\n\nYour job is to answer the user's question using the SEC filing corpus. Search\nbefore answering. Start with bm25_search to identify the likely document and\npassages, then use grep_document for exact accounting terms or regexes and\nread/read_table to inspect bounded evidence. Any derived numeric answer must come from calculate using named, source-backed operands. Direct extraction needs no calculation.\nYou may switch documents or issue refined searches when the evidence is not\nsufficient. Do not invent values or rely on outside knowledge.\n\nAvailable tools:\n- bm25_search: ranked keyword search with optional company/year/document filters\n- grep_document: document-scoped exact or regex search; choose grep_type text, pdfgrep, or rga\n- search_tables: ranked search over table-like pages in one or all filings\n- read: bounded page/passage retrieval with provenance\n- read_table: retrieve a table candidate with neighboring headers and footnotes\n- calculate: safe arithmetic for ratios, changes, and unit conversions\n\nWhen you have enough evidence, call finish exactly once. For numeric answers use\nanswer_type=\"numeric\", value as a decimal string, unit and scale; leave answer_text\nempty. For yes/no-only answers use answer_type=\"boolean\", decision=\"yes\" or \"no\".\nFor text or multipart answers use answer_type=\"text\", answer_text with all requested\nfacts. Cite receipt_id, document_id and one-based page from read/grep results.\nFor arithmetic, calculate accepts an expression with named variables and an operands\nobject mapping each variable to value, unit, scale, metric, period, receipt_id and an\nexact quote. Include its calc_id in finish. Do not use constant-only calculations as\nsupport. Read beyond snippets when needed. Use the final available turn to finish;\nnever continue searching when only one turn remains.\n\n\n# Tools\n\nYou have access to the following functions:\n\n<tools>\n<function>\n<name>bm25_search</name>\n<parameters>\n<parameter>\n<name>query_list</name>\n<type>array</type>\n<description>One or more keyword queries.</description>\n<items>{\"type\": \"string\"}</items>\n<title>Query List</title>\n</parameter>\n<parameter>\n<name>company</name>\n<type>string</type>\n<description>Optional company filter, for example 3M.</description>\n<default></default>\n<title>Company</title>\n</parameter>\n<parameter>\n<name>year</name>\n<type>integer</type>\n<description>Optional fiscal year; use -1 when unknown.</description>\n<default>-1</default>\n<title>Year</title>\n</parameter>\n<parameter>\n<name>filing_type</name>\n<type>string</type>\n<description>Optional type such as 10-K or 10-Q.</description>\n<default></default>\n<title>Filing Type</title>\n</parameter>\n<parameter>\n<name>document_id</name>\n<type>string</type>\n<description>Optional exact filing name.</description>\n<default></default>\n<title>Document Id</title>\n</parameter>\n<parameter>\n<name>scope</name>\n<type>string</type>\n<description>prose, tables, or both.</description>\n<default>both</default>\n<title>Scope</title>\n</parameter>\n<parameter>\n<name>top_k</name>\n<type>integer</type>\n<description>Maximum results to return.</description>\n<default>3</default>\n<title>Top K</title>\n</parameter>\n<title>bm25_search_params</title>\n<required>[\"query_list\"]</required>\n</parameters>\n</function>\n<function>\n<name>grep_document</name>\n<parameters>\n<parameter>\n<name>document_id</name>\n<type>string</type>\n<description>Exact document_id returned by bm25_search.</description>\n<title>Document Id</title>\n</parameter>\n<parameter>\n<name>patterns</name>\n<type>array</type>\n<description>Literal or regular-expression patterns.</description>\n<items>{\"type\": \"string\"}</items>\n<title>Patterns</title>\n</parameter>\n<parameter>\n<name>page_start</name>\n<type>integer</type>\n<description>First page to search, or -1 for all pages.</description>\n<default>-1</default>\n<title>Page Start</title>\n</parameter>\n<parameter>\n<name>page_end</name>\n<type>integer</type>\n<description>Last page to search, or -1 for all pages.</description>\n<default>-1</default>\n<title>Page End</title>\n</parameter>\n<parameter>\n<name>context_lines</name>\n<type>integer</type>\n<description>Number of surrounding lines per match.</description>\n<default>2</default>\n<title>Context Lines</title>\n</parameter>\n<parameter>\n<name>grep_type</name>\n<type>string</type>\n<description>Backend choice: text, pdfgrep, or rga.</description>\n<default>text</default>\n<title>Grep Type</title>\n</parameter>\n<title>grep_document_params</title>\n<required>[\"document_id\", \"patterns\"]</required>\n</parameters>\n</function>\n<function>\n<name>search_tables</name>\n<parameters>\n<parameter>\n<name>query_list</name>\n<type>array</type>\n<description>Terms such as revenue, cash flows, balance sheet, or PP&E.</description>\n<items>{\"type\": \"string\"}</items>\n<title>Query List</title>\n</parameter>\n<parameter>\n<name>document_id</name>\n<type>string</type>\n<description>Optional exact document_id; leave empty for corpus search.</description>\n<default></default>\n<title>Document Id</title>\n</parameter>\n<parameter>\n<name>company</name>\n<type>string</type>\n<description>Optional company filter.</description>\n<default></default>\n<title>Company</title>\n</parameter>\n<parameter>\n<name>year</name>\n<type>integer</type>\n<description>Optional fiscal year; use -1 when unknown.</description>\n<default>-1</default>\n<title>Year</title>\n</parameter>\n<parameter>\n<name>top_k</name>\n<type>integer</type>\n<description>Maximum table candidates.</description>\n<default>3</default>\n<title>Top K</title>\n</parameter>\n<title>search_tables_params</title>\n<required>[\"query_list\"]</required>\n</parameters>\n</function>\n<function>\n<name>read</name>\n<parameters>\n<parameter>\n<name>document_id</name>\n<type>string</type>\n<description>Exact document_id.</description>\n<title>Document Id</title>\n</parameter>\n<parameter>\n<name>page</name>\n<type>integer</type>\n<description>One-based page number, or -1 when using passage_id.</description>\n<default>-1</default>\n<title>Page</title>\n</parameter>\n<parameter>\n<name>start</name>\n<type>integer</type>\n<description>Character start within the selected page/window.</description>\n<default>0</default>\n<title>Start</title>\n</parameter>\n<parameter>\n<name>end</name>\n<type>integer</type>\n<description>Absolute character end, or -1 for the next bounded window.</description>\n<default>-1</default>\n<title>End</title>\n</parameter>\n<parameter>\n<name>passage_id</name>\n<type>string</type>\n<description>Optional passage_id returned by search.</description>\n<default></default>\n<title>Passage Id</title>\n</parameter>\n<title>read_params</title>\n<required>[\"document_id\"]</required>\n</parameters>\n</function>\n<function>\n<name>read_table</name>\n<parameters>\n<parameter>\n<name>table_id</name>\n<type>string</type>\n<description>Exact table_id returned by search_tables.</description>\n<title>Table Id</title>\n</parameter>\n<parameter>\n<name>include_neighbors</name>\n<type>boolean</type>\n<description>Return neighbor page identifiers for headers and footnotes.</description>\n<default>True</default>\n<title>Include Neighbors</title>\n</parameter>\n<parameter>\n<name>start</name>\n<type>integer</type>\n<description>Character offset within table page.</description>\n<default>0</default>\n<title>Start</title>\n</parameter>\n<parameter>\n<name>end</name>\n<type>integer</type>\n<description>Absolute end, or -1 for the next bounded table window.</description>\n<default>-1</default>\n<title>End</title>\n</parameter>\n<title>read_table_params</title>\n<required>[\"table_id\"]</required>\n</parameters>\n</function>\n<function>\n<name>calculate</name>\n<parameters>\n<parameter>\n<name>expression</name>\n<type>string</type>\n<description>Arithmetic using named source-backed operands and + - * /.</description>\n<title>Expression</title>\n</parameter>\n<parameter>\n<name>operands</name>\n<type>object</type>\n<description>Variable to value/unit/scale/metric/period/receipt_id/quote mapping.</description>\n<additionalProperties>True</additionalProperties>\n<default>{}</default>\n<title>Operands</title>\n</parameter>\n<title>calculate_params</title>\n<required>[\"expression\"]</required>\n</parameters>\n</function>\n<function>\n<name>finish</name>\n<parameters>\n<parameter>\n<name>answer_type</name>\n<type>string</type>\n<description>numeric, boolean, or text</description>\n<title>Answer Type</title>\n</parameter>\n<parameter>\n<name>value</name>\n<type>string</type>\n<description>Single decimal numeric answer; no units here.</description>\n<default></default>\n<title>Value</title>\n</parameter>\n<parameter>\n<name>unit</name>\n<type>string</type>\n<description>USD, EUR, percent, ratio, shares, or number.</description>\n<default></default>\n<title>Unit</title>\n</parameter>\n<parameter>\n<name>scale</name>\n<type>string</type>\n<description>ones, thousand, million, or billion.</description>\n<default></default>\n<title>Scale</title>\n</parameter>\n<parameter>\n<name>decision</name>\n<type>string</type>\n<description>yes or no for boolean answers.</description>\n<default></default>\n<title>Decision</title>\n</parameter>\n<parameter>\n<name>answer_text</name>\n<type>string</type>\n<description>Text/multipart answer; empty for numeric and boolean.</description>\n<default></default>\n<title>Answer Text</title>\n</parameter>\n<parameter>\n<name>citations</name>\n<type>array</type>\n<description>Each contains receipt_id, document_id and one-based page.</description>\n<default>[]</default>\n<items>{\"additionalProperties\": true, \"type\": \"object\"}</items>\n<title>Citations</title>\n</parameter>\n<parameter>\n<name>calc_id</name>\n<type>string</type>\n<description>Calculation record for a derived numeric result.</description>\n<default></default>\n<title>Calc Id</title>\n</parameter>\n<title>finish_params</title>\n<required>[\"answer_type\"]</required>\n</parameters>\n</function>\n</tools>\n\nIf you choose to call a function ONLY reply in the following format with NO suffix:\n\n<tool_call>\n<function=example_function_name>\n<parameter=example_parameter_1>\nvalue_1\n</parameter>\n<parameter=example_parameter_2>\nThis is the value for the second parameter\nthat can span\nmultiple lines\n</parameter>\n</function>\n</tool_call>\n\n<IMPORTANT>\nReminder:\n- Function calls MUST follow the specified format: an inner <function=...></function> block must be nested within <tool_call></tool_call> XML tags\n- Required parameters MUST be specified\n- You may provide optional reasoning for your function call in natural language BEFORE the function call, but NOT after\n- If there is no function call available, answer the question like normal with your current knowledge and do not tell the user about function calls\n</IMPORTANT>"
+    },
+    {
+      "role": "user",
+      "content": "Does AMCOR have an improving gross margin profile as of FY2023? If gross margin is not a useful metric for a company like this, then state that and explain why."
+    },
+    {
+      "role": "assistant",
+      "content": [
+        {
+          "type": "thinking",
+          "thinking": "We need to answer whether Amcor has an improving gross margin profile as of FY2023. Need to retrieve data about Amcor's gross margin for recent years, likely from 10-K filings. Use bm25_search to find Amcor FY2023 gross margin. Then maybe grep for \"gross margin\". Then compute trend.\n\nLet's start search."
+        },
+        {
+          "type": "text",
+          "text": ""
+        },
+        {
+          "type": "text",
+          "text": "\n"
+        }
+      ],
+      "tool_calls": [
+        {
+          "type": "function",
+          "id": null,
+          "function": {
+            "name": "bm25_search",
+            "arguments": "{\"query_list\": [\"Amcor gross margin FY2023\", \"Amcor 10-K 2023 gross margin\"], \"company\": \"Amcor\", \"year\": 2023, \"filing_type\": \"10-K\", \"top_k\": 5}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "content": "{\"queries\":[\"Amcor gross margin FY2023\",\"Amcor 10-K 2023 gross margin\"],\"filters\":{\"company\":\"Amcor\",\"year\":2023,\"filing_type\":\"10-K\",\"document_id\":\"\"},\"prose_hits\":[{\"document_id\":\"AMCOR_2023_10K\",\"page\":156,\"passage_id\":\"p:AMCOR_2023_10K:page:156:chunk:0\",\"score\":12.68651,\"snippet\":\"arbanes-Oxley Act of 2002, each of the undersigned certifies that the Annual Report on Form 10-K of Amcor\\nplc for the year ended June 30, 2023 (the \u201cReport\u201d), fully complies with the requirements of Section 13(a) or 15(d) of the Securities Exchange\\nAct of 1934 and that information contained in the R\",\"snippet_start\":91},{\"document_id\":\"AMCOR_2023_10K\",\"page\":29,\"passage_id\":\"p:AMCOR_2023_10K:page:29:chunk:0\",\"score\":12.55141,\"snippet\":\"\\nThe following is a discussion and analysis of changes in the results of operations for fiscal year 2023 compared to fiscal year 2022. A discussion\\nand analysis regarding our results of operations for fiscal year 2022, compared to fiscal year 2021 that are not included in this Annual Report on\\nForm \",\"snippet_start\":278},{\"document_id\":\"AMCOR_2023_10K\",\"page\":113,\"passage_id\":\"p:AMCOR_2023_10K:page:113:chunk:0\",\"score\":11.4187,\"snippet\":\"Description Form of Filing\\n2 .1\\nTransaction Agreement, dated as of August 6, 2018, by and among the Amcor plc, Amcor\\nLimited, Arctic Corp. and Bemis Company, Inc. (\u201cBemis\u201d) (incorporated by reference to\\nAnnex A to Amcor plc's Registration Statement on Form S-4 filed on March 12, 2019).\\nIncorporated \",\"snippet_start\":782},{\"document_id\":\"AMCOR_2023_10K\",\"page\":32,\"passage_id\":\"p:AMCOR_2023_10K:page:32:chunk:0\",\"score\":10.51337,\"snippet\":\"Results of Operations\\nConsolidated Results of Operations\\n($ in millions, except per share data) 2023 2022\\nNet sales $ 14,694 $ 14,544 \\nOperating income 1,508 1,239 \\nOperating income as a percentage of net sales 10.3 % 8.5 %\\nNet income attributable to Amcor plc $ 1,048 $ 805 \\nDiluted Earnings Per Sha\",\"snippet_start\":0}],\"table_hits\":[{\"document_id\":\"AMCOR_2023_10K\",\"page\":29,\"table_id\":\"t:AMCOR_2023_10K:page:29\",\"score\":10.99956,\"units\":\"in millions\",\"title\":\"\",\"snippet\":\"\\nThe following is a discussion and analysis of changes in the results of operations for fiscal year 2023 compared to fiscal year 2022. A discussion\\nand analysis regarding our results of operations for fiscal year 2022, compared to fiscal year 2021 that are not included in this Annual Report on\\nForm \",\"snippet_start\":278}],\"turns_remaining\":7,\"observation\":{\"raw_chars\":2450,\"truncated\":false}}",
+      "tool_call_id": "",
+      "name": "bm25_search"
+    },
+    {
+      "role": "assistant",
+      "content": [
+        {
+          "type": "thinking",
+          "thinking": "We have results. Need gross margin data. The snippet at page 32 shows operating income as % of net sales, but gross margin may be elsewhere. Let's search for \"gross margin\" in the document."
+        },
+        {
+          "type": "text",
+          "text": ""
+        },
+        {
+          "type": "text",
+          "text": "\n"
+        }
+      ],
+      "tool_calls": [
+        {
+          "type": "function",
+          "id": null,
+          "function": {
+            "name": "grep_document",
+            "arguments": "{\"document_id\": \"AMCOR_2023_10K\", \"patterns\": [\"gross margin\", \"Gross Margin\"], \"grep_type\": \"text\", \"context_lines\": 2}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "content": "{\"grep_type_requested\":\"text\",\"backend_used\":\"page_text\",\"matches\":[],\"turns_remaining\":6,\"observation\":{\"raw_chars\":90,\"truncated\":false}}",
+      "tool_call_id": "",
+      "name": "grep_document"
+    },
+    {
+      "role": "assistant",
+      "content": [
+        {
+          "type": "thinking",
+          "thinking": "No matches? Maybe term \"gross profit margin\" or \"Gross Profit\". Let's search for \"Gross Profit\"."
+        },
+        {
+          "type": "text",
+          "text": ""
+        },
+        {
+          "type": "text",
+          "text": "\n"
+        }
+      ],
+      "tool_calls": [
+        {
+          "type": "function",
+          "id": null,
+          "function": {
+            "name": "grep_document",
+            "arguments": "{\"document_id\": \"AMCOR_2023_10K\", \"patterns\": [\"Gross Profit\"], \"grep_type\": \"text\", \"context_lines\": 2}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "content": "{\"grep_type_requested\":\"text\",\"backend_used\":\"page_text\",\"matches\":[{\"document_id\":\"AMCOR_2023_10K\",\"page\":29,\"line\":12,\"text\":\"Net sales $ 14,694 100.0 % $ 14,544 100.0 %\\nCost of sales (11,969) (81.5) (11,724) (80.6)\\nGross profit 2,725 18.5 2,820 19.4 \\nOperating expenses:\\nSelling, general, and administrative expenses (1,246) (8.5) (1,284) (8.8)\",\"provenance\":\"AMCOR_2023_10K:page=29:line=12\",\"receipt_id\":\"r1\"},{\"document_id\":\"AMCOR_2023_10K\",\"page\":32,\"line\":15,\"text\":\" Net income attributable to Amcor plc increased by $243 million, or 30%, in fiscal year 2023, compared to fiscal year 2022, mainly as a result\\nof a pre-tax net gain of $215 million on the disposal of the Russian business in fiscal year 2023, decreased restructuring, impairment, and other\\nrelated activities, net of $123 million, and a decrease in income tax expense of $107 million, partially offset by a decrease in gross profit of $95\\nmillion and an increase in net interest expense of $124 millio\",\"provenance\":\"AMCOR_2023_10K:page=32:line=15\",\"receipt_id\":\"r2\"},{\"document_id\":\"AMCOR_2023_10K\",\"page\":33,\"line\":7,\"text\":\"more than offset by unfavorable volumes of (12%), unfavorable plant costs of (11%) and unfavorable SG&A and other costs of (5%), all largely\\nimpacted by inflationary pressures.\\nConsolidated Gross Profit\\n($ in millions) 2023 2022\\nGross profit $ 2,725 $ 2,820 \",\"provenance\":\"AMCOR_2023_10K:page=33:line=7\",\"receipt_id\":\"r3\"},{\"document_id\":\"AMCOR_2023_10K\",\"page\":33,\"line\":9,\"text\":\"Consolidated Gross Profit\\n($ in millions) 2023 2022\\nGross profit $ 2,725 $ 2,820 \\nGross profit as a percentage of net sales 18.5 % 19.4 %\\n Gross profit decreased by $95 million, or 3%, in fiscal year 2023, compared to fiscal year 2022. Excluding negative currency impacts of $78\",\"provenance\":\"AMCOR_2023_10K:page=33:line=9\",\"receipt_id\":\"r4\"},{\"document_id\":\"AMCOR_2023_10K\",\"page\":33,\"line\":10,\"text\":\"($ in millions) 2023 2022\\nGross profit $ 2,725 $ 2,820 \\nGross profit as a percentage of net sales 18.5 % 19.4 %\\n Gross profit decreased by $95 million, or 3%, in fiscal year 2023, compared to fiscal year 2022. Excluding negative currency impacts of $78\\nmillion, the negative impact from disposed and ceased operations of $73 million, the remaining variation in gross profit for fiscal year 2023 was\",\"provenance\":\"AMCOR_2023_10K:page=33:line=10\",\"receipt_id\":\"r5\"},{\"document_id\":\"AMCOR_2023_10K\",\"page\":33,\"line\":11,\"text\":\"Gross profit $ 2,725 $ 2,820 \\nGross profit as a percentage of net sales 18.5 % 19.4 %\\n Gross profit decreased by $95 million, or 3%, in fiscal year 2023, compared to fiscal year 2022. Excluding negative currency impacts of $78\\nmillion, the negative impact from disposed and ceased operations of $73 million, the remaining variation in gross profit for fiscal year 2023 was\\nan increase of $56 million, reflecting favorable operating cost performance. Gross profit as a percentage of sales decreased to\",\"provenance\":\"AMCOR_2023_10K:page=33:line=11\",\"receipt_id\":\"r6\"},{\"document_id\":\"AMCOR_2023_10K\",\"page\":33,\"line\":12,\"text\":\"Gross profit as a percentage of net sales 18.5 % 19.4 %\\n Gross profit decreased by $95 million, or 3%, in fiscal year 2023, compared to fiscal year 2022. Excluding negative currency impacts of $78\\nmillion, the negative impact from disposed and ceased operations of $73 million, the remaining variation in gross profit for fiscal year 2023 was\\nan increase of $56 million, reflecting favorable operating cost performance. Gross profit as a percentage of sales decreased to 18.5% in fiscal\\nyear 2023, ma\",\"provenance\":\"AMCOR_2023_10K:page=33:line=12\",\"receipt_id\":\"r7\"}],\"turns_remaining\":5,\"observation\":{\"raw_chars\":5221,\"truncated\":true}}",
+      "tool_call_id": "",
+      "name": "grep_document"
+    },
+    {
+      "role": "assistant",
+      "content": [
+        {
+          "type": "thinking",
+          "thinking": "We have gross profit and gross profit as % of net sales for 2023 and 2022: 2023: 18.5%; 2022: 19.4%. So gross margin decreased from 19.4% to 18.5%, i.e., not improving; it declined.\n\nWe might also need prior year (2021) to see trend. But question: \"Does AMCOR have an improving gross margin profile as of FY2023?\" We have data showing decline from FY2022 to FY2023. Might also check FY2021 if available. Let's search for gross profit 2021."
+        },
+        {
+          "type": "text",
+          "text": ""
+        },
+        {
+          "type": "text",
+          "text": "\n"
+        }
+      ],
+      "tool_calls": [
+        {
+          "type": "function",
+          "id": null,
+          "function": {
+            "name": "grep_document",
+            "arguments": "{\"document_id\": \"AMCOR_2023_10K\", \"patterns\": [\"Gross profit as a percentage of net sales 2021\"], \"grep_type\": \"text\", \"context_lines\": 1}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "content": "{\"grep_type_requested\":\"text\",\"backend_used\":\"page_text\",\"matches\":[],\"turns_remaining\":4,\"observation\":{\"raw_chars\":90,\"truncated\":false}}",
+      "tool_call_id": "",
+      "name": "grep_document"
+    },
+    {
+      "role": "assistant",
+      "content": [
+        {
+          "type": "thinking",
+          "thinking": "Maybe the 10-K only provides two years. Could search for \"2021\" in gross profit context."
+        },
+        {
+          "type": "text",
+          "text": ""
+        },
+        {
+          "type": "text",
+          "text": "\n"
+        }
+      ],
+      "tool_calls": [
+        {
+          "type": "function",
+          "id": null,
+          "function": {
+            "name": "grep_document",
+            "arguments": "{\"document_id\": \"AMCOR_2023_10K\", \"patterns\": [\"Gross profit.*2021\"], \"grep_type\": \"text\", \"context_lines\": 1}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "content": "{\"grep_type_requested\":\"text\",\"backend_used\":\"page_text\",\"matches\":[],\"turns_remaining\":3,\"observation\":{\"raw_chars\":90,\"truncated\":false}}",
+      "tool_call_id": "",
+      "name": "grep_document"
+    }
+  ],
+  "receipts": {
+    "r1": {
+      "document_id": "AMCOR_2023_10K",
+      "page": 29,
+      "line": 12,
+      "text": "Net sales $ 14,694 100.0 % $ 14,544 100.0 %\nCost of sales (11,969) (81.5) (11,724) (80.6)\nGross profit 2,725 18.5 2,820 19.4 \nOperating expenses:\nSelling, general, and administrative expenses (1,246) (8.5) (1,284) (8.8)",
+      "provenance": "AMCOR_2023_10K:page=29:line=12",
+      "receipt_id": "r1",
+      "tool": "grep_document",
+      "delivered_turn": 3
+    },
+    "r2": {
+      "document_id": "AMCOR_2023_10K",
+      "page": 32,
+      "line": 15,
+      "text": " Net income attributable to Amcor plc increased by $243 million, or 30%, in fiscal year 2023, compared to fiscal year 2022, mainly as a result\nof a pre-tax net gain of $215 million on the disposal of the Russian business in fiscal year 2023, decreased restructuring, impairment, and other\nrelated activities, net of $123 million, and a decrease in income tax expense of $107 million, partially offset by a decrease in gross profit of $95\nmillion and an increase in net interest expense of $124 millio",
+      "provenance": "AMCOR_2023_10K:page=32:line=15",
+      "receipt_id": "r2",
+      "tool": "grep_document",
+      "delivered_turn": 3
+    },
+    "r3": {
+      "document_id": "AMCOR_2023_10K",
+      "page": 33,
+      "line": 7,
+      "text": "more than offset by unfavorable volumes of (12%), unfavorable plant costs of (11%) and unfavorable SG&A and other costs of (5%), all largely\nimpacted by inflationary pressures.\nConsolidated Gross Profit\n($ in millions) 2023 2022\nGross profit $ 2,725 $ 2,820 ",
+      "provenance": "AMCOR_2023_10K:page=33:line=7",
+      "receipt_id": "r3",
+      "tool": "grep_document",
+      "delivered_turn": 3
+    },
+    "r4": {
+      "document_id": "AMCOR_2023_10K",
+      "page": 33,
+      "line": 9,
+      "text": "Consolidated Gross Profit\n($ in millions) 2023 2022\nGross profit $ 2,725 $ 2,820 \nGross profit as a percentage of net sales 18.5 % 19.4 %\n Gross profit decreased by $95 million, or 3%, in fiscal year 2023, compared to fiscal year 2022. Excluding negative currency impacts of $78",
+      "provenance": "AMCOR_2023_10K:page=33:line=9",
+      "receipt_id": "r4",
+      "tool": "grep_document",
+      "delivered_turn": 3
+    },
+    "r5": {
+      "document_id": "AMCOR_2023_10K",
+      "page": 33,
+      "line": 10,
+      "text": "($ in millions) 2023 2022\nGross profit $ 2,725 $ 2,820 \nGross profit as a percentage of net sales 18.5 % 19.4 %\n Gross profit decreased by $95 million, or 3%, in fiscal year 2023, compared to fiscal year 2022. Excluding negative currency impacts of $78\nmillion, the negative impact from disposed and ceased operations of $73 million, the remaining variation in gross profit for fiscal year 2023 was",
+      "provenance": "AMCOR_2023_10K:page=33:line=10",
+      "receipt_id": "r5",
+      "tool": "grep_document",
+      "delivered_turn": 3
+    },
+    "r6": {
+      "document_id": "AMCOR_2023_10K",
+      "page": 33,
+      "line": 11,
+      "text": "Gross profit $ 2,725 $ 2,820 \nGross profit as a percentage of net sales 18.5 % 19.4 %\n Gross profit decreased by $95 million, or 3%, in fiscal year 2023, compared to fiscal year 2022. Excluding negative currency impacts of $78\nmillion, the negative impact from disposed and ceased operations of $73 million, the remaining variation in gross profit for fiscal year 2023 was\nan increase of $56 million, reflecting favorable operating cost performance. Gross profit as a percentage of sales decreased to",
+      "provenance": "AMCOR_2023_10K:page=33:line=11",
+      "receipt_id": "r6",
+      "tool": "grep_document",
+      "delivered_turn": 3
+    },
+    "r7": {
+      "document_id": "AMCOR_2023_10K",
+      "page": 33,
+      "line": 12,
+      "text": "Gross profit as a percentage of net sales 18.5 % 19.4 %\n Gross profit decreased by $95 million, or 3%, in fiscal year 2023, compared to fiscal year 2022. Excluding negative currency impacts of $78\nmillion, the negative impact from disposed and ceased operations of $73 million, the remaining variation in gross profit for fiscal year 2023 was\nan increase of $56 million, reflecting favorable operating cost performance. Gross profit as a percentage of sales decreased to 18.5% in fiscal\nyear 2023, ma",
+      "provenance": "AMCOR_2023_10K:page=33:line=12",
+      "receipt_id": "r7",
+      "tool": "grep_document",
+      "delivered_turn": 3
+    }
+  },
+  "calculations": {},
+  "observations": [
+    {
+      "name": "bm25_search",
+      "payload": {
+        "queries": [
+          "Amcor gross margin FY2023",
+          "Amcor 10-K 2023 gross margin"
+        ],
+        "filters": {
+          "company": "Amcor",
+          "year": 2023,
+          "filing_type": "10-K",
+          "document_id": ""
+        },
+        "prose_hits": [
+          {
+            "document_id": "AMCOR_2023_10K",
+            "page": 156,
+            "passage_id": "p:AMCOR_2023_10K:page:156:chunk:0",
+            "score": 12.68651,
+            "snippet": "arbanes-Oxley Act of 2002, each of the undersigned certifies that the Annual Report on Form 10-K of Amcor\nplc for the year ended June 30, 2023 (the \u201cReport\u201d), fully complies with the requirements of Section 13(a) or 15(d) of the Securities Exchange\nAct of 1934 and that information contained in the R",
+            "snippet_start": 91
+          },
+          {
+            "document_id": "AMCOR_2023_10K",
+            "page": 29,
+            "passage_id": "p:AMCOR_2023_10K:page:29:chunk:0",
+            "score": 12.55141,
+            "snippet": "\nThe following is a discussion and analysis of changes in the results of operations for fiscal year 2023 compared to fiscal year 2022. A discussion\nand analysis regarding our results of operations for fiscal year 2022, compared to fiscal year 2021 that are not included in this Annual Report on\nForm ",
+            "snippet_start": 278
+          },
+          {
+            "document_id": "AMCOR_2023_10K",
+            "page": 113,
+            "passage_id": "p:AMCOR_2023_10K:page:113:chunk:0",
+            "score": 11.4187,
+            "snippet": "Description Form of Filing\n2 .1\nTransaction Agreement, dated as of August 6, 2018, by and among the Amcor plc, Amcor\nLimited, Arctic Corp. and Bemis Company, Inc. (\u201cBemis\u201d) (incorporated by reference to\nAnnex A to Amcor plc's Registration Statement on Form S-4 filed on March 12, 2019).\nIncorporated ",
+            "snippet_start": 782
+          },
+          {
+            "document_id": "AMCOR_2023_10K",
+            "page": 32,
+            "passage_id": "p:AMCOR_2023_10K:page:32:chunk:0",
+            "score": 10.51337,
+            "snippet": "Results of Operations\nConsolidated Results of Operations\n($ in millions, except per share data) 2023 2022\nNet sales $ 14,694 $ 14,544 \nOperating income 1,508 1,239 \nOperating income as a percentage of net sales 10.3 % 8.5 %\nNet income attributable to Amcor plc $ 1,048 $ 805 \nDiluted Earnings Per Sha",
+            "snippet_start": 0
+          }
+        ],
+        "table_hits": [
+          {
+            "document_id": "AMCOR_2023_10K",
+            "page": 29,
+            "table_id": "t:AMCOR_2023_10K:page:29",
+            "score": 10.99956,
+            "units": "in millions",
+            "title": "",
+            "snippet": "\nThe following is a discussion and analysis of changes in the results of operations for fiscal year 2023 compared to fiscal year 2022. A discussion\nand analysis regarding our results of operations for fiscal year 2022, compared to fiscal year 2021 that are not included in this Annual Report on\nForm ",
+            "snippet_start": 278
+          }
+        ],
+        "turns_remaining": 7,
+        "observation": {
+          "raw_chars": 2450,
+          "truncated": false
+        }
+      },
+      "visible_chars": 2501
+    },
+    {
+      "name": "grep_document",
+      "payload": {
+        "grep_type_requested": "text",
+        "backend_used": "page_text",
+        "matches": [],
+        "turns_remaining": 6,
+        "observation": {
+          "raw_chars": 90,
+          "truncated": false
+        }
+      },
+      "visible_chars": 139
+    },
+    {
+      "name": "grep_document",
+      "payload": {
+        "grep_type_requested": "text",
+        "backend_used": "page_text",
+        "matches": [
+          {
+            "document_id": "AMCOR_2023_10K",
+            "page": 29,
+            "line": 12,
+            "text": "Net sales $ 14,694 100.0 % $ 14,544 100.0 %\nCost of sales (11,969) (81.5) (11,724) (80.6)\nGross profit 2,725 18.5 2,820 19.4 \nOperating expenses:\nSelling, general, and administrative expenses (1,246) (8.5) (1,284) (8.8)",
+            "provenance": "AMCOR_2023_10K:page=29:line=12",
+            "receipt_id": "r1"
+          },
+          {
+            "document_id": "AMCOR_2023_10K",
+            "page": 32,
+            "line": 15,
+            "text": " Net income attributable to Amcor plc increased by $243 million, or 30%, in fiscal year 2023, compared to fiscal year 2022, mainly as a result\nof a pre-tax net gain of $215 million on the disposal of the Russian business in fiscal year 2023, decreased restructuring, impairment, and other\nrelated activities, net of $123 million, and a decrease in income tax expense of $107 million, partially offset by a decrease in gross profit of $95\nmillion and an increase in net interest expense of $124 millio",
+            "provenance": "AMCOR_2023_10K:page=32:line=15",
+            "receipt_id": "r2"
+          },
+          {
+            "document_id": "AMCOR_2023_10K",
+            "page": 33,
+            "line": 7,
+            "text": "more than offset by unfavorable volumes of (12%), unfavorable plant costs of (11%) and unfavorable SG&A and other costs of (5%), all largely\nimpacted by inflationary pressures.\nConsolidated Gross Profit\n($ in millions) 2023 2022\nGross profit $ 2,725 $ 2,820 ",
+            "provenance": "AMCOR_2023_10K:page=33:line=7",
+            "receipt_id": "r3"
+          },
+          {
+            "document_id": "AMCOR_2023_10K",
+            "page": 33,
+            "line": 9,
+            "text": "Consolidated Gross Profit\n($ in millions) 2023 2022\nGross profit $ 2,725 $ 2,820 \nGross profit as a percentage of net sales 18.5 % 19.4 %\n Gross profit decreased by $95 million, or 3%, in fiscal year 2023, compared to fiscal year 2022. Excluding negative currency impacts of $78",
+            "provenance": "AMCOR_2023_10K:page=33:line=9",
+            "receipt_id": "r4"
+          },
+          {
+            "document_id": "AMCOR_2023_10K",
+            "page": 33,
+            "line": 10,
+            "text": "($ in millions) 2023 2022\nGross profit $ 2,725 $ 2,820 \nGross profit as a percentage of net sales 18.5 % 19.4 %\n Gross profit decreased by $95 million, or 3%, in fiscal year 2023, compared to fiscal year 2022. Excluding negative currency impacts of $78\nmillion, the negative impact from disposed and ceased operations of $73 million, the remaining variation in gross profit for fiscal year 2023 was",
+            "provenance": "AMCOR_2023_10K:page=33:line=10",
+            "receipt_id": "r5"
+          },
+          {
+            "document_id": "AMCOR_2023_10K",
+            "page": 33,
+            "line": 11,
+            "text": "Gross profit $ 2,725 $ 2,820 \nGross profit as a percentage of net sales 18.5 % 19.4 %\n Gross profit decreased by $95 million, or 3%, in fiscal year 2023, compared to fiscal year 2022. Excluding negative currency impacts of $78\nmillion, the negative impact from disposed and ceased operations of $73 million, the remaining variation in gross profit for fiscal year 2023 was\nan increase of $56 million, reflecting favorable operating cost performance. Gross profit as a percentage of sales decreased to",
+            "provenance": "AMCOR_2023_10K:page=33:line=11",
+            "receipt_id": "r6"
+          },
+          {
+            "document_id": "AMCOR_2023_10K",
+            "page": 33,
+            "line": 12,
+            "text": "Gross profit as a percentage of net sales 18.5 % 19.4 %\n Gross profit decreased by $95 million, or 3%, in fiscal year 2023, compared to fiscal year 2022. Excluding negative currency impacts of $78\nmillion, the negative impact from disposed and ceased operations of $73 million, the remaining variation in gross profit for fiscal year 2023 was\nan increase of $56 million, reflecting favorable operating cost performance. Gross profit as a percentage of sales decreased to 18.5% in fiscal\nyear 2023, ma",
+            "provenance": "AMCOR_2023_10K:page=33:line=12",
+            "receipt_id": "r7"
+          }
+        ],
+        "turns_remaining": 5,
+        "observation": {
+          "raw_chars": 5221,
+          "truncated": true
+        }
+      },
+      "visible_chars": 3704
+    },
+    {
+      "name": "grep_document",
+      "payload": {
+        "grep_type_requested": "text",
+        "backend_used": "page_text",
+        "matches": [],
+        "turns_remaining": 4,
+        "observation": {
+          "raw_chars": 90,
+          "truncated": false
+        }
+      },
+      "visible_chars": 139
+    },
+    {
+      "name": "grep_document",
+      "payload": {
+        "grep_type_requested": "text",
+        "backend_used": "page_text",
+        "matches": [],
+        "turns_remaining": 3,
+        "observation": {
+          "raw_chars": 90,
+          "truncated": false
+        }
+      },
+      "visible_chars": 139
+    }
+  ],
+  "score": {}
+}

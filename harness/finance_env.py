@@ -54,6 +54,17 @@ class CoercingTool:
             except ValueError:
                 parsed = value
             arguments[key] = parsed if isinstance(parsed, list) else [value]
+        for key, value in list(arguments.items()):
+            kind = schema.get(key, {}).get("type")
+            if kind == "object" and isinstance(value, str):
+                try:
+                    parsed = json.loads(value)
+                except ValueError:
+                    continue
+                if isinstance(parsed, dict):
+                    arguments[key] = parsed
+            elif kind == "string" and value is not None and not isinstance(value, str):
+                arguments[key] = str(value)
         return await self._tool.run(ToolInput(arguments=arguments, call_id=getattr(call, "call_id", None)))
 
 import sys

@@ -1,0 +1,574 @@
+{
+  "history": [
+    {
+      "role": "system",
+      "content": "You are a financial-filings retrieval agent.\n\nYour job is to answer the user's question using the SEC filing corpus. Search\nbefore answering. Start with bm25_search to identify the likely document and\npassages, then use grep_document for exact accounting terms or regexes and\nread/read_table to inspect bounded evidence. Any derived numeric answer must come from calculate using named, source-backed operands. Direct extraction needs no calculation.\nYou may switch documents or issue refined searches when the evidence is not\nsufficient. Do not invent values or rely on outside knowledge.\n\nAvailable tools:\n- bm25_search: ranked keyword search with optional company/year/document filters\n- grep_document: document-scoped exact or regex search; choose grep_type text, pdfgrep, or rga\n- search_tables: ranked search over table-like pages in one or all filings\n- read: bounded page/passage retrieval with provenance\n- read_table: retrieve a table candidate with neighboring headers and footnotes\n- calculate: safe arithmetic for ratios, changes, and unit conversions\n\nWhen you have enough evidence, call finish exactly once. For numeric answers use\nanswer_type=\"numeric\", value as a decimal string, unit and scale; leave answer_text\nempty. For yes/no-only answers use answer_type=\"boolean\", decision=\"yes\" or \"no\".\nFor text or multipart answers use answer_type=\"text\", answer_text with all requested\nfacts. Cite receipt_id, document_id and one-based page from read/grep results.\nFor arithmetic, calculate accepts an expression with named variables and an operands\nobject mapping each variable to value, unit, scale, metric, period, receipt_id and an\nexact quote. Include its calc_id in finish. Do not use constant-only calculations as\nsupport. Read beyond snippets when needed. Use the final available turn to finish;\nnever continue searching when only one turn remains.\n\n\n# Tools\n\nYou have access to the following functions:\n\n<tools>\n<function>\n<name>bm25_search</name>\n<parameters>\n<parameter>\n<name>query_list</name>\n<type>array</type>\n<description>One or more keyword queries.</description>\n<items>{\"type\": \"string\"}</items>\n<title>Query List</title>\n</parameter>\n<parameter>\n<name>company</name>\n<type>string</type>\n<description>Optional company filter, for example 3M.</description>\n<default></default>\n<title>Company</title>\n</parameter>\n<parameter>\n<name>year</name>\n<type>integer</type>\n<description>Optional fiscal year; use -1 when unknown.</description>\n<default>-1</default>\n<title>Year</title>\n</parameter>\n<parameter>\n<name>filing_type</name>\n<type>string</type>\n<description>Optional type such as 10-K or 10-Q.</description>\n<default></default>\n<title>Filing Type</title>\n</parameter>\n<parameter>\n<name>document_id</name>\n<type>string</type>\n<description>Optional exact filing name.</description>\n<default></default>\n<title>Document Id</title>\n</parameter>\n<parameter>\n<name>scope</name>\n<type>string</type>\n<description>prose, tables, or both.</description>\n<default>both</default>\n<title>Scope</title>\n</parameter>\n<parameter>\n<name>top_k</name>\n<type>integer</type>\n<description>Maximum results to return.</description>\n<default>3</default>\n<title>Top K</title>\n</parameter>\n<title>bm25_search_params</title>\n<required>[\"query_list\"]</required>\n</parameters>\n</function>\n<function>\n<name>grep_document</name>\n<parameters>\n<parameter>\n<name>document_id</name>\n<type>string</type>\n<description>Exact document_id returned by bm25_search.</description>\n<title>Document Id</title>\n</parameter>\n<parameter>\n<name>patterns</name>\n<type>array</type>\n<description>Literal or regular-expression patterns.</description>\n<items>{\"type\": \"string\"}</items>\n<title>Patterns</title>\n</parameter>\n<parameter>\n<name>page_start</name>\n<type>integer</type>\n<description>First page to search, or -1 for all pages.</description>\n<default>-1</default>\n<title>Page Start</title>\n</parameter>\n<parameter>\n<name>page_end</name>\n<type>integer</type>\n<description>Last page to search, or -1 for all pages.</description>\n<default>-1</default>\n<title>Page End</title>\n</parameter>\n<parameter>\n<name>context_lines</name>\n<type>integer</type>\n<description>Number of surrounding lines per match.</description>\n<default>2</default>\n<title>Context Lines</title>\n</parameter>\n<parameter>\n<name>grep_type</name>\n<type>string</type>\n<description>Backend choice: text, pdfgrep, or rga.</description>\n<default>text</default>\n<title>Grep Type</title>\n</parameter>\n<title>grep_document_params</title>\n<required>[\"document_id\", \"patterns\"]</required>\n</parameters>\n</function>\n<function>\n<name>search_tables</name>\n<parameters>\n<parameter>\n<name>query_list</name>\n<type>array</type>\n<description>Terms such as revenue, cash flows, balance sheet, or PP&E.</description>\n<items>{\"type\": \"string\"}</items>\n<title>Query List</title>\n</parameter>\n<parameter>\n<name>document_id</name>\n<type>string</type>\n<description>Optional exact document_id; leave empty for corpus search.</description>\n<default></default>\n<title>Document Id</title>\n</parameter>\n<parameter>\n<name>company</name>\n<type>string</type>\n<description>Optional company filter.</description>\n<default></default>\n<title>Company</title>\n</parameter>\n<parameter>\n<name>year</name>\n<type>integer</type>\n<description>Optional fiscal year; use -1 when unknown.</description>\n<default>-1</default>\n<title>Year</title>\n</parameter>\n<parameter>\n<name>top_k</name>\n<type>integer</type>\n<description>Maximum table candidates.</description>\n<default>3</default>\n<title>Top K</title>\n</parameter>\n<title>search_tables_params</title>\n<required>[\"query_list\"]</required>\n</parameters>\n</function>\n<function>\n<name>read</name>\n<parameters>\n<parameter>\n<name>document_id</name>\n<type>string</type>\n<description>Exact document_id.</description>\n<title>Document Id</title>\n</parameter>\n<parameter>\n<name>page</name>\n<type>integer</type>\n<description>One-based page number, or -1 when using passage_id.</description>\n<default>-1</default>\n<title>Page</title>\n</parameter>\n<parameter>\n<name>start</name>\n<type>integer</type>\n<description>Character start within the selected page/window.</description>\n<default>0</default>\n<title>Start</title>\n</parameter>\n<parameter>\n<name>end</name>\n<type>integer</type>\n<description>Absolute character end, or -1 for the next bounded window.</description>\n<default>-1</default>\n<title>End</title>\n</parameter>\n<parameter>\n<name>passage_id</name>\n<type>string</type>\n<description>Optional passage_id returned by search.</description>\n<default></default>\n<title>Passage Id</title>\n</parameter>\n<title>read_params</title>\n<required>[\"document_id\"]</required>\n</parameters>\n</function>\n<function>\n<name>read_table</name>\n<parameters>\n<parameter>\n<name>table_id</name>\n<type>string</type>\n<description>Exact table_id returned by search_tables.</description>\n<title>Table Id</title>\n</parameter>\n<parameter>\n<name>include_neighbors</name>\n<type>boolean</type>\n<description>Return neighbor page identifiers for headers and footnotes.</description>\n<default>True</default>\n<title>Include Neighbors</title>\n</parameter>\n<parameter>\n<name>start</name>\n<type>integer</type>\n<description>Character offset within table page.</description>\n<default>0</default>\n<title>Start</title>\n</parameter>\n<parameter>\n<name>end</name>\n<type>integer</type>\n<description>Absolute end, or -1 for the next bounded table window.</description>\n<default>-1</default>\n<title>End</title>\n</parameter>\n<title>read_table_params</title>\n<required>[\"table_id\"]</required>\n</parameters>\n</function>\n<function>\n<name>calculate</name>\n<parameters>\n<parameter>\n<name>expression</name>\n<type>string</type>\n<description>Arithmetic using named source-backed operands and + - * /.</description>\n<title>Expression</title>\n</parameter>\n<parameter>\n<name>operands</name>\n<type>object</type>\n<description>Variable to value/unit/scale/metric/period/receipt_id/quote mapping.</description>\n<additionalProperties>True</additionalProperties>\n<default>{}</default>\n<title>Operands</title>\n</parameter>\n<title>calculate_params</title>\n<required>[\"expression\"]</required>\n</parameters>\n</function>\n<function>\n<name>finish</name>\n<parameters>\n<parameter>\n<name>answer_type</name>\n<type>string</type>\n<description>numeric, boolean, or text</description>\n<title>Answer Type</title>\n</parameter>\n<parameter>\n<name>value</name>\n<type>string</type>\n<description>Single decimal numeric answer; no units here.</description>\n<default></default>\n<title>Value</title>\n</parameter>\n<parameter>\n<name>unit</name>\n<type>string</type>\n<description>USD, EUR, percent, ratio, shares, or number.</description>\n<default></default>\n<title>Unit</title>\n</parameter>\n<parameter>\n<name>scale</name>\n<type>string</type>\n<description>ones, thousand, million, or billion.</description>\n<default></default>\n<title>Scale</title>\n</parameter>\n<parameter>\n<name>decision</name>\n<type>string</type>\n<description>yes or no for boolean answers.</description>\n<default></default>\n<title>Decision</title>\n</parameter>\n<parameter>\n<name>answer_text</name>\n<type>string</type>\n<description>Text/multipart answer; empty for numeric and boolean.</description>\n<default></default>\n<title>Answer Text</title>\n</parameter>\n<parameter>\n<name>citations</name>\n<type>array</type>\n<description>Each contains receipt_id, document_id and one-based page.</description>\n<default>[]</default>\n<items>{\"additionalProperties\": true, \"type\": \"object\"}</items>\n<title>Citations</title>\n</parameter>\n<parameter>\n<name>calc_id</name>\n<type>string</type>\n<description>Calculation record for a derived numeric result.</description>\n<default></default>\n<title>Calc Id</title>\n</parameter>\n<title>finish_params</title>\n<required>[\"answer_type\"]</required>\n</parameters>\n</function>\n</tools>\n\nIf you choose to call a function ONLY reply in the following format with NO suffix:\n\n<tool_call>\n<function=example_function_name>\n<parameter=example_parameter_1>\nvalue_1\n</parameter>\n<parameter=example_parameter_2>\nThis is the value for the second parameter\nthat can span\nmultiple lines\n</parameter>\n</function>\n</tool_call>\n\n<IMPORTANT>\nReminder:\n- Function calls MUST follow the specified format: an inner <function=...></function> block must be nested within <tool_call></tool_call> XML tags\n- Required parameters MUST be specified\n- You may provide optional reasoning for your function call in natural language BEFORE the function call, but NOT after\n- If there is no function call available, answer the question like normal with your current knowledge and do not tell the user about function calls\n</IMPORTANT>"
+    },
+    {
+      "role": "user",
+      "content": "You are an investment banker and your only resource(s) to answer the following question is (are): the statement of financial position and the cash flow statement. Here's the question: what is the FY2015 operating cash flow ratio for Adobe? Operating cash flow ratio is defined as: cash from operations / total current liabilities. Round your answer to two decimal places."
+    },
+    {
+      "role": "assistant",
+      "content": [
+        {
+          "type": "thinking",
+          "thinking": "We need FY2015 operating cash flow ratio for Adobe: cash from operations / total current liabilities. Need data from statement of financial position (balance sheet) for current liabilities FY2015, and cash flow statement for cash from operations FY2015.\n\nWe must search the SEC filings for Adobe. Use bm25_search to find relevant documents. Probably 10-K for fiscal year 2015. Adobe fiscal year ends November? But we need FY2015 (likely fiscal 2015). Let's search."
+        },
+        {
+          "type": "text",
+          "text": ""
+        },
+        {
+          "type": "text",
+          "text": "\n"
+        }
+      ],
+      "tool_calls": [
+        {
+          "type": "function",
+          "id": null,
+          "function": {
+            "name": "bm25_search",
+            "arguments": "{\"query_list\": [\"Adobe cash from operations 2015\", \"Adobe current liabilities 2015 10-K\"], \"company\": \"Adobe\", \"year\": 2015, \"filing_type\": \"10-K\", \"top_k\": 5, \"scope\": \"both\"}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "content": "{\"queries\":[\"Adobe cash from operations 2015\",\"Adobe current liabilities 2015 10-K\"],\"filters\":{\"company\":\"Adobe\",\"year\":2015,\"filing_type\":\"10-K\",\"document_id\":\"\"},\"prose_hits\":[{\"document_id\":\"ADOBE_2015_10K\",\"page\":40,\"passage_id\":\"p:ADOBE_2015_10K:page:40:chunk:1\",\"score\":13.35798,\"snippet\":\"al Digital Media ARR of approximately $3.00 billion as of November\u00a027, 2015 increased by $1.12 billion, or 60%, \\nfrom $1.88 billion as of November\u00a028, 2014. The change in our Digital Media ARR was primarily due to increases in \\nthe number of paid Creative Cloud individual and team subscriptions and \",\"snippet_start\":1900},{\"document_id\":\"ADOBE_2015_10K\",\"page\":59,\"passage_id\":\"p:ADOBE_2015_10K:page:59:chunk:0\",\"score\":13.22201,\"snippet\":\"59\\n ADOBE SYSTEMS INCORPORATED\\n CONSOLIDATED BALANCE SHEETS\\n(In thousands, except par value)\\n\u00a0\\nNovember 27,\\n2015\\nNovember 28,\\n2014\\nASSETS\\nCurrent assets: \u00a0 \u00a0\\nCash and cash equivalents.................................................................................................................... \",\"snippet_start\":0}],\"table_hits\":[{\"document_id\":\"ADOBE_2015_10K\",\"page\":59,\"table_id\":\"t:ADOBE_2015_10K:page:59\",\"score\":17.36578,\"units\":\"In thousands, except par value\",\"title\":\"CONSOLIDATED BALANCE SHEETS\",\"snippet\":\"59\\n ADOBE SYSTEMS INCORPORATED\\n CONSOLIDATED BALANCE SHEETS\\n(In thousands, except par value)\\n\u00a0\\nNovember 27,\\n2015\\nNovember 28,\\n2014\\nASSETS\\nCurrent assets: \u00a0 \u00a0\\nCash and cash equivalents.................................................................................................................... \",\"snippet_start\":0},{\"document_id\":\"ADOBE_2015_10K\",\"page\":78,\"table_id\":\"t:ADOBE_2015_10K:page:78\",\"score\":16.22402,\"units\":\"in thousands\",\"title\":\"the intrinsic value of these cash flow hedges in accumulated other comprehensive income in our Consolidated Balance Sheets,\",\"snippet\":\"ADOBE SYSTEMS INCORPORATED\\n NOTES TO CONSOLIDATED FINANCIAL STATEMENTS (Continued)\\n78\\nthe intrinsic value of these cash flow hedges in accumulated other comprehensive income in our Consolidated Balance Sheets, \\nuntil the forecasted transaction occurs. When the forecasted transaction occurs, we recla\",\"snippet_start\":0},{\"document_id\":\"ADOBE_2015_10K\",\"page\":70,\"table_id\":\"t:ADOBE_2015_10K:page:70\",\"score\":15.72483,\"units\":\"\",\"title\":\"On November 20, 2015, the Financial Accounting Standards Board (\u201cFASB\u201d) issued ASU No. 2015-17, Balance Sheet\",\"snippet\":\"ADOBE SYSTEMS INCORPORATED\\n NOTES TO CONSOLIDATED FINANCIAL STATEMENTS (Continued)\\n70\\nwarranted. If we license our software or provide SaaS services to a customer where we have a reason to believe the customer\u2019s \\nability to pay is not probable, due to country risk or credit risk, we will not recogni\",\"snippet_start\":0}],\"turns_remaining\":7,\"observation\":{\"raw_chars\":2782,\"truncated\":false}}",
+      "tool_call_id": "",
+      "name": "bm25_search"
+    },
+    {
+      "role": "assistant",
+      "content": [
+        {
+          "type": "thinking",
+          "thinking": "We have document ID ADOBE_2015_10K. Need cash from operations for FY2015 (fiscal year ending Nov 27, 2015). Also need total current liabilities from balance sheet as of that date.\n\nWe have balance sheet page 59. Let's read that page to get current liabilities. Also need cash flow statement data: likely page somewhere else. Let's search for cash from operations in the 10K. Use grep_document."
+        },
+        {
+          "type": "text",
+          "text": ""
+        },
+        {
+          "type": "text",
+          "text": "\n"
+        }
+      ],
+      "tool_calls": [
+        {
+          "type": "function",
+          "id": null,
+          "function": {
+            "name": "grep_document",
+            "arguments": "{\"document_id\": \"ADOBE_2015_10K\", \"patterns\": [\"cash from operations\", \"Cash flow from operating activities\", \"Operating cash flow\"], \"grep_type\": \"text\", \"context_lines\": 2}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "content": "{\"grep_type_requested\":\"text\",\"backend_used\":\"page_text\",\"matches\":[{\"document_id\":\"ADOBE_2015_10K\",\"page\":53,\"line\":21,\"text\":\"has not already been previously provided, we would provide for and pay additional U.S. taxes in connection with repatriating \\nthese funds.\\nCash from operations could also be affected by various risks and uncertainties, including, but not limited to the risks detailed \\nin Part I, Item 1A titled \u201cRisk Factors\u201d. However, based on our current business plan and revenue prospects, we believe that our \\nexisting cash, cash equivalents and investment balances, our anticipated cash flows from operations a\",\"provenance\":\"ADOBE_2015_10K:page=53:line=21\",\"receipt_id\":\"r1\"}],\"turns_remaining\":6,\"observation\":{\"raw_chars\":720,\"truncated\":false}}",
+      "tool_call_id": "",
+      "name": "grep_document"
+    },
+    {
+      "role": "assistant",
+      "content": [
+        {
+          "type": "thinking",
+          "thinking": "The grep returned a match about \"Cash from operations\" in a risk factor section, not the actual cash flow statement figure. Need to locate the cash flow statement data. Might be in the consolidated statements of cash flows. Let's search for \"Cash Flows From Operating Activities\" phrase."
+        },
+        {
+          "type": "text",
+          "text": ""
+        },
+        {
+          "type": "text",
+          "text": "\n"
+        }
+      ],
+      "tool_calls": [
+        {
+          "type": "function",
+          "id": null,
+          "function": {
+            "name": "grep_document",
+            "arguments": "{\"document_id\": \"ADOBE_2015_10K\", \"patterns\": [\"Cash Flows From Operating Activities\", \"cash flows from operating activities\"], \"grep_type\": \"text\", \"context_lines\": 2}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "content": "{\"grep_type_requested\":\"text\",\"backend_used\":\"page_text\",\"matches\":[{\"document_id\":\"ADOBE_2015_10K\",\"page\":51,\"line\":32,\"text\":\"of employee options and participation in the employee stock purchase plan. Other uses of cash include our stock repurchase \\nprogram, which is described below, business acquisitions and purchases of property and equipment.\u00a0\\nCash Flows from Operating Activities\\nFor fiscal 2015, net cash provided by operating activities of $1.47 billion was primarily comprised of net income plus the \\nnet effect of non-cash items. The primary working capital sources of cash were net income coupled with increases in \",\"provenance\":\"ADOBE_2015_10K:page=51:line=32\",\"receipt_id\":\"r2\"},{\"document_id\":\"ADOBE_2015_10K\",\"page\":63,\"line\":13,\"text\":\"November 29,\\n2013\\nCash flows from operating activities: \u00a0 \u00a0\\nNet income..................................................................................................................... $ 629,551 $ 268,395 $ 289,985\\nAdjustments to reconcile net income to net cash provided by operating activities:\",\"provenance\":\"ADOBE_2015_10K:page=63:line=13\",\"receipt_id\":\"r3\"}],\"turns_remaining\":5,\"observation\":{\"raw_chars\":1150,\"truncated\":false}}",
+      "tool_call_id": "",
+      "name": "grep_document"
+    },
+    {
+      "role": "assistant",
+      "content": [
+        {
+          "type": "thinking",
+          "thinking": "We have cash flow data on page 51: \"For fiscal 2015, net cash provided by operating activities of $1.47 billion\". Need exact figure maybe $1.47 billion. But need precise number, maybe $1,473,000 or something. Let's read page 51 more context to get exact amount."
+        },
+        {
+          "type": "text",
+          "text": ""
+        },
+        {
+          "type": "text",
+          "text": "\n"
+        }
+      ],
+      "tool_calls": [
+        {
+          "type": "function",
+          "id": null,
+          "function": {
+            "name": "read",
+            "arguments": "{\"document_id\": \"ADOBE_2015_10K\", \"page\": 51, \"start\": 0, \"end\": 2000}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "content": "{\"document_id\":\"ADOBE_2015_10K\",\"page\":51,\"page_start\":51,\"page_end\":51,\"start\":0,\"end\":2000,\"total_chars\":5293,\"text\":\"51\\nLIQUIDITY AND CAPITAL RESOURCES\\nThis data should be read in conjunction with our Consolidated Statements of Cash Flows.\\nAs of\\n(in millions)\\nNovember 27,\\n2015\\nNovember 28,\\n2014\\nCash and cash equivalents............................................................................................. $ 876.6 $ 1,117.4\\nShort-term investments ................................................................................................. $ 3,111.5 $ 2,622.1\\nWorking capital............................................................................................................. $ 2,608.3 $ 2,107.9\\nStockholders\u2019 equity...................................................................................................... $ 7,001.6 $ 6,775.9\\n A summary of our cash flows is as follows:\\n(in millions)\\nFiscal\\n2015\\nFiscal\\n2014\\nFiscal\\n2013\\nNet cash provided by operating activities............................................. $ 1,469.5 $ 1,287.5 $ 1,151.7\\nNet cash used for investing activities ................................................... (1,488.4) (490.7) (1,177.8)\\nNet cash used for financing activities................................................... (200.7) (507.3) (559.1)\\nEffect of foreign currency exchange rates on cash and cash\\nequivalents ............................................................................................ (21.2) (6.7) (5.2)\\nNet increase (decrease) in cash and cash equivalents........................... $ (240.8) $ 282.8 $ (590.4) \u00a0\\nOur primary source of cash is receipts from revenue. The primary uses of cash are payroll related expenses, general operating \\nexpenses including marketing, travel and office rent, and cost of revenue. Other sources of cash are proceeds from the exercise \\nof employee options and participation in the employee stock purchase plan. Other uses of cash include our stock repurchase \\nprogram, which is described below, business acquisitions and purchases of property and equipment.\u00a0\\nCash Flows from Operating Activities\\nFo\",\"next_start\":2000,\"has_more\":true,\"turns_remaining\":4,\"receipt_id\":\"r4\",\"observation\":{\"raw_chars\":2226,\"truncated\":false}}",
+      "tool_call_id": "",
+      "name": "read"
+    },
+    {
+      "role": "assistant",
+      "content": [
+        {
+          "type": "thinking",
+          "thinking": "The read shows a summary table: Net cash provided by operating activities for fiscal 2015: $1,469.5 (in millions). Good.\n\nNow need total current liabilities from balance sheet. We have balance sheet page 59. Let's read page 59 to get current liabilities."
+        },
+        {
+          "type": "text",
+          "text": ""
+        },
+        {
+          "type": "text",
+          "text": "\n"
+        }
+      ],
+      "tool_calls": [
+        {
+          "type": "function",
+          "id": null,
+          "function": {
+            "name": "read",
+            "arguments": "{\"document_id\": \"ADOBE_2015_10K\", \"page\": 59, \"start\": 0, \"end\": 2000}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "content": "{\"document_id\":\"ADOBE_2015_10K\",\"page\":59,\"page_start\":59,\"page_end\":59,\"start\":0,\"end\":2000,\"total_chars\":5774,\"text\":\"59\\n ADOBE SYSTEMS INCORPORATED\\n CONSOLIDATED BALANCE SHEETS\\n(In thousands, except par value)\\n\u00a0\\nNovember 27,\\n2015\\nNovember 28,\\n2014\\nASSETS\\nCurrent assets: \u00a0 \u00a0\\nCash and cash equivalents.................................................................................................................... $ 876,560 $ 1,117,400\\nShort-term investments ........................................................................................................................ 3,111,524 2,622,091\\nTrade receivables, net of allowances for doubtful accounts of $7,293 and $7,867,\u00a0respectively........ 672,006 591,800\\nDeferred income taxes.......................................................................................................................... \u2014 95,279\\nPrepaid expenses and other current assets ........................................................................................... 161,802 175,758\\nTotal current assets.......................................................................................................................... 4,821,892 4,602,328\\nProperty and equipment, net ................................................................................................................... 787,421 785,123\\nGoodwill ................................................................................................................................................. 5,366,881 4,721,962\\nPurchased and other intangibles, net....................................................................................................... 510,007 469,662\\nInvestment in lease receivable ................................................................................................................ 80,439 80,439\\nOther assets............................................................................................................................................. 159,832 126,315\\nTotal assets...................................................................................................\",\"next_start\":2000,\"has_more\":true,\"turns_remaining\":3,\"receipt_id\":\"r5\",\"observation\":{\"raw_chars\":2216,\"truncated\":false}}",
+      "tool_call_id": "",
+      "name": "read"
+    },
+    {
+      "role": "assistant",
+      "content": [
+        {
+          "type": "thinking",
+          "thinking": "The balance sheet shows current assets but we need total current liabilities. Need to scroll further down the same page; the text may continue with liabilities section. Let's read more after the current assets, maybe the liabilities start after some lines. The read shows \"Total assets...\" and then likely next part includes liabilities. We need to capture the rest. Use read with start offset beyond 2000? The read returned total_chars 5774, but we only saw up to some point. Let's request more start at 2000."
+        },
+        {
+          "type": "text",
+          "text": ""
+        },
+        {
+          "type": "text",
+          "text": "\n"
+        }
+      ],
+      "tool_calls": [
+        {
+          "type": "function",
+          "id": null,
+          "function": {
+            "name": "read",
+            "arguments": "{\"document_id\": \"ADOBE_2015_10K\", \"page\": 59, \"start\": 2000, \"end\": 4000}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "content": "{\"document_id\":\"ADOBE_2015_10K\",\"page\":59,\"page_start\":59,\"page_end\":59,\"start\":2000,\"end\":4000,\"total_chars\":5774,\"text\":\"................................... $ 11,726,472 $ 10,785,829\\nLIABILITIES AND STOCKHOLDERS\u2019 EQUITY\\nCurrent liabilities: \u00a0 \u00a0\\nTrade payables...................................................................................................................................... $ 93,307 $ 68,377\\nAccrued expenses................................................................................................................................. 678,364 683,866\\nDebt and capital lease obligations........................................................................................................ \u2014 603,229\\nAccrued restructuring........................................................................................................................... 1,520 17,120\\nIncome taxes payable ........................................................................................................................... 6,165 23,920\\nDeferred revenue.................................................................................................................................. 1,434,200 1,097,923\\nTotal current liabilities.................................................................................................................... 2,213,556 2,494,435\\nLong-term liabilities: \u00a0 \u00a0\\nDebt and capital lease obligations........................................................................................................ 1,907,231 911,086\\nDeferred revenue.................................................................................................................................. 51,094 57,401\\nAccrued restructuring........................................................................................................................... 3,214 5,194\\nIncome taxes payable ........................................................................................................................... 256,129 125,746\\nDeferred income taxes.....................................................................\",\"next_start\":4000,\"has_more\":true,\"turns_remaining\":2,\"receipt_id\":\"r6\",\"observation\":{\"raw_chars\":2212,\"truncated\":false}}",
+      "tool_call_id": "",
+      "name": "read"
+    },
+    {
+      "role": "assistant",
+      "content": [
+        {
+          "type": "thinking",
+          "thinking": "Great. We have total current liabilities for FY2015 (Nov 27, 2015) = $2,213,556 (in thousands). The balance sheet is in thousands. So current liabilities = 2,213,556 thousand = $2.213556 billion.\n\nOperating cash flow from earlier: $1,469.5 million (from summary). But need to ensure units consistent. Operating cash flow is in millions per the liquidity section. The cash flow statement likely also in millions. The summary says \"Net cash provided by operating activities... $1,469.5\" and earlier context \"in millions\". So operating cash flow = $1,469.5 million.\n\nCurrent liabilities = $2,213,556 thousand = $2,213.556 million.\n\nOperating cash flow ratio = cash from operations / total current liabilities = 1,469.5 / 2,213.556.\n\nCompute."
+        },
+        {
+          "type": "text",
+          "text": ""
+        },
+        {
+          "type": "text",
+          "text": "\n"
+        }
+      ],
+      "tool_calls": [
+        {
+          "type": "function",
+          "id": null,
+          "function": {
+            "name": "calculate",
+            "arguments": "{\"expression\": \"1469.5 / 2213.556\", \"operands\": \"{\\\"1469.5\\\": {\\\"value\\\": 1469.5, \\\"unit\\\": \\\"million\\\", \\\"metric\\\": \\\"cash from operations\\\", \\\"period\\\": \\\"FY2015\\\", \\\"receipt_id\\\": \\\"r4\\\", \\\"quote\\\": \\\"$1,469.5 million net cash provided by operating activities\\\"}, \\\"2213.556\\\": {\\\"value\\\": 2213.556, \\\"unit\\\": \\\"million\\\", \\\"metric\\\": \\\"total current liabilities\\\", \\\"period\\\": \\\"FY2015\\\", \\\"receipt_id\\\": \\\"r6\\\", \\\"quote\\\": \\\"Total current liabilities $2,213,556 thousand\\\"}}}\"}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "content": "{\"error\": \"Parameter validation failed: 1 validation error for calculate_params\\noperands\\n  Input should be a valid dictionary [type=dict_type, input_value='{\\\"1469.5\\\": {\\\"value\\\": 146...$2,213,556 thousand\\\"}}}', input_type=str]\\n    For further information visit https://errors.pydantic.dev/2.13/v/dict_type\"}",
+      "tool_call_id": "",
+      "name": "calculate"
+    },
+    {
+      "role": "assistant",
+      "content": [
+        {
+          "type": "thinking",
+          "thinking": "The calculate tool expects operands mapping variable names to objects with value, unit, scale, metric, period, receipt_id, quote. I gave keys as numbers; need variable names, maybe \"opcf\" and \"cl\". Let's define variables: \"ocf\" and \"cl\"."
+        },
+        {
+          "type": "text",
+          "text": ""
+        },
+        {
+          "type": "text",
+          "text": "\n"
+        }
+      ],
+      "tool_calls": [
+        {
+          "type": "function",
+          "id": null,
+          "function": {
+            "name": "calculate",
+            "arguments": "{\"expression\": \"ocf / cl\", \"operands\": \"{\\\"ocf\\\": {\\\"value\\\": 1469.5, \\\"unit\\\": \\\"million\\\", \\\"metric\\\": \\\"cash from operations\\\", \\\"period\\\": \\\"FY2015\\\", \\\"receipt_id\\\": \\\"r4\\\", \\\"quote\\\": \\\"$1,469.5 million net cash provided by operating activities\\\"}, \\\"cl\\\": {\\\"value\\\": 2213.556, \\\"unit\\\": \\\"million\\\", \\\"metric\\\": \\\"total current liabilities\\\", \\\"period\\\": \\\"FY2015\\\", \\\"receipt_id\\\": \\\"r6\\\", \\\"quote\\\": \\\"Total current liabilities $2,213,556 thousand\\\"}}}\"}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "content": "{\"error\": \"Parameter validation failed: 1 validation error for calculate_params\\noperands\\n  Input should be a valid dictionary [type=dict_type, input_value='{\\\"ocf\\\": {\\\"value\\\": 1469.5...$2,213,556 thousand\\\"}}}', input_type=str]\\n    For further information visit https://errors.pydantic.dev/2.13/v/dict_type\"}",
+      "tool_call_id": "",
+      "name": "calculate"
+    }
+  ],
+  "receipts": {
+    "r1": {
+      "document_id": "ADOBE_2015_10K",
+      "page": 53,
+      "line": 21,
+      "text": "has not already been previously provided, we would provide for and pay additional U.S. taxes in connection with repatriating \nthese funds.\nCash from operations could also be affected by various risks and uncertainties, including, but not limited to the risks detailed \nin Part I, Item 1A titled \u201cRisk Factors\u201d. However, based on our current business plan and revenue prospects, we believe that our \nexisting cash, cash equivalents and investment balances, our anticipated cash flows from operations a",
+      "provenance": "ADOBE_2015_10K:page=53:line=21",
+      "receipt_id": "r1",
+      "tool": "grep_document",
+      "delivered_turn": 2
+    },
+    "r2": {
+      "document_id": "ADOBE_2015_10K",
+      "page": 51,
+      "line": 32,
+      "text": "of employee options and participation in the employee stock purchase plan. Other uses of cash include our stock repurchase \nprogram, which is described below, business acquisitions and purchases of property and equipment.\u00a0\nCash Flows from Operating Activities\nFor fiscal 2015, net cash provided by operating activities of $1.47 billion was primarily comprised of net income plus the \nnet effect of non-cash items. The primary working capital sources of cash were net income coupled with increases in ",
+      "provenance": "ADOBE_2015_10K:page=51:line=32",
+      "receipt_id": "r2",
+      "tool": "grep_document",
+      "delivered_turn": 3
+    },
+    "r3": {
+      "document_id": "ADOBE_2015_10K",
+      "page": 63,
+      "line": 13,
+      "text": "November 29,\n2013\nCash flows from operating activities: \u00a0 \u00a0\nNet income..................................................................................................................... $ 629,551 $ 268,395 $ 289,985\nAdjustments to reconcile net income to net cash provided by operating activities:",
+      "provenance": "ADOBE_2015_10K:page=63:line=13",
+      "receipt_id": "r3",
+      "tool": "grep_document",
+      "delivered_turn": 3
+    },
+    "r4": {
+      "document_id": "ADOBE_2015_10K",
+      "page": 51,
+      "page_start": 51,
+      "page_end": 51,
+      "start": 0,
+      "end": 2000,
+      "total_chars": 5293,
+      "text": "51\nLIQUIDITY AND CAPITAL RESOURCES\nThis data should be read in conjunction with our Consolidated Statements of Cash Flows.\nAs of\n(in millions)\nNovember 27,\n2015\nNovember 28,\n2014\nCash and cash equivalents............................................................................................. $ 876.6 $ 1,117.4\nShort-term investments ................................................................................................. $ 3,111.5 $ 2,622.1\nWorking capital............................................................................................................. $ 2,608.3 $ 2,107.9\nStockholders\u2019 equity...................................................................................................... $ 7,001.6 $ 6,775.9\n A summary of our cash flows is as follows:\n(in millions)\nFiscal\n2015\nFiscal\n2014\nFiscal\n2013\nNet cash provided by operating activities............................................. $ 1,469.5 $ 1,287.5 $ 1,151.7\nNet cash used for investing activities ................................................... (1,488.4) (490.7) (1,177.8)\nNet cash used for financing activities................................................... (200.7) (507.3) (559.1)\nEffect of foreign currency exchange rates on cash and cash\nequivalents ............................................................................................ (21.2) (6.7) (5.2)\nNet increase (decrease) in cash and cash equivalents........................... $ (240.8) $ 282.8 $ (590.4) \u00a0\nOur primary source of cash is receipts from revenue. The primary uses of cash are payroll related expenses, general operating \nexpenses including marketing, travel and office rent, and cost of revenue. Other sources of cash are proceeds from the exercise \nof employee options and participation in the employee stock purchase plan. Other uses of cash include our stock repurchase \nprogram, which is described below, business acquisitions and purchases of property and equipment.\u00a0\nCash Flows from Operating Activities\nFo",
+      "next_start": 2000,
+      "has_more": true,
+      "turns_remaining": 4,
+      "receipt_id": "r4",
+      "observation": {
+        "raw_chars": 2226,
+        "truncated": false
+      },
+      "tool": "read",
+      "delivered_turn": 4
+    },
+    "r5": {
+      "document_id": "ADOBE_2015_10K",
+      "page": 59,
+      "page_start": 59,
+      "page_end": 59,
+      "start": 0,
+      "end": 2000,
+      "total_chars": 5774,
+      "text": "59\n ADOBE SYSTEMS INCORPORATED\n CONSOLIDATED BALANCE SHEETS\n(In thousands, except par value)\n\u00a0\nNovember 27,\n2015\nNovember 28,\n2014\nASSETS\nCurrent assets: \u00a0 \u00a0\nCash and cash equivalents.................................................................................................................... $ 876,560 $ 1,117,400\nShort-term investments ........................................................................................................................ 3,111,524 2,622,091\nTrade receivables, net of allowances for doubtful accounts of $7,293 and $7,867,\u00a0respectively........ 672,006 591,800\nDeferred income taxes.......................................................................................................................... \u2014 95,279\nPrepaid expenses and other current assets ........................................................................................... 161,802 175,758\nTotal current assets.......................................................................................................................... 4,821,892 4,602,328\nProperty and equipment, net ................................................................................................................... 787,421 785,123\nGoodwill ................................................................................................................................................. 5,366,881 4,721,962\nPurchased and other intangibles, net....................................................................................................... 510,007 469,662\nInvestment in lease receivable ................................................................................................................ 80,439 80,439\nOther assets............................................................................................................................................. 159,832 126,315\nTotal assets...................................................................................................",
+      "next_start": 2000,
+      "has_more": true,
+      "turns_remaining": 3,
+      "receipt_id": "r5",
+      "observation": {
+        "raw_chars": 2216,
+        "truncated": false
+      },
+      "tool": "read",
+      "delivered_turn": 5
+    },
+    "r6": {
+      "document_id": "ADOBE_2015_10K",
+      "page": 59,
+      "page_start": 59,
+      "page_end": 59,
+      "start": 2000,
+      "end": 4000,
+      "total_chars": 5774,
+      "text": "................................... $ 11,726,472 $ 10,785,829\nLIABILITIES AND STOCKHOLDERS\u2019 EQUITY\nCurrent liabilities: \u00a0 \u00a0\nTrade payables...................................................................................................................................... $ 93,307 $ 68,377\nAccrued expenses................................................................................................................................. 678,364 683,866\nDebt and capital lease obligations........................................................................................................ \u2014 603,229\nAccrued restructuring........................................................................................................................... 1,520 17,120\nIncome taxes payable ........................................................................................................................... 6,165 23,920\nDeferred revenue.................................................................................................................................. 1,434,200 1,097,923\nTotal current liabilities.................................................................................................................... 2,213,556 2,494,435\nLong-term liabilities: \u00a0 \u00a0\nDebt and capital lease obligations........................................................................................................ 1,907,231 911,086\nDeferred revenue.................................................................................................................................. 51,094 57,401\nAccrued restructuring........................................................................................................................... 3,214 5,194\nIncome taxes payable ........................................................................................................................... 256,129 125,746\nDeferred income taxes.....................................................................",
+      "next_start": 4000,
+      "has_more": true,
+      "turns_remaining": 2,
+      "receipt_id": "r6",
+      "observation": {
+        "raw_chars": 2212,
+        "truncated": false
+      },
+      "tool": "read",
+      "delivered_turn": 6
+    }
+  },
+  "calculations": {},
+  "observations": [
+    {
+      "name": "bm25_search",
+      "payload": {
+        "queries": [
+          "Adobe cash from operations 2015",
+          "Adobe current liabilities 2015 10-K"
+        ],
+        "filters": {
+          "company": "Adobe",
+          "year": 2015,
+          "filing_type": "10-K",
+          "document_id": ""
+        },
+        "prose_hits": [
+          {
+            "document_id": "ADOBE_2015_10K",
+            "page": 40,
+            "passage_id": "p:ADOBE_2015_10K:page:40:chunk:1",
+            "score": 13.35798,
+            "snippet": "al Digital Media ARR of approximately $3.00 billion as of November\u00a027, 2015 increased by $1.12 billion, or 60%, \nfrom $1.88 billion as of November\u00a028, 2014. The change in our Digital Media ARR was primarily due to increases in \nthe number of paid Creative Cloud individual and team subscriptions and ",
+            "snippet_start": 1900
+          },
+          {
+            "document_id": "ADOBE_2015_10K",
+            "page": 59,
+            "passage_id": "p:ADOBE_2015_10K:page:59:chunk:0",
+            "score": 13.22201,
+            "snippet": "59\n ADOBE SYSTEMS INCORPORATED\n CONSOLIDATED BALANCE SHEETS\n(In thousands, except par value)\n\u00a0\nNovember 27,\n2015\nNovember 28,\n2014\nASSETS\nCurrent assets: \u00a0 \u00a0\nCash and cash equivalents.................................................................................................................... ",
+            "snippet_start": 0
+          }
+        ],
+        "table_hits": [
+          {
+            "document_id": "ADOBE_2015_10K",
+            "page": 59,
+            "table_id": "t:ADOBE_2015_10K:page:59",
+            "score": 17.36578,
+            "units": "In thousands, except par value",
+            "title": "CONSOLIDATED BALANCE SHEETS",
+            "snippet": "59\n ADOBE SYSTEMS INCORPORATED\n CONSOLIDATED BALANCE SHEETS\n(In thousands, except par value)\n\u00a0\nNovember 27,\n2015\nNovember 28,\n2014\nASSETS\nCurrent assets: \u00a0 \u00a0\nCash and cash equivalents.................................................................................................................... ",
+            "snippet_start": 0
+          },
+          {
+            "document_id": "ADOBE_2015_10K",
+            "page": 78,
+            "table_id": "t:ADOBE_2015_10K:page:78",
+            "score": 16.22402,
+            "units": "in thousands",
+            "title": "the intrinsic value of these cash flow hedges in accumulated other comprehensive income in our Consolidated Balance Sheets,",
+            "snippet": "ADOBE SYSTEMS INCORPORATED\n NOTES TO CONSOLIDATED FINANCIAL STATEMENTS (Continued)\n78\nthe intrinsic value of these cash flow hedges in accumulated other comprehensive income in our Consolidated Balance Sheets, \nuntil the forecasted transaction occurs. When the forecasted transaction occurs, we recla",
+            "snippet_start": 0
+          },
+          {
+            "document_id": "ADOBE_2015_10K",
+            "page": 70,
+            "table_id": "t:ADOBE_2015_10K:page:70",
+            "score": 15.72483,
+            "units": "",
+            "title": "On November 20, 2015, the Financial Accounting Standards Board (\u201cFASB\u201d) issued ASU No. 2015-17, Balance Sheet",
+            "snippet": "ADOBE SYSTEMS INCORPORATED\n NOTES TO CONSOLIDATED FINANCIAL STATEMENTS (Continued)\n70\nwarranted. If we license our software or provide SaaS services to a customer where we have a reason to believe the customer\u2019s \nability to pay is not probable, due to country risk or credit risk, we will not recogni",
+            "snippet_start": 0
+          }
+        ],
+        "turns_remaining": 7,
+        "observation": {
+          "raw_chars": 2782,
+          "truncated": false
+        }
+      },
+      "visible_chars": 2833
+    },
+    {
+      "name": "grep_document",
+      "payload": {
+        "grep_type_requested": "text",
+        "backend_used": "page_text",
+        "matches": [
+          {
+            "document_id": "ADOBE_2015_10K",
+            "page": 53,
+            "line": 21,
+            "text": "has not already been previously provided, we would provide for and pay additional U.S. taxes in connection with repatriating \nthese funds.\nCash from operations could also be affected by various risks and uncertainties, including, but not limited to the risks detailed \nin Part I, Item 1A titled \u201cRisk Factors\u201d. However, based on our current business plan and revenue prospects, we believe that our \nexisting cash, cash equivalents and investment balances, our anticipated cash flows from operations a",
+            "provenance": "ADOBE_2015_10K:page=53:line=21",
+            "receipt_id": "r1"
+          }
+        ],
+        "turns_remaining": 6,
+        "observation": {
+          "raw_chars": 720,
+          "truncated": false
+        }
+      },
+      "visible_chars": 770
+    },
+    {
+      "name": "grep_document",
+      "payload": {
+        "grep_type_requested": "text",
+        "backend_used": "page_text",
+        "matches": [
+          {
+            "document_id": "ADOBE_2015_10K",
+            "page": 51,
+            "line": 32,
+            "text": "of employee options and participation in the employee stock purchase plan. Other uses of cash include our stock repurchase \nprogram, which is described below, business acquisitions and purchases of property and equipment.\u00a0\nCash Flows from Operating Activities\nFor fiscal 2015, net cash provided by operating activities of $1.47 billion was primarily comprised of net income plus the \nnet effect of non-cash items. The primary working capital sources of cash were net income coupled with increases in ",
+            "provenance": "ADOBE_2015_10K:page=51:line=32",
+            "receipt_id": "r2"
+          },
+          {
+            "document_id": "ADOBE_2015_10K",
+            "page": 63,
+            "line": 13,
+            "text": "November 29,\n2013\nCash flows from operating activities: \u00a0 \u00a0\nNet income..................................................................................................................... $ 629,551 $ 268,395 $ 289,985\nAdjustments to reconcile net income to net cash provided by operating activities:",
+            "provenance": "ADOBE_2015_10K:page=63:line=13",
+            "receipt_id": "r3"
+          }
+        ],
+        "turns_remaining": 5,
+        "observation": {
+          "raw_chars": 1150,
+          "truncated": false
+        }
+      },
+      "visible_chars": 1201
+    },
+    {
+      "name": "read",
+      "payload": {
+        "document_id": "ADOBE_2015_10K",
+        "page": 51,
+        "page_start": 51,
+        "page_end": 51,
+        "start": 0,
+        "end": 2000,
+        "total_chars": 5293,
+        "text": "51\nLIQUIDITY AND CAPITAL RESOURCES\nThis data should be read in conjunction with our Consolidated Statements of Cash Flows.\nAs of\n(in millions)\nNovember 27,\n2015\nNovember 28,\n2014\nCash and cash equivalents............................................................................................. $ 876.6 $ 1,117.4\nShort-term investments ................................................................................................. $ 3,111.5 $ 2,622.1\nWorking capital............................................................................................................. $ 2,608.3 $ 2,107.9\nStockholders\u2019 equity...................................................................................................... $ 7,001.6 $ 6,775.9\n A summary of our cash flows is as follows:\n(in millions)\nFiscal\n2015\nFiscal\n2014\nFiscal\n2013\nNet cash provided by operating activities............................................. $ 1,469.5 $ 1,287.5 $ 1,151.7\nNet cash used for investing activities ................................................... (1,488.4) (490.7) (1,177.8)\nNet cash used for financing activities................................................... (200.7) (507.3) (559.1)\nEffect of foreign currency exchange rates on cash and cash\nequivalents ............................................................................................ (21.2) (6.7) (5.2)\nNet increase (decrease) in cash and cash equivalents........................... $ (240.8) $ 282.8 $ (590.4) \u00a0\nOur primary source of cash is receipts from revenue. The primary uses of cash are payroll related expenses, general operating \nexpenses including marketing, travel and office rent, and cost of revenue. Other sources of cash are proceeds from the exercise \nof employee options and participation in the employee stock purchase plan. Other uses of cash include our stock repurchase \nprogram, which is described below, business acquisitions and purchases of property and equipment.\u00a0\nCash Flows from Operating Activities\nFo",
+        "next_start": 2000,
+        "has_more": true,
+        "turns_remaining": 4,
+        "receipt_id": "r4",
+        "observation": {
+          "raw_chars": 2226,
+          "truncated": false
+        }
+      },
+      "visible_chars": 2277
+    },
+    {
+      "name": "read",
+      "payload": {
+        "document_id": "ADOBE_2015_10K",
+        "page": 59,
+        "page_start": 59,
+        "page_end": 59,
+        "start": 0,
+        "end": 2000,
+        "total_chars": 5774,
+        "text": "59\n ADOBE SYSTEMS INCORPORATED\n CONSOLIDATED BALANCE SHEETS\n(In thousands, except par value)\n\u00a0\nNovember 27,\n2015\nNovember 28,\n2014\nASSETS\nCurrent assets: \u00a0 \u00a0\nCash and cash equivalents.................................................................................................................... $ 876,560 $ 1,117,400\nShort-term investments ........................................................................................................................ 3,111,524 2,622,091\nTrade receivables, net of allowances for doubtful accounts of $7,293 and $7,867,\u00a0respectively........ 672,006 591,800\nDeferred income taxes.......................................................................................................................... \u2014 95,279\nPrepaid expenses and other current assets ........................................................................................... 161,802 175,758\nTotal current assets.......................................................................................................................... 4,821,892 4,602,328\nProperty and equipment, net ................................................................................................................... 787,421 785,123\nGoodwill ................................................................................................................................................. 5,366,881 4,721,962\nPurchased and other intangibles, net....................................................................................................... 510,007 469,662\nInvestment in lease receivable ................................................................................................................ 80,439 80,439\nOther assets............................................................................................................................................. 159,832 126,315\nTotal assets...................................................................................................",
+        "next_start": 2000,
+        "has_more": true,
+        "turns_remaining": 3,
+        "receipt_id": "r5",
+        "observation": {
+          "raw_chars": 2216,
+          "truncated": false
+        }
+      },
+      "visible_chars": 2267
+    },
+    {
+      "name": "read",
+      "payload": {
+        "document_id": "ADOBE_2015_10K",
+        "page": 59,
+        "page_start": 59,
+        "page_end": 59,
+        "start": 2000,
+        "end": 4000,
+        "total_chars": 5774,
+        "text": "................................... $ 11,726,472 $ 10,785,829\nLIABILITIES AND STOCKHOLDERS\u2019 EQUITY\nCurrent liabilities: \u00a0 \u00a0\nTrade payables...................................................................................................................................... $ 93,307 $ 68,377\nAccrued expenses................................................................................................................................. 678,364 683,866\nDebt and capital lease obligations........................................................................................................ \u2014 603,229\nAccrued restructuring........................................................................................................................... 1,520 17,120\nIncome taxes payable ........................................................................................................................... 6,165 23,920\nDeferred revenue.................................................................................................................................. 1,434,200 1,097,923\nTotal current liabilities.................................................................................................................... 2,213,556 2,494,435\nLong-term liabilities: \u00a0 \u00a0\nDebt and capital lease obligations........................................................................................................ 1,907,231 911,086\nDeferred revenue.................................................................................................................................. 51,094 57,401\nAccrued restructuring........................................................................................................................... 3,214 5,194\nIncome taxes payable ........................................................................................................................... 256,129 125,746\nDeferred income taxes.....................................................................",
+        "next_start": 4000,
+        "has_more": true,
+        "turns_remaining": 2,
+        "receipt_id": "r6",
+        "observation": {
+          "raw_chars": 2212,
+          "truncated": false
+        }
+      },
+      "visible_chars": 2263
+    }
+  ],
+  "score": {
+    "F": 0.0,
+    "A": 0.0,
+    "G": 0.0,
+    "Ret": 0.0,
+    "reward": 0.0,
+    "correct": 0,
+    "grounded_success": 0,
+    "unresolved": false,
+    "fabricated_citation": false,
+    "grader_version": "workshop-rubric-v2-derived-provenance"
+  }
+}

@@ -1,0 +1,284 @@
+{
+  "history": [
+    {
+      "role": "system",
+      "content": "You are a financial-filings retrieval agent.\n\nYour job is to answer the user's question using the SEC filing corpus. Search\nbefore answering. Start with bm25_search to identify the likely document and\npassages, then use grep_document for exact accounting terms or regexes and\nread/read_table to inspect bounded evidence. Any derived numeric answer must come from calculate using named, source-backed operands. Direct extraction needs no calculation.\nYou may switch documents or issue refined searches when the evidence is not\nsufficient. Do not invent values or rely on outside knowledge.\n\nAvailable tools:\n- bm25_search: ranked keyword search with optional company/year/document filters\n- grep_document: document-scoped exact or regex search; choose grep_type text, pdfgrep, or rga\n- search_tables: ranked search over table-like pages in one or all filings\n- read: bounded page/passage retrieval with provenance\n- read_table: retrieve a table candidate with neighboring headers and footnotes\n- calculate: safe arithmetic for ratios, changes, and unit conversions\n\nWhen you have enough evidence, call finish exactly once. For numeric answers use\nanswer_type=\"numeric\", value as a decimal string, unit and scale; leave answer_text\nempty. For yes/no-only answers use answer_type=\"boolean\", decision=\"yes\" or \"no\".\nFor text or multipart answers use answer_type=\"text\", answer_text with all requested\nfacts. Cite receipt_id, document_id and one-based page from read/grep results.\nFor arithmetic, calculate accepts an expression with named variables and an operands\nobject mapping each variable to value, unit, scale, metric, period, receipt_id and an\nexact quote. Include its calc_id in finish. Do not use constant-only calculations as\nsupport. Read beyond snippets when needed. Use the final available turn to finish;\nnever continue searching when only one turn remains.\n\n\n# Tools\n\nYou have access to the following functions:\n\n<tools>\n<function>\n<name>bm25_search</name>\n<parameters>\n<parameter>\n<name>query_list</name>\n<type>array</type>\n<description>One or more keyword queries.</description>\n<items>{\"type\": \"string\"}</items>\n<title>Query List</title>\n</parameter>\n<parameter>\n<name>company</name>\n<type>string</type>\n<description>Optional company filter, for example 3M.</description>\n<default></default>\n<title>Company</title>\n</parameter>\n<parameter>\n<name>year</name>\n<type>integer</type>\n<description>Optional fiscal year; use -1 when unknown.</description>\n<default>-1</default>\n<title>Year</title>\n</parameter>\n<parameter>\n<name>filing_type</name>\n<type>string</type>\n<description>Optional type such as 10-K or 10-Q.</description>\n<default></default>\n<title>Filing Type</title>\n</parameter>\n<parameter>\n<name>document_id</name>\n<type>string</type>\n<description>Optional exact filing name.</description>\n<default></default>\n<title>Document Id</title>\n</parameter>\n<parameter>\n<name>scope</name>\n<type>string</type>\n<description>prose, tables, or both.</description>\n<default>both</default>\n<title>Scope</title>\n</parameter>\n<parameter>\n<name>top_k</name>\n<type>integer</type>\n<description>Maximum results to return.</description>\n<default>3</default>\n<title>Top K</title>\n</parameter>\n<title>bm25_search_params</title>\n<required>[\"query_list\"]</required>\n</parameters>\n</function>\n<function>\n<name>grep_document</name>\n<parameters>\n<parameter>\n<name>document_id</name>\n<type>string</type>\n<description>Exact document_id returned by bm25_search.</description>\n<title>Document Id</title>\n</parameter>\n<parameter>\n<name>patterns</name>\n<type>array</type>\n<description>Literal or regular-expression patterns.</description>\n<items>{\"type\": \"string\"}</items>\n<title>Patterns</title>\n</parameter>\n<parameter>\n<name>page_start</name>\n<type>integer</type>\n<description>First page to search, or -1 for all pages.</description>\n<default>-1</default>\n<title>Page Start</title>\n</parameter>\n<parameter>\n<name>page_end</name>\n<type>integer</type>\n<description>Last page to search, or -1 for all pages.</description>\n<default>-1</default>\n<title>Page End</title>\n</parameter>\n<parameter>\n<name>context_lines</name>\n<type>integer</type>\n<description>Number of surrounding lines per match.</description>\n<default>2</default>\n<title>Context Lines</title>\n</parameter>\n<parameter>\n<name>grep_type</name>\n<type>string</type>\n<description>Backend choice: text, pdfgrep, or rga.</description>\n<default>text</default>\n<title>Grep Type</title>\n</parameter>\n<title>grep_document_params</title>\n<required>[\"document_id\", \"patterns\"]</required>\n</parameters>\n</function>\n<function>\n<name>search_tables</name>\n<parameters>\n<parameter>\n<name>query_list</name>\n<type>array</type>\n<description>Terms such as revenue, cash flows, balance sheet, or PP&E.</description>\n<items>{\"type\": \"string\"}</items>\n<title>Query List</title>\n</parameter>\n<parameter>\n<name>document_id</name>\n<type>string</type>\n<description>Optional exact document_id; leave empty for corpus search.</description>\n<default></default>\n<title>Document Id</title>\n</parameter>\n<parameter>\n<name>company</name>\n<type>string</type>\n<description>Optional company filter.</description>\n<default></default>\n<title>Company</title>\n</parameter>\n<parameter>\n<name>year</name>\n<type>integer</type>\n<description>Optional fiscal year; use -1 when unknown.</description>\n<default>-1</default>\n<title>Year</title>\n</parameter>\n<parameter>\n<name>top_k</name>\n<type>integer</type>\n<description>Maximum table candidates.</description>\n<default>3</default>\n<title>Top K</title>\n</parameter>\n<title>search_tables_params</title>\n<required>[\"query_list\"]</required>\n</parameters>\n</function>\n<function>\n<name>read</name>\n<parameters>\n<parameter>\n<name>document_id</name>\n<type>string</type>\n<description>Exact document_id.</description>\n<title>Document Id</title>\n</parameter>\n<parameter>\n<name>page</name>\n<type>integer</type>\n<description>One-based page number, or -1 when using passage_id.</description>\n<default>-1</default>\n<title>Page</title>\n</parameter>\n<parameter>\n<name>start</name>\n<type>integer</type>\n<description>Character start within the selected page/window.</description>\n<default>0</default>\n<title>Start</title>\n</parameter>\n<parameter>\n<name>end</name>\n<type>integer</type>\n<description>Absolute character end, or -1 for the next bounded window.</description>\n<default>-1</default>\n<title>End</title>\n</parameter>\n<parameter>\n<name>passage_id</name>\n<type>string</type>\n<description>Optional passage_id returned by search.</description>\n<default></default>\n<title>Passage Id</title>\n</parameter>\n<title>read_params</title>\n<required>[\"document_id\"]</required>\n</parameters>\n</function>\n<function>\n<name>read_table</name>\n<parameters>\n<parameter>\n<name>table_id</name>\n<type>string</type>\n<description>Exact table_id returned by search_tables.</description>\n<title>Table Id</title>\n</parameter>\n<parameter>\n<name>include_neighbors</name>\n<type>boolean</type>\n<description>Return neighbor page identifiers for headers and footnotes.</description>\n<default>True</default>\n<title>Include Neighbors</title>\n</parameter>\n<parameter>\n<name>start</name>\n<type>integer</type>\n<description>Character offset within table page.</description>\n<default>0</default>\n<title>Start</title>\n</parameter>\n<parameter>\n<name>end</name>\n<type>integer</type>\n<description>Absolute end, or -1 for the next bounded table window.</description>\n<default>-1</default>\n<title>End</title>\n</parameter>\n<title>read_table_params</title>\n<required>[\"table_id\"]</required>\n</parameters>\n</function>\n<function>\n<name>calculate</name>\n<parameters>\n<parameter>\n<name>expression</name>\n<type>string</type>\n<description>Arithmetic using named source-backed operands and + - * /.</description>\n<title>Expression</title>\n</parameter>\n<parameter>\n<name>operands</name>\n<type>object</type>\n<description>Variable to value/unit/scale/metric/period/receipt_id/quote mapping.</description>\n<additionalProperties>True</additionalProperties>\n<default>{}</default>\n<title>Operands</title>\n</parameter>\n<title>calculate_params</title>\n<required>[\"expression\"]</required>\n</parameters>\n</function>\n<function>\n<name>finish</name>\n<parameters>\n<parameter>\n<name>answer_type</name>\n<type>string</type>\n<description>numeric, boolean, or text</description>\n<title>Answer Type</title>\n</parameter>\n<parameter>\n<name>value</name>\n<type>string</type>\n<description>Single decimal numeric answer; no units here.</description>\n<default></default>\n<title>Value</title>\n</parameter>\n<parameter>\n<name>unit</name>\n<type>string</type>\n<description>USD, EUR, percent, ratio, shares, or number.</description>\n<default></default>\n<title>Unit</title>\n</parameter>\n<parameter>\n<name>scale</name>\n<type>string</type>\n<description>ones, thousand, million, or billion.</description>\n<default></default>\n<title>Scale</title>\n</parameter>\n<parameter>\n<name>decision</name>\n<type>string</type>\n<description>yes or no for boolean answers.</description>\n<default></default>\n<title>Decision</title>\n</parameter>\n<parameter>\n<name>answer_text</name>\n<type>string</type>\n<description>Text/multipart answer; empty for numeric and boolean.</description>\n<default></default>\n<title>Answer Text</title>\n</parameter>\n<parameter>\n<name>citations</name>\n<type>array</type>\n<description>Each contains receipt_id, document_id and one-based page.</description>\n<default>[]</default>\n<items>{\"additionalProperties\": true, \"type\": \"object\"}</items>\n<title>Citations</title>\n</parameter>\n<parameter>\n<name>calc_id</name>\n<type>string</type>\n<description>Calculation record for a derived numeric result.</description>\n<default></default>\n<title>Calc Id</title>\n</parameter>\n<title>finish_params</title>\n<required>[\"answer_type\"]</required>\n</parameters>\n</function>\n</tools>\n\nIf you choose to call a function ONLY reply in the following format with NO suffix:\n\n<tool_call>\n<function=example_function_name>\n<parameter=example_parameter_1>\nvalue_1\n</parameter>\n<parameter=example_parameter_2>\nThis is the value for the second parameter\nthat can span\nmultiple lines\n</parameter>\n</function>\n</tool_call>\n\n<IMPORTANT>\nReminder:\n- Function calls MUST follow the specified format: an inner <function=...></function> block must be nested within <tool_call></tool_call> XML tags\n- Required parameters MUST be specified\n- You may provide optional reasoning for your function call in natural language BEFORE the function call, but NOT after\n- If there is no function call available, answer the question like normal with your current knowledge and do not tell the user about function calls\n</IMPORTANT>"
+    },
+    {
+      "role": "user",
+      "content": "What is Amcor's year end FY2020 net AR (in USD millions)? Address the question by adopting the perspective of a financial analyst who can only use the details shown within the balance sheet."
+    },
+    {
+      "role": "assistant",
+      "content": [
+        {
+          "type": "thinking",
+          "thinking": "We need Amcor's year-end FY2020 net AR (accounts receivable) in USD millions, using only balance sheet details. Must search for Amcor filings FY2020 10-K. Use bm25_search with query \"Amcor FY2020 net accounts receivable\"."
+        },
+        {
+          "type": "text",
+          "text": ""
+        },
+        {
+          "type": "text",
+          "text": "\n"
+        }
+      ],
+      "tool_calls": [
+        {
+          "type": "function",
+          "id": null,
+          "function": {
+            "name": "bm25_search",
+            "arguments": "{\"query_list\": [\"Amcor FY2020 net accounts receivable balance sheet\"], \"company\": \"Amcor\", \"year\": 2020, \"filing_type\": \"10-K\", \"top_k\": 5}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "content": "{\"queries\":[\"Amcor FY2020 net accounts receivable balance sheet\"],\"filters\":{\"company\":\"Amcor\",\"year\":2020,\"filing_type\":\"10-K\",\"document_id\":\"\"},\"prose_hits\":[{\"document_id\":\"AMCOR_2020_10K\",\"page\":146,\"passage_id\":\"p:AMCOR_2020_10K:page:146:chunk:0\",\"score\":14.71799,\"snippet\":\"ntext otherwise clearly requires, any reference to a\\n\\\"Subsidiary\\\" is a reference to a Subsidiary of Amcor.\\n\u2022 \\\"Substitute Rating Agency\\\" means a \\\"nationally recognized stat istical rating organization\\\" within the meaning of the Exchange Act engaged by Amcor to provide a rating of the Notes in the\\neve\",\"snippet_start\":131},{\"document_id\":\"AMCOR_2020_10K\",\"page\":56,\"passage_id\":\"p:AMCOR_2020_10K:page:56:chunk:0\",\"score\":14.11169,\"snippet\":\" Company\u2019s option. Cash equivalents are carried at cost which approximates fair market value.\\nTrade Receivables, Net: Trade accounts receivable, net, are stated at the amount the Company expects to collect, which is net of an allowance for sales returns and the estimated losses resulting from\\nthe in\",\"snippet_start\":926}],\"table_hits\":[{\"document_id\":\"AMCOR_2020_10K\",\"page\":146,\"table_id\":\"t:AMCOR_2020_10K:page:146\",\"score\":20.89278,\"units\":\"\",\"title\":\"Group, plus (c) the net cash proceeds received by Amcor from any share capital issuance by Amcor consummated after the date of the most recent balance sheet included in such Accoun\",\"snippet\":\"ntext otherwise clearly requires, any reference to a\\n\\\"Subsidiary\\\" is a reference to a Subsidiary of Amcor.\\n\u2022 \\\"Substitute Rating Agency\\\" means a \\\"nationally recognized stat istical rating organization\\\" within the meaning of the Exchange Act engaged by Amcor to provide a rating of the Notes in the\\neve\",\"snippet_start\":131},{\"document_id\":\"AMCOR_2020_10K\",\"page\":50,\"table_id\":\"t:AMCOR_2020_10K:page:50\",\"score\":16.99106,\"units\":\"in millions\",\"title\":\"Consolidated Balance Sheet\",\"snippet\":\"Amcor plc and Subsidiaries\\nConsolidated Balance Sheet\\n(in millions)\\nAs of June 30, 2020 2019\\nAssets\\nCurrent assets:\\nCash and cash equivalents $ 742.6 $ 601.6 \\nTrade receivables, net 1,615.9 1,864.3 \\nInventories, net 1,831.9 1,953.8 \\nPrepaid expenses and other current assets 344.3 374.3 \\nAssets held \",\"snippet_start\":0},{\"document_id\":\"AMCOR_2020_10K\",\"page\":44,\"table_id\":\"t:AMCOR_2020_10K:page:44\",\"score\":16.25071,\"units\":\"\",\"title\":\"We have audited the accompanying consolidated balance sheet of Amcor plc and its subsidiaries (the \u201cCompany\u201d) as of June 30, 2020 and 2019, and the related consolidated statements \",\"snippet\":\"port of Independent Registered Public Accounting Firm\\nTo the Board of Directors and Shareholders of Amcor plc\\nOpinions on the Financial Statements and Internal Control over Financial Reporting\\nWe have audited the accompanying consolidated balance sheet of Amcor plc and its subsidiaries (the \u201cCompany\",\"snippet_start\":56}],\"turns_remaining\":7,\"observation\":{\"raw_chars\":2868,\"truncated\":false}}",
+      "tool_call_id": "",
+      "name": "bm25_search"
+    },
+    {
+      "role": "assistant",
+      "content": [
+        {
+          "type": "thinking",
+          "thinking": "We have results. The table hit shows Consolidated Balance Sheet page 50 with \"Trade receivables, net\" values: As of June 30, 2020: 1,615.9; 2019: 1,864.3 (units in millions). The question: \"What is Amcor's year end FY2020 net AR (in USD millions)?\" FY2020 year-end likely June 30, 2020 (Amcor's fiscal year ends June 30). So net AR = 1,615.9 million USD.\n\nWe need to answer as a financial analyst using only balance sheet details. Provide answer numeric 1615.9 million, unit USD millions. Provide citations: receipt_id? We have document_id AMCOR_2020_10K, page 50. Need receipt_id; not provided. But we can cite the table result. The tool returns receipt_id maybe not needed; but finish expects citations with receipt_id, document_id, page. We may not have receipt_id; maybe we can use the passage ID? The bm25 result includes passage_id but not receipt_id. However we can still provide citation with document_id and page. The format: each contains receipt_id, document_id and one-based page. We might not have receipt_id; maybe we can set receipt_id as empty? But spec says each contains receipt_id, document_id and one-based page. Possibly we can use the passage_id as receipt_id? Not sure. Could we retrieve the table with read_table to get receipt_id? Let's try read_table with table_id from result: t:AMCOR_2020_10K:page:50."
+        },
+        {
+          "type": "text",
+          "text": ""
+        },
+        {
+          "type": "text",
+          "text": "\n"
+        }
+      ],
+      "tool_calls": [
+        {
+          "type": "function",
+          "id": null,
+          "function": {
+            "name": "read_table",
+            "arguments": "{\"table_id\": \"t:AMCOR_2020_10K:page:50\", \"include_neighbors\": \"True\"}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "content": "{\"document_id\":\"AMCOR_2020_10K\",\"page\":50,\"page_start\":50,\"page_end\":50,\"start\":0,\"end\":2077,\"total_chars\":2077,\"text\":\"Amcor plc and Subsidiaries\\nConsolidated Balance Sheet\\n(in millions)\\nAs of June 30, 2020 2019\\nAssets\\nCurrent assets:\\nCash and cash equivalents $ 742.6 $ 601.6 \\nTrade receivables, net 1,615.9 1,864.3 \\nInventories, net 1,831.9 1,953.8 \\nPrepaid expenses and other current assets 344.3 374.3 \\nAssets held for sale \u2014 416.1 \\nTotal current assets 4,534.7 5,210.1 \\nNon-current assets:\\nInvestments in affiliated companies 77.7 98.9 \\nProperty, plant and equipment, net 3,614.8 3,975.0 \\nOperating lease assets 525.3 \u2014 \\nDeferred tax assets 135.4 190.9 \\nOther intangible assets, net 1,994.3 2,306.8 \\nGoodwill 5,339.3 5,156.0 \\nEmployee benefit assets 43.4 40.2 \\nOther non-current assets 177.2 187.1 \\nTotal non-current assets 11,907.4 11,954.9 \\nTotal assets $ 16,442.1 $ 17,165.0 \\nLiabilities\\nCurrent liabilities:\\nCurrent portion of long-term debt $ 11.1 $ 5.4 \\nShort-term debt 195.2 788.8 \\nTrade payables 2,170.8 2,303.4 \\nAccrued employee costs 476.5 378.4 \\nOther current liabilities 1,120.0 1,044.9 \\nLiabilities held for sale \u2014 20.9 \\nTotal current liabilities 3,973.6 4,541.8 \\nNon-current liabilities:\\nLong-term debt, less current portion 6,028.4 5,309.0 \\nOperating lease liabilities 465.7 \u2014 \\nDeferred tax liabilities 672.4 1,011.7 \\nEmployee benefit obligations 391.7 386.8 \\nOther non-current liabilities 223.2 241.0 \\nTotal non-current liabilities 7,781.4 6,948.5 \\nTotal liabilities 11,755.0 11,490.3 \\nCommitments and contingencies (See Note 19)\\nShareholders' Equity\\nAmcor plc shareholders\u2019 equity:\\nOrdinary shares ($0.01 par value):\\nAuthorized (9,000.0 shares)\\nIssued (1,568.5 and 1,625.9 shares, respectively) 15.7 16.3 \\nAdditional paid-in capital 5,480.0 6,007.5 \\nRetained earnings 246.5 323.7 \\nAccumulated other comprehensive income (loss) (1,049.3) (72 2.4)\\nTreasury shares (6.7 and 1.4 shares, respectively) (67.0) (16.1)\\nTotal Amcor plc shareholders' equity 4,625.9 5,609.0 \\nNon-controlling interest 61.2 65.7 \\nTotal shareholders' equity 4,687.1 5,674.7 \\nTotal liabilities and shareholders' equity $ 16,442.1 $ 17,165.0 \\nSee accompanying notes to consolidated financial statements.\\n50\",\"next_start\":null,\"has_more\":false,\"table_id\":\"t:AMCOR_2020_10K:page:50\",\"title\":\"Consolidated Balance Sheet\",\"units\":\"in millions\",\"neighbor_pages\":[49,51],\"neighbor_hint\":\"Use read on neighbor_pages for headers/footnotes outside this page.\",\"turns_remaining\":6,\"receipt_id\":\"r1\",\"observation\":{\"raw_chars\":2535,\"truncated\":false}}",
+      "tool_call_id": "",
+      "name": "read_table"
+    },
+    {
+      "role": "assistant",
+      "content": [
+        {
+          "type": "thinking",
+          "thinking": "The read_table result includes receipt_id \"r1\". Good. So we can cite receipt_id r1, document_id AMCOR_2020_10K, page 50.\n\nNow answer: net AR = 1,615.9 million USD. Provide as numeric answer with unit \"USD millions\". Use answer_type numeric, value \"1615.9\". scale? Probably \"million\". The scale field expects ones, thousand, million, or billion. So scale \"million\". value as string \"1615.9\". Provide citations.\n\nThus finalize."
+        },
+        {
+          "type": "text",
+          "text": ""
+        },
+        {
+          "type": "text",
+          "text": "\n"
+        }
+      ],
+      "tool_calls": [
+        {
+          "type": "function",
+          "id": null,
+          "function": {
+            "name": "finish",
+            "arguments": "{\"answer_type\": \"numeric\", \"value\": 1615.9, \"unit\": \"USD millions\", \"scale\": \"million\", \"citations\": [{\"receipt_id\": \"r1\", \"document_id\": \"AMCOR_2020_10K\", \"page\": 50}]}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "content": "{\"finish\":true,\"accepted\":{\"answer_type\":\"numeric\",\"value\":\"1615.9\",\"unit\":\"usd millions\",\"scale\":\"million\",\"decision\":\"\",\"answer_text\":\"\",\"citations\":[{\"receipt_id\":\"r1\",\"document_id\":\"AMCOR_2020_10K\",\"page\":50}],\"calc_id\":\"\"},\"turns_remaining\":5,\"observation\":{\"raw_chars\":248,\"truncated\":false}}",
+      "tool_call_id": "",
+      "name": "finish"
+    }
+  ],
+  "receipts": {
+    "r1": {
+      "document_id": "AMCOR_2020_10K",
+      "page": 50,
+      "page_start": 50,
+      "page_end": 50,
+      "start": 0,
+      "end": 2077,
+      "total_chars": 2077,
+      "text": "Amcor plc and Subsidiaries\nConsolidated Balance Sheet\n(in millions)\nAs of June 30, 2020 2019\nAssets\nCurrent assets:\nCash and cash equivalents $ 742.6 $ 601.6 \nTrade receivables, net 1,615.9 1,864.3 \nInventories, net 1,831.9 1,953.8 \nPrepaid expenses and other current assets 344.3 374.3 \nAssets held for sale \u2014 416.1 \nTotal current assets 4,534.7 5,210.1 \nNon-current assets:\nInvestments in affiliated companies 77.7 98.9 \nProperty, plant and equipment, net 3,614.8 3,975.0 \nOperating lease assets 525.3 \u2014 \nDeferred tax assets 135.4 190.9 \nOther intangible assets, net 1,994.3 2,306.8 \nGoodwill 5,339.3 5,156.0 \nEmployee benefit assets 43.4 40.2 \nOther non-current assets 177.2 187.1 \nTotal non-current assets 11,907.4 11,954.9 \nTotal assets $ 16,442.1 $ 17,165.0 \nLiabilities\nCurrent liabilities:\nCurrent portion of long-term debt $ 11.1 $ 5.4 \nShort-term debt 195.2 788.8 \nTrade payables 2,170.8 2,303.4 \nAccrued employee costs 476.5 378.4 \nOther current liabilities 1,120.0 1,044.9 \nLiabilities held for sale \u2014 20.9 \nTotal current liabilities 3,973.6 4,541.8 \nNon-current liabilities:\nLong-term debt, less current portion 6,028.4 5,309.0 \nOperating lease liabilities 465.7 \u2014 \nDeferred tax liabilities 672.4 1,011.7 \nEmployee benefit obligations 391.7 386.8 \nOther non-current liabilities 223.2 241.0 \nTotal non-current liabilities 7,781.4 6,948.5 \nTotal liabilities 11,755.0 11,490.3 \nCommitments and contingencies (See Note 19)\nShareholders' Equity\nAmcor plc shareholders\u2019 equity:\nOrdinary shares ($0.01 par value):\nAuthorized (9,000.0 shares)\nIssued (1,568.5 and 1,625.9 shares, respectively) 15.7 16.3 \nAdditional paid-in capital 5,480.0 6,007.5 \nRetained earnings 246.5 323.7 \nAccumulated other comprehensive income (loss) (1,049.3) (72 2.4)\nTreasury shares (6.7 and 1.4 shares, respectively) (67.0) (16.1)\nTotal Amcor plc shareholders' equity 4,625.9 5,609.0 \nNon-controlling interest 61.2 65.7 \nTotal shareholders' equity 4,687.1 5,674.7 \nTotal liabilities and shareholders' equity $ 16,442.1 $ 17,165.0 \nSee accompanying notes to consolidated financial statements.\n50",
+      "next_start": null,
+      "has_more": false,
+      "table_id": "t:AMCOR_2020_10K:page:50",
+      "title": "Consolidated Balance Sheet",
+      "units": "in millions",
+      "neighbor_pages": [
+        49,
+        51
+      ],
+      "neighbor_hint": "Use read on neighbor_pages for headers/footnotes outside this page.",
+      "turns_remaining": 6,
+      "receipt_id": "r1",
+      "observation": {
+        "raw_chars": 2535,
+        "truncated": false
+      },
+      "tool": "read_table",
+      "delivered_turn": 2
+    }
+  },
+  "calculations": {},
+  "observations": [
+    {
+      "name": "bm25_search",
+      "payload": {
+        "queries": [
+          "Amcor FY2020 net accounts receivable balance sheet"
+        ],
+        "filters": {
+          "company": "Amcor",
+          "year": 2020,
+          "filing_type": "10-K",
+          "document_id": ""
+        },
+        "prose_hits": [
+          {
+            "document_id": "AMCOR_2020_10K",
+            "page": 146,
+            "passage_id": "p:AMCOR_2020_10K:page:146:chunk:0",
+            "score": 14.71799,
+            "snippet": "ntext otherwise clearly requires, any reference to a\n\"Subsidiary\" is a reference to a Subsidiary of Amcor.\n\u2022 \"Substitute Rating Agency\" means a \"nationally recognized stat istical rating organization\" within the meaning of the Exchange Act engaged by Amcor to provide a rating of the Notes in the\neve",
+            "snippet_start": 131
+          },
+          {
+            "document_id": "AMCOR_2020_10K",
+            "page": 56,
+            "passage_id": "p:AMCOR_2020_10K:page:56:chunk:0",
+            "score": 14.11169,
+            "snippet": " Company\u2019s option. Cash equivalents are carried at cost which approximates fair market value.\nTrade Receivables, Net: Trade accounts receivable, net, are stated at the amount the Company expects to collect, which is net of an allowance for sales returns and the estimated losses resulting from\nthe in",
+            "snippet_start": 926
+          }
+        ],
+        "table_hits": [
+          {
+            "document_id": "AMCOR_2020_10K",
+            "page": 146,
+            "table_id": "t:AMCOR_2020_10K:page:146",
+            "score": 20.89278,
+            "units": "",
+            "title": "Group, plus (c) the net cash proceeds received by Amcor from any share capital issuance by Amcor consummated after the date of the most recent balance sheet included in such Accoun",
+            "snippet": "ntext otherwise clearly requires, any reference to a\n\"Subsidiary\" is a reference to a Subsidiary of Amcor.\n\u2022 \"Substitute Rating Agency\" means a \"nationally recognized stat istical rating organization\" within the meaning of the Exchange Act engaged by Amcor to provide a rating of the Notes in the\neve",
+            "snippet_start": 131
+          },
+          {
+            "document_id": "AMCOR_2020_10K",
+            "page": 50,
+            "table_id": "t:AMCOR_2020_10K:page:50",
+            "score": 16.99106,
+            "units": "in millions",
+            "title": "Consolidated Balance Sheet",
+            "snippet": "Amcor plc and Subsidiaries\nConsolidated Balance Sheet\n(in millions)\nAs of June 30, 2020 2019\nAssets\nCurrent assets:\nCash and cash equivalents $ 742.6 $ 601.6 \nTrade receivables, net 1,615.9 1,864.3 \nInventories, net 1,831.9 1,953.8 \nPrepaid expenses and other current assets 344.3 374.3 \nAssets held ",
+            "snippet_start": 0
+          },
+          {
+            "document_id": "AMCOR_2020_10K",
+            "page": 44,
+            "table_id": "t:AMCOR_2020_10K:page:44",
+            "score": 16.25071,
+            "units": "",
+            "title": "We have audited the accompanying consolidated balance sheet of Amcor plc and its subsidiaries (the \u201cCompany\u201d) as of June 30, 2020 and 2019, and the related consolidated statements ",
+            "snippet": "port of Independent Registered Public Accounting Firm\nTo the Board of Directors and Shareholders of Amcor plc\nOpinions on the Financial Statements and Internal Control over Financial Reporting\nWe have audited the accompanying consolidated balance sheet of Amcor plc and its subsidiaries (the \u201cCompany",
+            "snippet_start": 56
+          }
+        ],
+        "turns_remaining": 7,
+        "observation": {
+          "raw_chars": 2868,
+          "truncated": false
+        }
+      },
+      "visible_chars": 2919
+    },
+    {
+      "name": "read_table",
+      "payload": {
+        "document_id": "AMCOR_2020_10K",
+        "page": 50,
+        "page_start": 50,
+        "page_end": 50,
+        "start": 0,
+        "end": 2077,
+        "total_chars": 2077,
+        "text": "Amcor plc and Subsidiaries\nConsolidated Balance Sheet\n(in millions)\nAs of June 30, 2020 2019\nAssets\nCurrent assets:\nCash and cash equivalents $ 742.6 $ 601.6 \nTrade receivables, net 1,615.9 1,864.3 \nInventories, net 1,831.9 1,953.8 \nPrepaid expenses and other current assets 344.3 374.3 \nAssets held for sale \u2014 416.1 \nTotal current assets 4,534.7 5,210.1 \nNon-current assets:\nInvestments in affiliated companies 77.7 98.9 \nProperty, plant and equipment, net 3,614.8 3,975.0 \nOperating lease assets 525.3 \u2014 \nDeferred tax assets 135.4 190.9 \nOther intangible assets, net 1,994.3 2,306.8 \nGoodwill 5,339.3 5,156.0 \nEmployee benefit assets 43.4 40.2 \nOther non-current assets 177.2 187.1 \nTotal non-current assets 11,907.4 11,954.9 \nTotal assets $ 16,442.1 $ 17,165.0 \nLiabilities\nCurrent liabilities:\nCurrent portion of long-term debt $ 11.1 $ 5.4 \nShort-term debt 195.2 788.8 \nTrade payables 2,170.8 2,303.4 \nAccrued employee costs 476.5 378.4 \nOther current liabilities 1,120.0 1,044.9 \nLiabilities held for sale \u2014 20.9 \nTotal current liabilities 3,973.6 4,541.8 \nNon-current liabilities:\nLong-term debt, less current portion 6,028.4 5,309.0 \nOperating lease liabilities 465.7 \u2014 \nDeferred tax liabilities 672.4 1,011.7 \nEmployee benefit obligations 391.7 386.8 \nOther non-current liabilities 223.2 241.0 \nTotal non-current liabilities 7,781.4 6,948.5 \nTotal liabilities 11,755.0 11,490.3 \nCommitments and contingencies (See Note 19)\nShareholders' Equity\nAmcor plc shareholders\u2019 equity:\nOrdinary shares ($0.01 par value):\nAuthorized (9,000.0 shares)\nIssued (1,568.5 and 1,625.9 shares, respectively) 15.7 16.3 \nAdditional paid-in capital 5,480.0 6,007.5 \nRetained earnings 246.5 323.7 \nAccumulated other comprehensive income (loss) (1,049.3) (72 2.4)\nTreasury shares (6.7 and 1.4 shares, respectively) (67.0) (16.1)\nTotal Amcor plc shareholders' equity 4,625.9 5,609.0 \nNon-controlling interest 61.2 65.7 \nTotal shareholders' equity 4,687.1 5,674.7 \nTotal liabilities and shareholders' equity $ 16,442.1 $ 17,165.0 \nSee accompanying notes to consolidated financial statements.\n50",
+        "next_start": null,
+        "has_more": false,
+        "table_id": "t:AMCOR_2020_10K:page:50",
+        "title": "Consolidated Balance Sheet",
+        "units": "in millions",
+        "neighbor_pages": [
+          49,
+          51
+        ],
+        "neighbor_hint": "Use read on neighbor_pages for headers/footnotes outside this page.",
+        "turns_remaining": 6,
+        "receipt_id": "r1",
+        "observation": {
+          "raw_chars": 2535,
+          "truncated": false
+        }
+      },
+      "visible_chars": 2586
+    },
+    {
+      "name": "finish",
+      "payload": {
+        "finish": true,
+        "accepted": {
+          "answer_type": "numeric",
+          "value": "1615.9",
+          "unit": "usd millions",
+          "scale": "million",
+          "decision": "",
+          "answer_text": "",
+          "citations": [
+            {
+              "receipt_id": "r1",
+              "document_id": "AMCOR_2020_10K",
+              "page": 50
+            }
+          ],
+          "calc_id": ""
+        },
+        "turns_remaining": 5,
+        "observation": {
+          "raw_chars": 248,
+          "truncated": false
+        }
+      },
+      "visible_chars": 298
+    }
+  ],
+  "score": {
+    "F": 1.0,
+    "A": 0.0,
+    "G": 1.0,
+    "Ret": 1.0,
+    "reward": 0.0,
+    "correct": 0,
+    "grounded_success": 0,
+    "unresolved": false,
+    "fabricated_citation": false,
+    "grader_version": "workshop-rubric-v2-derived-provenance"
+  }
+}

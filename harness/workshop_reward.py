@@ -7,7 +7,7 @@ import re
 from dataclasses import dataclass, field
 from decimal import Decimal, InvalidOperation, ROUND_HALF_UP, localcontext
 
-SCORER_VERSION = "workshop-v1"
+SCORER_VERSION = "workshop-rubric-v2-derived-provenance"
 SCALES = {"ones": Decimal(1), "thousand": Decimal(1000), "million": Decimal(1000000), "billion": Decimal(1000000000)}
 SCALE_ALIASES = {"": "ones", "1": "ones", "k": "thousand", "thousands": "thousand", "m": "million", "mm": "million", "millions": "million", "b": "billion", "bn": "billion", "billions": "billion"}
 UNIT_ALIASES = {"$": "USD", "usd": "USD", "dollars": "USD", "€": "EUR", "eur": "EUR", "£": "GBP", "gbp": "GBP", "%": "percent", "percentage": "percent", "percent": "percent", "ratio": "ratio", "": "number", "number": "number"}
@@ -169,6 +169,8 @@ class EpisodeState:
             raise ValueError('Provide exactly one source-backed operand for every expression variable')
         values = {}
         for name, operand in operands.items():
+            if not isinstance(operand, dict):
+                raise ValueError('Each operand must be an object with source provenance')
             receipt = self.receipts.get(operand.get('receipt_id'), {})
             quote = operand.get('quote', '')
             if receipt.get('delivered_turn', -1) >= self.turn or receipt.get('tool') not in ('read', 'read_table', 'grep_document') or not quote or quote not in receipt.get('text', ''):
@@ -177,7 +179,8 @@ class EpisodeState:
                 raise ValueError('Operand metric and period must identify text in its source quote')
             value = scalar(operand['value'])
             # Source values are in displayed units; expression performs explicit conversions.
-            mentions = re.findall(r'(?<![\w.])(?:\(\s*[+-]?\d[\d,]*(?:\.\d+)?\s*\)|[+-]?\d[\d,]*(?:\.\d+)?)', quote.replace('−', '-'))
+            number_token = r'(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?'
+            mentions = re.findall(rf'(?<![\w.])(?:\(\s*[+-]?{number_token}\s*\)|[+-]?{number_token}(?!,))', quote.replace('−', '-'))
             observed = [parse_number(x)[0] for x in mentions]
             if value not in observed:
                 raise ValueError('Operand value missing from quote')
@@ -192,13 +195,15 @@ class EpisodeState:
             if isinstance(node, ast.Constant) and type(node.value) in (int, float): return scalar(str(node.value))
             if isinstance(node, ast.UnaryOp) and isinstance(node.op, (ast.UAdd, ast.USub)):
                 return evaluate(node.operand) * (-1 if isinstance(node.op, ast.USub) else 1)
-            if isinstance(node, ast.BinOp) and isinstance(node.op, (ast.Add, ast.Sub, ast.Mult, ast.Div)):
+            if isinstance(node, ast.BinOp) and isinstance(node.op, (ast.Add, ast.Sub, ast.Mult, ast.Div, ast.Pow)):
                 left, right = evaluate(node.left), evaluate(node.right)
                 if isinstance(node.op, ast.Add): return left + right
                 if isinstance(node.op, ast.Sub): return left - right
                 if isinstance(node.op, ast.Mult): return left * right
-                return left / right
-            raise ValueError('Only named operands, constants and + - * / are supported')
+                if isinstance(node.op, ast.Div): return left / right
+                if abs(right) > 8: raise ValueError('Exponent too large')
+                return left ** right
+            raise ValueError('Only named operands, constants and + - * / ** are supported')
         result = evaluate(tree)
         scalar(format(result, 'f'))
         # Constants such as the 2 in an average are legitimate. At scoring time

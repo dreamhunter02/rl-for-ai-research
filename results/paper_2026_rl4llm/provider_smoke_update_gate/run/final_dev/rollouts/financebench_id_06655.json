@@ -1,0 +1,615 @@
+{
+  "history": [
+    {
+      "role": "system",
+      "content": "You are a financial-filings retrieval agent.\n\nYour job is to answer the user's question using the SEC filing corpus. Search\nbefore answering. Start with bm25_search to identify the likely document and\npassages, then use grep_document for exact accounting terms or regexes and\nread/read_table to inspect bounded evidence. Any derived numeric answer must come from calculate using named, source-backed operands. Direct extraction needs no calculation.\nYou may switch documents or issue refined searches when the evidence is not\nsufficient. Do not invent values or rely on outside knowledge.\n\nAvailable tools:\n- bm25_search: ranked keyword search with optional company/year/document filters\n- grep_document: document-scoped exact or regex search; choose grep_type text, pdfgrep, or rga\n- search_tables: ranked search over table-like pages in one or all filings\n- read: bounded page/passage retrieval with provenance\n- read_table: retrieve a table candidate with neighboring headers and footnotes\n- calculate: safe arithmetic for ratios, changes, and unit conversions\n\nWhen you have enough evidence, call finish exactly once. For numeric answers use\nanswer_type=\"numeric\", value as a decimal string, unit and scale; leave answer_text\nempty. For yes/no-only answers use answer_type=\"boolean\", decision=\"yes\" or \"no\".\nFor text or multipart answers use answer_type=\"text\", answer_text with all requested\nfacts. Cite receipt_id, document_id and one-based page from read/grep results.\nFor arithmetic, calculate accepts an expression with named variables and an operands\nobject mapping each variable to value, unit, scale, metric, period, receipt_id and an\nexact quote. Include its calc_id in finish. Do not use constant-only calculations as\nsupport. Read beyond snippets when needed. Use the final available turn to finish;\nnever continue searching when only one turn remains.\n\n\n# Tools\n\nYou have access to the following functions:\n\n<tools>\n<function>\n<name>bm25_search</name>\n<parameters>\n<parameter>\n<name>query_list</name>\n<type>array</type>\n<description>One or more keyword queries.</description>\n<items>{\"type\": \"string\"}</items>\n<title>Query List</title>\n</parameter>\n<parameter>\n<name>company</name>\n<type>string</type>\n<description>Optional company filter, for example 3M.</description>\n<default></default>\n<title>Company</title>\n</parameter>\n<parameter>\n<name>year</name>\n<type>integer</type>\n<description>Optional fiscal year; use -1 when unknown.</description>\n<default>-1</default>\n<title>Year</title>\n</parameter>\n<parameter>\n<name>filing_type</name>\n<type>string</type>\n<description>Optional type such as 10-K or 10-Q.</description>\n<default></default>\n<title>Filing Type</title>\n</parameter>\n<parameter>\n<name>document_id</name>\n<type>string</type>\n<description>Optional exact filing name.</description>\n<default></default>\n<title>Document Id</title>\n</parameter>\n<parameter>\n<name>scope</name>\n<type>string</type>\n<description>prose, tables, or both.</description>\n<default>both</default>\n<title>Scope</title>\n</parameter>\n<parameter>\n<name>top_k</name>\n<type>integer</type>\n<description>Maximum results to return.</description>\n<default>3</default>\n<title>Top K</title>\n</parameter>\n<title>bm25_search_params</title>\n<required>[\"query_list\"]</required>\n</parameters>\n</function>\n<function>\n<name>grep_document</name>\n<parameters>\n<parameter>\n<name>document_id</name>\n<type>string</type>\n<description>Exact document_id returned by bm25_search.</description>\n<title>Document Id</title>\n</parameter>\n<parameter>\n<name>patterns</name>\n<type>array</type>\n<description>Literal or regular-expression patterns.</description>\n<items>{\"type\": \"string\"}</items>\n<title>Patterns</title>\n</parameter>\n<parameter>\n<name>page_start</name>\n<type>integer</type>\n<description>First page to search, or -1 for all pages.</description>\n<default>-1</default>\n<title>Page Start</title>\n</parameter>\n<parameter>\n<name>page_end</name>\n<type>integer</type>\n<description>Last page to search, or -1 for all pages.</description>\n<default>-1</default>\n<title>Page End</title>\n</parameter>\n<parameter>\n<name>context_lines</name>\n<type>integer</type>\n<description>Number of surrounding lines per match.</description>\n<default>2</default>\n<title>Context Lines</title>\n</parameter>\n<parameter>\n<name>grep_type</name>\n<type>string</type>\n<description>Backend choice: text, pdfgrep, or rga.</description>\n<default>text</default>\n<title>Grep Type</title>\n</parameter>\n<title>grep_document_params</title>\n<required>[\"document_id\", \"patterns\"]</required>\n</parameters>\n</function>\n<function>\n<name>search_tables</name>\n<parameters>\n<parameter>\n<name>query_list</name>\n<type>array</type>\n<description>Terms such as revenue, cash flows, balance sheet, or PP&E.</description>\n<items>{\"type\": \"string\"}</items>\n<title>Query List</title>\n</parameter>\n<parameter>\n<name>document_id</name>\n<type>string</type>\n<description>Optional exact document_id; leave empty for corpus search.</description>\n<default></default>\n<title>Document Id</title>\n</parameter>\n<parameter>\n<name>company</name>\n<type>string</type>\n<description>Optional company filter.</description>\n<default></default>\n<title>Company</title>\n</parameter>\n<parameter>\n<name>year</name>\n<type>integer</type>\n<description>Optional fiscal year; use -1 when unknown.</description>\n<default>-1</default>\n<title>Year</title>\n</parameter>\n<parameter>\n<name>top_k</name>\n<type>integer</type>\n<description>Maximum table candidates.</description>\n<default>3</default>\n<title>Top K</title>\n</parameter>\n<title>search_tables_params</title>\n<required>[\"query_list\"]</required>\n</parameters>\n</function>\n<function>\n<name>read</name>\n<parameters>\n<parameter>\n<name>document_id</name>\n<type>string</type>\n<description>Exact document_id.</description>\n<title>Document Id</title>\n</parameter>\n<parameter>\n<name>page</name>\n<type>integer</type>\n<description>One-based page number, or -1 when using passage_id.</description>\n<default>-1</default>\n<title>Page</title>\n</parameter>\n<parameter>\n<name>start</name>\n<type>integer</type>\n<description>Character start within the selected page/window.</description>\n<default>0</default>\n<title>Start</title>\n</parameter>\n<parameter>\n<name>end</name>\n<type>integer</type>\n<description>Absolute character end, or -1 for the next bounded window.</description>\n<default>-1</default>\n<title>End</title>\n</parameter>\n<parameter>\n<name>passage_id</name>\n<type>string</type>\n<description>Optional passage_id returned by search.</description>\n<default></default>\n<title>Passage Id</title>\n</parameter>\n<title>read_params</title>\n<required>[\"document_id\"]</required>\n</parameters>\n</function>\n<function>\n<name>read_table</name>\n<parameters>\n<parameter>\n<name>table_id</name>\n<type>string</type>\n<description>Exact table_id returned by search_tables.</description>\n<title>Table Id</title>\n</parameter>\n<parameter>\n<name>include_neighbors</name>\n<type>boolean</type>\n<description>Return neighbor page identifiers for headers and footnotes.</description>\n<default>True</default>\n<title>Include Neighbors</title>\n</parameter>\n<parameter>\n<name>start</name>\n<type>integer</type>\n<description>Character offset within table page.</description>\n<default>0</default>\n<title>Start</title>\n</parameter>\n<parameter>\n<name>end</name>\n<type>integer</type>\n<description>Absolute end, or -1 for the next bounded table window.</description>\n<default>-1</default>\n<title>End</title>\n</parameter>\n<title>read_table_params</title>\n<required>[\"table_id\"]</required>\n</parameters>\n</function>\n<function>\n<name>calculate</name>\n<parameters>\n<parameter>\n<name>expression</name>\n<type>string</type>\n<description>Arithmetic using named source-backed operands and + - * /.</description>\n<title>Expression</title>\n</parameter>\n<parameter>\n<name>operands</name>\n<type>object</type>\n<description>Variable to value/unit/scale/metric/period/receipt_id/quote mapping.</description>\n<additionalProperties>True</additionalProperties>\n<default>{}</default>\n<title>Operands</title>\n</parameter>\n<title>calculate_params</title>\n<required>[\"expression\"]</required>\n</parameters>\n</function>\n<function>\n<name>finish</name>\n<parameters>\n<parameter>\n<name>answer_type</name>\n<type>string</type>\n<description>numeric, boolean, or text</description>\n<title>Answer Type</title>\n</parameter>\n<parameter>\n<name>value</name>\n<type>string</type>\n<description>Single decimal numeric answer; no units here.</description>\n<default></default>\n<title>Value</title>\n</parameter>\n<parameter>\n<name>unit</name>\n<type>string</type>\n<description>USD, EUR, percent, ratio, shares, or number.</description>\n<default></default>\n<title>Unit</title>\n</parameter>\n<parameter>\n<name>scale</name>\n<type>string</type>\n<description>ones, thousand, million, or billion.</description>\n<default></default>\n<title>Scale</title>\n</parameter>\n<parameter>\n<name>decision</name>\n<type>string</type>\n<description>yes or no for boolean answers.</description>\n<default></default>\n<title>Decision</title>\n</parameter>\n<parameter>\n<name>answer_text</name>\n<type>string</type>\n<description>Text/multipart answer; empty for numeric and boolean.</description>\n<default></default>\n<title>Answer Text</title>\n</parameter>\n<parameter>\n<name>citations</name>\n<type>array</type>\n<description>Each contains receipt_id, document_id and one-based page.</description>\n<default>[]</default>\n<items>{\"additionalProperties\": true, \"type\": \"object\"}</items>\n<title>Citations</title>\n</parameter>\n<parameter>\n<name>calc_id</name>\n<type>string</type>\n<description>Calculation record for a derived numeric result.</description>\n<default></default>\n<title>Calc Id</title>\n</parameter>\n<title>finish_params</title>\n<required>[\"answer_type\"]</required>\n</parameters>\n</function>\n</tools>\n\nIf you choose to call a function ONLY reply in the following format with NO suffix:\n\n<tool_call>\n<function=example_function_name>\n<parameter=example_parameter_1>\nvalue_1\n</parameter>\n<parameter=example_parameter_2>\nThis is the value for the second parameter\nthat can span\nmultiple lines\n</parameter>\n</function>\n</tool_call>\n\n<IMPORTANT>\nReminder:\n- Function calls MUST follow the specified format: an inner <function=...></function> block must be nested within <tool_call></tool_call> XML tags\n- Required parameters MUST be specified\n- You may provide optional reasoning for your function call in natural language BEFORE the function call, but NOT after\n- If there is no function call available, answer the question like normal with your current knowledge and do not tell the user about function calls\n</IMPORTANT>"
+    },
+    {
+      "role": "user",
+      "content": "What is Amazon's FY2017 days payable outstanding (DPO)? DPO is defined as: 365 * (average accounts payable between FY2016 and FY2017) / (FY2017 COGS + change in inventory between FY2016 and FY2017). Round your answer to two decimal places. Address the question by using the line items and information shown within the balance sheet and the P&L statement."
+    },
+    {
+      "role": "assistant",
+      "content": [
+        {
+          "type": "thinking",
+          "thinking": "We need Amazon's FY2017 DPO using formula: 365 * (average accounts payable between FY2016 and FY2017) / (FY2017 COGS + change in inventory between FY2016 and FY2017).\n\nWe need data: accounts payable (liability) for FY2016 and FY2017 from balance sheet; COGS for FY2017 from income statement; inventory values for FY2016 and FY2017 from balance sheet to compute change in inventory (FY2017 inventory - FY2016 inventory). Then compute average accounts payable = (AP_2016 + AP_2017)/2.\n\nWe need to retrieve Amazon 10-K for fiscal year 2017 (FY2017). Amazon's fiscal year ends Dec 31. So FY2017 is year ended Dec 31, 2017. We'll need to search for Amazon filings.\n\nFirst, bm25_search for Amazon 2017 10-K, looking for accounts payable, COGS, inventory.\n\nLet's search."
+        },
+        {
+          "type": "text",
+          "text": ""
+        },
+        {
+          "type": "text",
+          "text": "\n"
+        }
+      ],
+      "tool_calls": [
+        {
+          "type": "function",
+          "id": null,
+          "function": {
+            "name": "bm25_search",
+            "arguments": "{\"query_list\": [\"Amazon 2017 10-K accounts payable COGS inventory\"], \"company\": \"Amazon\", \"year\": 2017, \"filing_type\": \"10-K\", \"top_k\": 5}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "content": "{\"queries\":[\"Amazon 2017 10-K accounts payable COGS inventory\"],\"filters\":{\"company\":\"Amazon\",\"year\":2017,\"filing_type\":\"10-K\",\"document_id\":\"\"},\"prose_hits\":[{\"document_id\":\"AMAZON_2017_10K\",\"page\":52,\"passage_id\":\"p:AMAZON_2017_10K:page:52:chunk:1\",\"score\":14.36144,\"snippet\":\" long-termconstruction obligations a\\nre considered long-term finance lease obligations with amounts payable during the next 12 months recorded as \u201cAccrued expenses andother.\u201d Gross assets remain\\ning under finance leases were $2.9 billion and $5.4 billion as of December 31, 2016 and 2017 . Accumulate\",\"snippet_start\":1988},{\"document_id\":\"AMAZON_2017_10K\",\"page\":20,\"passage_id\":\"p:AMAZON_2017_10K:page:20:chunk:2\",\"score\":14.11497,\"snippet\":\"ing Poli\\ncies.\u201d \\n_______________________\\n(3)\\nThe operating cycle is th e number of days of sales in inventory plus the number of days of sales in accounts receivable minus accounts payable days.20\",\"snippet_start\":4344},{\"document_id\":\"AMAZON_2017_10K\",\"page\":61,\"passage_id\":\"p:AMAZON_2017_10K:page:61:chunk:0\",\"score\":13.31484,\"snippet\":\"e district court\u2019s judgment tothe United States Court of Appeals fo\\nr the Federal Circuit. In March 2017, the court of appeals affirmed the district court\u2019s decision. In June 2017, the UnitedStates District Court for th\\ne Western District of Kentucky dismissed the Busk and Saldana cases with prejudi\",\"snippet_start\":153},{\"document_id\":\"AMAZON_2017_10K\",\"page\":61,\"passage_id\":\"p:AMAZON_2017_10K:page:61:chunk:1\",\"score\":12.7827,\"snippet\":\"om, Inc., Amazon.com, LLC, AMZN Mobile,LLC, Amazon Web Services, Inc. and Audible, \\nInc. for patent infringement in the United States District Court for the Eastern District of Texas. The complaintalleges, among other things, \\nthat Amazon Appstore, Amazon Instant Video, Amazon Music, Audible Audiobo\",\"snippet_start\":1900}],\"table_hits\":[{\"document_id\":\"AMAZON_2017_10K\",\"page\":61,\"table_id\":\"t:AMAZON_2017_10K:page:61\",\"score\":11.75498,\"units\":\"\",\"title\":\"\",\"snippet\":\"e district court\u2019s judgment tothe United States Court of Appeals fo\\nr the Federal Circuit. In March 2017, the court of appeals affirmed the district court\u2019s decision. In June 2017, the UnitedStates District Court for th\\ne Western District of Kentucky dismissed the Busk and Saldana cases with prejudi\",\"snippet_start\":153}],\"turns_remaining\":7,\"observation\":{\"raw_chars\":2332,\"truncated\":false}}",
+      "tool_call_id": "",
+      "name": "bm25_search"
+    },
+    {
+      "role": "assistant",
+      "content": [
+        {
+          "type": "thinking",
+          "thinking": "We have document ID AMAZON_2017_10K. Need to extract specific line items: accounts payable (likely \"Accounts payable\" line in balance sheet), COGS (cost of sales) from income statement, inventory values.\n\nWe can grep for \"Accounts payable\" in that document."
+        },
+        {
+          "type": "text",
+          "text": ""
+        },
+        {
+          "type": "text",
+          "text": "\n"
+        }
+      ],
+      "tool_calls": [
+        {
+          "type": "function",
+          "id": null,
+          "function": {
+            "name": "grep_document",
+            "arguments": "{\"document_id\": \"AMAZON_2017_10K\", \"patterns\": [\"Accounts payable\"], \"grep_type\": \"text\", \"context_lines\": 2}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "content": "{\"grep_type_requested\":\"text\",\"backend_used\":\"page_text\",\"matches\":[{\"document_id\":\"AMAZON_2017_10K\",\"page\":9,\"line\":15,\"text\":\"ent terms with our retail vendors that extend beyond the amount of time necessary to collect proceeds from our consumer customers.As a result of holiday sales, as o\\nf December 31 of each year, our cash, cash equivalents, and marketable securities balances typically reach their highest level (otherthan as a result of cash f\\nlows provided by or used in investing and financing activities). This operating cycle results in a corresponding increase in accounts payableas of December 31. Our accounts pa\",\"provenance\":\"AMAZON_2017_10K:page=9:line=15\",\"receipt_id\":\"r1\"},{\"document_id\":\"AMAZON_2017_10K\",\"page\":19,\"line\":41,\"text\":\"(1)\\nSee \u201cResults of Operations\u2014Non-GAAP Financial Measu res\u201d below for additional information on our non-GAAP free cash flows financial measures.(2)\\nWorking capital consists o f accounts receivable, inventory, and accounts payable.19\",\"provenance\":\"AMAZON_2017_10K:page=19:line=41\",\"receipt_id\":\"r2\"},{\"document_id\":\"AMAZON_2017_10K\",\"page\":20,\"line\":7,\"text\":\"r product mix, the mix of sales by us and by third-party sellers, our continuing focus on in-stock inventory availability andselection of product off\\nerings, our investment in new geographies and product lines, and the extent to which we choose to utilize third-party fulfillment providers.We also expect some var\\niability in accounts payable days over time since they are affected by several factors, including the mix of product sales, the mix of salesby third-party sellers, \\nthe mix of suppliers,\",\"provenance\":\"AMAZON_2017_10K:page=20:line=7\",\"receipt_id\":\"r3\"},{\"document_id\":\"AMAZON_2017_10K\",\"page\":20,\"line\":36,\"text\":\"_______________________\\n(3)\\nThe operating cycle is th e number of days of sales in inventory plus the number of days of sales in accounts receivable minus accounts payable days.20\",\"provenance\":\"AMAZON_2017_10K:page=20:line=36\",\"receipt_id\":\"r4\"},{\"document_id\":\"AMAZON_2017_10K\",\"page\":37,\"line\":20,\"text\":\" Inventories\\n(2,187 ) (1,426 ) (3,583 ) Accounts receivable, net and other\\n(1,755 ) (3,367 ) (4,786 ) Accounts payable\\n4,294 5,030 7,175 Accrued expenses and other\\n913 1,724 283 Unearned revenue\",\"provenance\":\"AMAZON_2017_10K:page=37:line=20\",\"receipt_id\":\"r5\"},{\"document_id\":\"AMAZON_2017_10K\",\"page\":40,\"line\":21,\"text\":\"$ 83,402 $ 131,310 LIABILITIES AND STOCKH\\nOLDERS\u2019 EQUITY Current liabilities:\\n Accounts payable\\n$ 25,309 $ 34,616 Accrued expenses and other\\n13,739 18,170 Unearned revenue\",\"provenance\":\"AMAZON_2017_10K:page=40:line=21\",\"receipt_id\":\"r6\"}],\"turns_remaining\":6,\"observation\":{\"raw_chars\":2653,\"truncated\":false}}",
+      "tool_call_id": "",
+      "name": "grep_document"
+    },
+    {
+      "role": "assistant",
+      "content": [
+        {
+          "type": "thinking",
+          "thinking": "We have multiple matches. The key data appears on page 37 and page 40. Page 37 seems to have a table with inventories, accounts receivable net and other, accounts payable values: numbers (2,187), (1,426), (3,583) for inventories? Actually line: \"Inventories (2,187) (1,426) (3,583) Accounts receivable, net and other (1,755) (3,367) (4,786) Accounts payable 4,294 5,030 7,175 Accrued expenses and other 913 1,724 283 Unearned revenue\". This likely shows three columns: maybe 2015, 2016, 2017? Need to interpret. The order could be FY2015, FY2016, FY2017. Since it's a 10-K for 2017, typical balance sheet shows two years prior and current. But there are three numbers; maybe includes 2015, 2016, 2017. Let's see page 40: \"Accounts payable $25,309 $34,616\". That appears to be current liabilities line for accounts payable with two columns: maybe 2016 and 2017. The numbers: 25,309 and 34,616. Those are likely in millions? Amazon's balances are in millions. So AP 2016 = $25,309 million, AP 2017 = $34,616 million.\n\nBut page 37 numbers: 4,294 5,030 7,175 for accounts payable. That seems maybe in billions? Actually Amazon's AP is in tens of billions? Wait, Amazon's 2017 AP is $34.6 billion, as per page 40. So page 37 numbers 4.294, 5.030, 7.175 could be in billions? But 7.175B is too low. Maybe page 37 is a different section, maybe \"Accounts payable\" as part of \"Other current liabilities\"? Let's examine context.\n\nWe need to read page 37 fully to understand columns. Use read on page 37."
+        },
+        {
+          "type": "text",
+          "text": ""
+        },
+        {
+          "type": "text",
+          "text": "\n"
+        }
+      ],
+      "tool_calls": [
+        {
+          "type": "function",
+          "id": null,
+          "function": {
+            "name": "read",
+            "arguments": "{\"document_id\": \"AMAZON_2017_10K\", \"page\": 37, \"start\": 0, \"end\": 2000}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "content": "{\"document_id\":\"AMAZON_2017_10K\",\"page\":37,\"page_start\":37,\"page_end\":37,\"start\":0,\"end\":2000,\"total_chars\":2498,\"text\":\"Table of Contents\\nAMAZON.COM, INC.\\nCONSOLIDATED STATEMENTS OF\\n CASH FLOWS(in millions)\\n \\n Year Ended December 31, \\n2015 2016 2017 CASH AND CASH EQUIVALENTS, BEGINNING OF PERIOD\\n$ 14,557 $ 15,890 $ 19,334 OPERATING ACTIVITIES:\\n Net income\\n596 2,371 3,033 Adjustments to reconcile net income to net cash from operating activities:\\n Depreciation of property and equipment, including internal-use software and website development, and\\nother amortization, including capitalized content costs\\n6,281 8,116 11,478 Stock-based compensation\\n2,119 2,975 4,215 Other operating expense, net\\n155 160 202 Other expense (income), net\\n250 (20 ) (292 ) Deferred income taxes\\n81 (246 ) (29 ) Changes in operating assets and liabilities:\\n Inventories\\n(2,187 ) (1,426 ) (3,583 ) Accounts receivable, net and other\\n(1,755 ) (3,367 ) (4,786 ) Accounts payable\\n4,294 5,030 7,175 Accrued expenses and other\\n913 1,724 283 Unearned revenue\\n1,292 1,955 738 Net cash provided by (used in) operating activities\\n12,039 17,272 18,434 INVESTING ACTIVITIES:\\n Purchases of property and equipment, including internal-use software and website development\\n(5,387 ) (7,804 ) (11,955 ) Proceeds from property and equipment incentives\\n798 1,067 1,897 Acquisitions, net of cash acquired, and other\\n(795 ) (116 ) (13,972 ) Sales and maturities of marketable securities\\n3,025 4,733 9,988 Purchases of marketable securities\\n(4,091 ) (7,756 ) (13,777 ) Net cash provided by (used in) investing activities\\n(6,450 ) (9,876 ) (27,819 ) FINANCING ACTIVITIES:\\n Proceeds from long-term debt and other\\n353 621 16,231 Repayments of long-term debt and other\\n(1,652 ) (354 ) (1,372 ) Principal repayments of capital lease obligations\\n(2,462 ) (3,860 ) (4,799 ) Principal repayments of finance lease obligations\\n(121 ) (147 ) (200 ) Net cash provided by (used in) financing activities\\n(3,882 ) (3,740 ) 9,860 Foreign currency effect on cash and cash equivalents\\n(374 ) (212 ) 713 Net increase (decrease) in ca\\nsh and cash equivalents1,333 3,444 1,188 CASH A\",\"next_start\":2000,\"has_more\":true,\"turns_remaining\":5,\"receipt_id\":\"r7\",\"observation\":{\"raw_chars\":2233,\"truncated\":false}}",
+      "tool_call_id": "",
+      "name": "read"
+    },
+    {
+      "role": "assistant",
+      "content": [
+        {
+          "type": "thinking",
+          "thinking": "The page 37 is actually the Consolidated Statements of Cash Flows, showing changes in inventories, accounts receivable, accounts payable etc for years 2015, 2016, 2017. The accounts payable row shows 4,294 (2015), 5,030 (2016), 7,175 (2017) in millions? Wait, the cash flow statement shows changes in accounts payable: increase/decrease. The numbers 4,294, 5,030, 7,175 are the cash flow effects, not the balance sheet amounts. But we can use the change in accounts payable from cash flow to infer beginning and ending AP? Not directly.\n\nBetter to get balance sheet values. Page 40 seems to have AP line items with two columns: likely 2016 and 2017. Let's read page 40."
+        },
+        {
+          "type": "text",
+          "text": ""
+        },
+        {
+          "type": "text",
+          "text": "\n"
+        }
+      ],
+      "tool_calls": [
+        {
+          "type": "function",
+          "id": null,
+          "function": {
+            "name": "read",
+            "arguments": "{\"document_id\": \"AMAZON_2017_10K\", \"page\": 40, \"start\": 0, \"end\": 2000}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "content": "{\"document_id\":\"AMAZON_2017_10K\",\"page\":40,\"page_start\":40,\"page_end\":40,\"start\":0,\"end\":1356,\"total_chars\":1356,\"text\":\"Table of Contents\\nAMAZON.COM, INC.\\nCONSOLIDATED BALANCE SHEETS\\n(in millions, except per share data)\\n \\n \\nDecember 31, \\n2016 2017 ASSETS\\n Current assets:\\n Cash and cash equivalents\\n$ 19,334 $ 20,522 Marketable securities\\n6,647 10,464 Inventories\\n11,461 16,047 Accounts receivable, net \\nand other8,339 13,164 Total current assets\\n45,781 60,197 Property and equipment, net\\n29,114 48,866 Goodwill\\n3,784 13,350 Other assets\\n4,723 8,897 Total assets\\n$ 83,402 $ 131,310 LIABILITIES AND STOCKH\\nOLDERS\u2019 EQUITY Current liabilities:\\n Accounts payable\\n$ 25,309 $ 34,616 Accrued expenses and other\\n13,739 18,170 Unearned revenue\\n4,768 5,097 Total current liabilities\\n43,816 57,883 Long-term debt\\n7,694 24,743 Other long-term liabilities\\n12,607 20,975 Commitments and contingenc\\nies (Note 7) Stockholders\u2019 equity:\\n Preferred stock, $0.01 par valu\\ne: Authorized shares \u2014 500\\n Issued and outstanding shares \u2014 none\\n\u2014 \u2014 Common stock, $0.01 par value:\\n Authorized shares \u2014 5,000\\n Issued shares \u2014 500 and 507\\n Outstanding shares \u2014 477 and 484\\n5 5 Treasury stock, at cost\\n(1,837 ) (1,837 ) Additional paid-in capital\\n17,186 21,389 Accumulated other compr\\nehensive loss(985 ) (484 ) Retained earnings\\n4,916 8,636 Total stockholders\u2019 equity\\n19,285 27,709 Total liabilities \\nand stockholders\u2019 equity$ 83,402 $ 131,310 See accompanying notes to consol\\nidated financial statements.40\",\"next_start\":null,\"has_more\":false,\"turns_remaining\":4,\"receipt_id\":\"r8\",\"observation\":{\"raw_chars\":1594,\"truncated\":false}}",
+      "tool_call_id": "",
+      "name": "read"
+    },
+    {
+      "role": "assistant",
+      "content": [
+        {
+          "type": "thinking",
+          "thinking": "Great. The balance sheet shows:\n\n- Inventories: 2016: $11,461 million; 2017: $16,047 million.\n- Accounts payable: 2016: $25,309 million; 2017: $34,616 million.\n\nNow need COGS (Cost of Goods Sold) for FY2017 from income statement. Let's search for COGS in the 10-K."
+        },
+        {
+          "type": "text",
+          "text": ""
+        },
+        {
+          "type": "text",
+          "text": "\n"
+        }
+      ],
+      "tool_calls": [
+        {
+          "type": "function",
+          "id": null,
+          "function": {
+            "name": "grep_document",
+            "arguments": "{\"document_id\": \"AMAZON_2017_10K\", \"patterns\": [\"Cost of sales\", \"Cost of Goods Sold\"], \"grep_type\": \"text\", \"context_lines\": 2}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "content": "{\"grep_type_requested\":\"text\",\"backend_used\":\"page_text\",\"matches\":[{\"document_id\":\"AMAZON_2017_10K\",\"page\":27,\"line\":8,\"text\":\"Year Ended December 31, \\n2015 2016 2017 Operating expenses:\\n Cost of sales\\n$ 71,651 $ 88,265 $ 111,934 Fulfillment\\n13,410 17,619 25,249 Marketing\",\"provenance\":\"AMAZON_2017_10K:page=27:line=8\",\"receipt_id\":\"r9\"},{\"document_id\":\"AMAZON_2017_10K\",\"page\":27,\"line\":16,\"text\":\"171 167 214 Total operating expenses\\n$ 104,773 $ 131,801 $ 173,760 Year-over-year Percen\\ntage Growth: Cost of sales\\n14 % 23 % 27 % Fulfillment\\n25 31 43 Marketing\",\"provenance\":\"AMAZON_2017_10K:page=27:line=16\",\"receipt_id\":\"r10\"},{\"document_id\":\"AMAZON_2017_10K\",\"page\":27,\"line\":23,\"text\":\"13 39 51 Other operating expense, net\\n28 (2 ) 28 Percent of Net Sales:\\n Cost of sales\\n67.0 % 64.9 % 62.9 % Fulfillment\\n12.5 13.0 14.2 Marketing\",\"provenance\":\"AMAZON_2017_10K:page=27:line=23\",\"receipt_id\":\"r11\"},{\"document_id\":\"AMAZON_2017_10K\",\"page\":27,\"line\":29,\"text\":\"11.7 11.8 12.7 General and administrative\\n1.6 1.8 2.1 Other operating expense, net\\n0.2 0.1 0.1 Cost of Sales\\nCost of sales primarily cons\\nists of the purchase price of consumer products, digital media content costs where we record revenue gross, including video andmusic, packaging supplies, sort\",\"provenance\":\"AMAZON_2017_10K:page=27:line=29\",\"receipt_id\":\"r12\"},{\"document_id\":\"AMAZON_2017_10K\",\"page\":27,\"line\":30,\"text\":\"1.6 1.8 2.1 Other operating expense, net\\n0.2 0.1 0.1 Cost of Sales\\nCost of sales primarily cons\\nists of the purchase price of consumer products, digital media content costs where we record revenue gross, including video andmusic, packaging supplies, sort\\nation and delivery center and related equipment costs, and inbound and outbound shipping costs, including where we are thetransportation servic\",\"provenance\":\"AMAZON_2017_10K:page=27:line=30\",\"receipt_id\":\"r13\"},{\"document_id\":\"AMAZON_2017_10K\",\"page\":27,\"line\":34,\"text\":\"ation and delivery center and related equipment costs, and inbound and outbound shipping costs, including where we are thetransportation servic\\ne provider.The \\nincrease in cost of sales in absolute do llars in 2016 and 2017 , compared to the compar able prior year periods, is primarily due to increased product andshipping costs resulting from \\nincreased sales.Shipping costs to receive produc\\nts from our suppliers are included in our inventory and recognized as cost of sales upon sale of products\",\"provenance\":\"AMAZON_2017_10K:page=27:line=34\",\"receipt_id\":\"r14\"},{\"document_id\":\"AMAZON_2017_10K\",\"page\":27,\"line\":36,\"text\":\"increase in cost of sales in absolute do llars in 2016 and 2017 , compared to the compar able prior year periods, is primarily due to increased product andshipping costs resulting from \\nincreased sales.Shipping costs to receive produc\\nts from our suppliers are included in our inventory and recognized as cost of sales upon sale of products to our customers.Shipping costs, which include sortat\\nion and delivery center and transportation costs, were $11.5 billion , $16.2 billion , and $21.7 billion \",\"provenance\":\"AMAZON_2017_10K:page=27:line=36\",\"receipt_id\":\"r15\"},{\"document_id\":\"AMAZON_2017_10K\",\"page\":38,\"line\":12,\"text\":\"27,738 41,322 59,293 Total net sales\\n107,006 135,987 177,866 Operating expenses:\\n Cost of sales\\n71,651 88,265 111,934 Fulfillment\\n13,410 17,619 25,249 Marketing\",\"provenance\":\"AMAZON_2017_10K:page=38:line=12\",\"receipt_id\":\"r16\"}],\"turns_remaining\":3,\"observation\":{\"raw_chars\":7432,\"truncated\":true}}",
+      "tool_call_id": "",
+      "name": "grep_document"
+    }
+  ],
+  "receipts": {
+    "r1": {
+      "document_id": "AMAZON_2017_10K",
+      "page": 9,
+      "line": 15,
+      "text": "ent terms with our retail vendors that extend beyond the amount of time necessary to collect proceeds from our consumer customers.As a result of holiday sales, as o\nf December 31 of each year, our cash, cash equivalents, and marketable securities balances typically reach their highest level (otherthan as a result of cash f\nlows provided by or used in investing and financing activities). This operating cycle results in a corresponding increase in accounts payableas of December 31. Our accounts pa",
+      "provenance": "AMAZON_2017_10K:page=9:line=15",
+      "receipt_id": "r1",
+      "tool": "grep_document",
+      "delivered_turn": 2
+    },
+    "r2": {
+      "document_id": "AMAZON_2017_10K",
+      "page": 19,
+      "line": 41,
+      "text": "(1)\nSee \u201cResults of Operations\u2014Non-GAAP Financial Measu res\u201d below for additional information on our non-GAAP free cash flows financial measures.(2)\nWorking capital consists o f accounts receivable, inventory, and accounts payable.19",
+      "provenance": "AMAZON_2017_10K:page=19:line=41",
+      "receipt_id": "r2",
+      "tool": "grep_document",
+      "delivered_turn": 2
+    },
+    "r3": {
+      "document_id": "AMAZON_2017_10K",
+      "page": 20,
+      "line": 7,
+      "text": "r product mix, the mix of sales by us and by third-party sellers, our continuing focus on in-stock inventory availability andselection of product off\nerings, our investment in new geographies and product lines, and the extent to which we choose to utilize third-party fulfillment providers.We also expect some var\niability in accounts payable days over time since they are affected by several factors, including the mix of product sales, the mix of salesby third-party sellers, \nthe mix of suppliers,",
+      "provenance": "AMAZON_2017_10K:page=20:line=7",
+      "receipt_id": "r3",
+      "tool": "grep_document",
+      "delivered_turn": 2
+    },
+    "r4": {
+      "document_id": "AMAZON_2017_10K",
+      "page": 20,
+      "line": 36,
+      "text": "_______________________\n(3)\nThe operating cycle is th e number of days of sales in inventory plus the number of days of sales in accounts receivable minus accounts payable days.20",
+      "provenance": "AMAZON_2017_10K:page=20:line=36",
+      "receipt_id": "r4",
+      "tool": "grep_document",
+      "delivered_turn": 2
+    },
+    "r5": {
+      "document_id": "AMAZON_2017_10K",
+      "page": 37,
+      "line": 20,
+      "text": " Inventories\n(2,187 ) (1,426 ) (3,583 ) Accounts receivable, net and other\n(1,755 ) (3,367 ) (4,786 ) Accounts payable\n4,294 5,030 7,175 Accrued expenses and other\n913 1,724 283 Unearned revenue",
+      "provenance": "AMAZON_2017_10K:page=37:line=20",
+      "receipt_id": "r5",
+      "tool": "grep_document",
+      "delivered_turn": 2
+    },
+    "r6": {
+      "document_id": "AMAZON_2017_10K",
+      "page": 40,
+      "line": 21,
+      "text": "$ 83,402 $ 131,310 LIABILITIES AND STOCKH\nOLDERS\u2019 EQUITY Current liabilities:\n Accounts payable\n$ 25,309 $ 34,616 Accrued expenses and other\n13,739 18,170 Unearned revenue",
+      "provenance": "AMAZON_2017_10K:page=40:line=21",
+      "receipt_id": "r6",
+      "tool": "grep_document",
+      "delivered_turn": 2
+    },
+    "r7": {
+      "document_id": "AMAZON_2017_10K",
+      "page": 37,
+      "page_start": 37,
+      "page_end": 37,
+      "start": 0,
+      "end": 2000,
+      "total_chars": 2498,
+      "text": "Table of Contents\nAMAZON.COM, INC.\nCONSOLIDATED STATEMENTS OF\n CASH FLOWS(in millions)\n \n Year Ended December 31, \n2015 2016 2017 CASH AND CASH EQUIVALENTS, BEGINNING OF PERIOD\n$ 14,557 $ 15,890 $ 19,334 OPERATING ACTIVITIES:\n Net income\n596 2,371 3,033 Adjustments to reconcile net income to net cash from operating activities:\n Depreciation of property and equipment, including internal-use software and website development, and\nother amortization, including capitalized content costs\n6,281 8,116 11,478 Stock-based compensation\n2,119 2,975 4,215 Other operating expense, net\n155 160 202 Other expense (income), net\n250 (20 ) (292 ) Deferred income taxes\n81 (246 ) (29 ) Changes in operating assets and liabilities:\n Inventories\n(2,187 ) (1,426 ) (3,583 ) Accounts receivable, net and other\n(1,755 ) (3,367 ) (4,786 ) Accounts payable\n4,294 5,030 7,175 Accrued expenses and other\n913 1,724 283 Unearned revenue\n1,292 1,955 738 Net cash provided by (used in) operating activities\n12,039 17,272 18,434 INVESTING ACTIVITIES:\n Purchases of property and equipment, including internal-use software and website development\n(5,387 ) (7,804 ) (11,955 ) Proceeds from property and equipment incentives\n798 1,067 1,897 Acquisitions, net of cash acquired, and other\n(795 ) (116 ) (13,972 ) Sales and maturities of marketable securities\n3,025 4,733 9,988 Purchases of marketable securities\n(4,091 ) (7,756 ) (13,777 ) Net cash provided by (used in) investing activities\n(6,450 ) (9,876 ) (27,819 ) FINANCING ACTIVITIES:\n Proceeds from long-term debt and other\n353 621 16,231 Repayments of long-term debt and other\n(1,652 ) (354 ) (1,372 ) Principal repayments of capital lease obligations\n(2,462 ) (3,860 ) (4,799 ) Principal repayments of finance lease obligations\n(121 ) (147 ) (200 ) Net cash provided by (used in) financing activities\n(3,882 ) (3,740 ) 9,860 Foreign currency effect on cash and cash equivalents\n(374 ) (212 ) 713 Net increase (decrease) in ca\nsh and cash equivalents1,333 3,444 1,188 CASH A",
+      "next_start": 2000,
+      "has_more": true,
+      "turns_remaining": 5,
+      "receipt_id": "r7",
+      "observation": {
+        "raw_chars": 2233,
+        "truncated": false
+      },
+      "tool": "read",
+      "delivered_turn": 3
+    },
+    "r8": {
+      "document_id": "AMAZON_2017_10K",
+      "page": 40,
+      "page_start": 40,
+      "page_end": 40,
+      "start": 0,
+      "end": 1356,
+      "total_chars": 1356,
+      "text": "Table of Contents\nAMAZON.COM, INC.\nCONSOLIDATED BALANCE SHEETS\n(in millions, except per share data)\n \n \nDecember 31, \n2016 2017 ASSETS\n Current assets:\n Cash and cash equivalents\n$ 19,334 $ 20,522 Marketable securities\n6,647 10,464 Inventories\n11,461 16,047 Accounts receivable, net \nand other8,339 13,164 Total current assets\n45,781 60,197 Property and equipment, net\n29,114 48,866 Goodwill\n3,784 13,350 Other assets\n4,723 8,897 Total assets\n$ 83,402 $ 131,310 LIABILITIES AND STOCKH\nOLDERS\u2019 EQUITY Current liabilities:\n Accounts payable\n$ 25,309 $ 34,616 Accrued expenses and other\n13,739 18,170 Unearned revenue\n4,768 5,097 Total current liabilities\n43,816 57,883 Long-term debt\n7,694 24,743 Other long-term liabilities\n12,607 20,975 Commitments and contingenc\nies (Note 7) Stockholders\u2019 equity:\n Preferred stock, $0.01 par valu\ne: Authorized shares \u2014 500\n Issued and outstanding shares \u2014 none\n\u2014 \u2014 Common stock, $0.01 par value:\n Authorized shares \u2014 5,000\n Issued shares \u2014 500 and 507\n Outstanding shares \u2014 477 and 484\n5 5 Treasury stock, at cost\n(1,837 ) (1,837 ) Additional paid-in capital\n17,186 21,389 Accumulated other compr\nehensive loss(985 ) (484 ) Retained earnings\n4,916 8,636 Total stockholders\u2019 equity\n19,285 27,709 Total liabilities \nand stockholders\u2019 equity$ 83,402 $ 131,310 See accompanying notes to consol\nidated financial statements.40",
+      "next_start": null,
+      "has_more": false,
+      "turns_remaining": 4,
+      "receipt_id": "r8",
+      "observation": {
+        "raw_chars": 1594,
+        "truncated": false
+      },
+      "tool": "read",
+      "delivered_turn": 4
+    },
+    "r9": {
+      "document_id": "AMAZON_2017_10K",
+      "page": 27,
+      "line": 8,
+      "text": "Year Ended December 31, \n2015 2016 2017 Operating expenses:\n Cost of sales\n$ 71,651 $ 88,265 $ 111,934 Fulfillment\n13,410 17,619 25,249 Marketing",
+      "provenance": "AMAZON_2017_10K:page=27:line=8",
+      "receipt_id": "r9",
+      "tool": "grep_document",
+      "delivered_turn": 5
+    },
+    "r10": {
+      "document_id": "AMAZON_2017_10K",
+      "page": 27,
+      "line": 16,
+      "text": "171 167 214 Total operating expenses\n$ 104,773 $ 131,801 $ 173,760 Year-over-year Percen\ntage Growth: Cost of sales\n14 % 23 % 27 % Fulfillment\n25 31 43 Marketing",
+      "provenance": "AMAZON_2017_10K:page=27:line=16",
+      "receipt_id": "r10",
+      "tool": "grep_document",
+      "delivered_turn": 5
+    },
+    "r11": {
+      "document_id": "AMAZON_2017_10K",
+      "page": 27,
+      "line": 23,
+      "text": "13 39 51 Other operating expense, net\n28 (2 ) 28 Percent of Net Sales:\n Cost of sales\n67.0 % 64.9 % 62.9 % Fulfillment\n12.5 13.0 14.2 Marketing",
+      "provenance": "AMAZON_2017_10K:page=27:line=23",
+      "receipt_id": "r11",
+      "tool": "grep_document",
+      "delivered_turn": 5
+    },
+    "r12": {
+      "document_id": "AMAZON_2017_10K",
+      "page": 27,
+      "line": 29,
+      "text": "11.7 11.8 12.7 General and administrative\n1.6 1.8 2.1 Other operating expense, net\n0.2 0.1 0.1 Cost of Sales\nCost of sales primarily cons\nists of the purchase price of consumer products, digital media content costs where we record revenue gross, including video andmusic, packaging supplies, sort",
+      "provenance": "AMAZON_2017_10K:page=27:line=29",
+      "receipt_id": "r12",
+      "tool": "grep_document",
+      "delivered_turn": 5
+    },
+    "r13": {
+      "document_id": "AMAZON_2017_10K",
+      "page": 27,
+      "line": 30,
+      "text": "1.6 1.8 2.1 Other operating expense, net\n0.2 0.1 0.1 Cost of Sales\nCost of sales primarily cons\nists of the purchase price of consumer products, digital media content costs where we record revenue gross, including video andmusic, packaging supplies, sort\nation and delivery center and related equipment costs, and inbound and outbound shipping costs, including where we are thetransportation servic",
+      "provenance": "AMAZON_2017_10K:page=27:line=30",
+      "receipt_id": "r13",
+      "tool": "grep_document",
+      "delivered_turn": 5
+    },
+    "r14": {
+      "document_id": "AMAZON_2017_10K",
+      "page": 27,
+      "line": 34,
+      "text": "ation and delivery center and related equipment costs, and inbound and outbound shipping costs, including where we are thetransportation servic\ne provider.The \nincrease in cost of sales in absolute do llars in 2016 and 2017 , compared to the compar able prior year periods, is primarily due to increased product andshipping costs resulting from \nincreased sales.Shipping costs to receive produc\nts from our suppliers are included in our inventory and recognized as cost of sales upon sale of products",
+      "provenance": "AMAZON_2017_10K:page=27:line=34",
+      "receipt_id": "r14",
+      "tool": "grep_document",
+      "delivered_turn": 5
+    },
+    "r15": {
+      "document_id": "AMAZON_2017_10K",
+      "page": 27,
+      "line": 36,
+      "text": "increase in cost of sales in absolute do llars in 2016 and 2017 , compared to the compar able prior year periods, is primarily due to increased product andshipping costs resulting from \nincreased sales.Shipping costs to receive produc\nts from our suppliers are included in our inventory and recognized as cost of sales upon sale of products to our customers.Shipping costs, which include sortat\nion and delivery center and transportation costs, were $11.5 billion , $16.2 billion , and $21.7 billion ",
+      "provenance": "AMAZON_2017_10K:page=27:line=36",
+      "receipt_id": "r15",
+      "tool": "grep_document",
+      "delivered_turn": 5
+    },
+    "r16": {
+      "document_id": "AMAZON_2017_10K",
+      "page": 38,
+      "line": 12,
+      "text": "27,738 41,322 59,293 Total net sales\n107,006 135,987 177,866 Operating expenses:\n Cost of sales\n71,651 88,265 111,934 Fulfillment\n13,410 17,619 25,249 Marketing",
+      "provenance": "AMAZON_2017_10K:page=38:line=12",
+      "receipt_id": "r16",
+      "tool": "grep_document",
+      "delivered_turn": 5
+    }
+  },
+  "calculations": {},
+  "observations": [
+    {
+      "name": "bm25_search",
+      "payload": {
+        "queries": [
+          "Amazon 2017 10-K accounts payable COGS inventory"
+        ],
+        "filters": {
+          "company": "Amazon",
+          "year": 2017,
+          "filing_type": "10-K",
+          "document_id": ""
+        },
+        "prose_hits": [
+          {
+            "document_id": "AMAZON_2017_10K",
+            "page": 52,
+            "passage_id": "p:AMAZON_2017_10K:page:52:chunk:1",
+            "score": 14.36144,
+            "snippet": " long-termconstruction obligations a\nre considered long-term finance lease obligations with amounts payable during the next 12 months recorded as \u201cAccrued expenses andother.\u201d Gross assets remain\ning under finance leases were $2.9 billion and $5.4 billion as of December 31, 2016 and 2017 . Accumulate",
+            "snippet_start": 1988
+          },
+          {
+            "document_id": "AMAZON_2017_10K",
+            "page": 20,
+            "passage_id": "p:AMAZON_2017_10K:page:20:chunk:2",
+            "score": 14.11497,
+            "snippet": "ing Poli\ncies.\u201d \n_______________________\n(3)\nThe operating cycle is th e number of days of sales in inventory plus the number of days of sales in accounts receivable minus accounts payable days.20",
+            "snippet_start": 4344
+          },
+          {
+            "document_id": "AMAZON_2017_10K",
+            "page": 61,
+            "passage_id": "p:AMAZON_2017_10K:page:61:chunk:0",
+            "score": 13.31484,
+            "snippet": "e district court\u2019s judgment tothe United States Court of Appeals fo\nr the Federal Circuit. In March 2017, the court of appeals affirmed the district court\u2019s decision. In June 2017, the UnitedStates District Court for th\ne Western District of Kentucky dismissed the Busk and Saldana cases with prejudi",
+            "snippet_start": 153
+          },
+          {
+            "document_id": "AMAZON_2017_10K",
+            "page": 61,
+            "passage_id": "p:AMAZON_2017_10K:page:61:chunk:1",
+            "score": 12.7827,
+            "snippet": "om, Inc., Amazon.com, LLC, AMZN Mobile,LLC, Amazon Web Services, Inc. and Audible, \nInc. for patent infringement in the United States District Court for the Eastern District of Texas. The complaintalleges, among other things, \nthat Amazon Appstore, Amazon Instant Video, Amazon Music, Audible Audiobo",
+            "snippet_start": 1900
+          }
+        ],
+        "table_hits": [
+          {
+            "document_id": "AMAZON_2017_10K",
+            "page": 61,
+            "table_id": "t:AMAZON_2017_10K:page:61",
+            "score": 11.75498,
+            "units": "",
+            "title": "",
+            "snippet": "e district court\u2019s judgment tothe United States Court of Appeals fo\nr the Federal Circuit. In March 2017, the court of appeals affirmed the district court\u2019s decision. In June 2017, the UnitedStates District Court for th\ne Western District of Kentucky dismissed the Busk and Saldana cases with prejudi",
+            "snippet_start": 153
+          }
+        ],
+        "turns_remaining": 7,
+        "observation": {
+          "raw_chars": 2332,
+          "truncated": false
+        }
+      },
+      "visible_chars": 2383
+    },
+    {
+      "name": "grep_document",
+      "payload": {
+        "grep_type_requested": "text",
+        "backend_used": "page_text",
+        "matches": [
+          {
+            "document_id": "AMAZON_2017_10K",
+            "page": 9,
+            "line": 15,
+            "text": "ent terms with our retail vendors that extend beyond the amount of time necessary to collect proceeds from our consumer customers.As a result of holiday sales, as o\nf December 31 of each year, our cash, cash equivalents, and marketable securities balances typically reach their highest level (otherthan as a result of cash f\nlows provided by or used in investing and financing activities). This operating cycle results in a corresponding increase in accounts payableas of December 31. Our accounts pa",
+            "provenance": "AMAZON_2017_10K:page=9:line=15",
+            "receipt_id": "r1"
+          },
+          {
+            "document_id": "AMAZON_2017_10K",
+            "page": 19,
+            "line": 41,
+            "text": "(1)\nSee \u201cResults of Operations\u2014Non-GAAP Financial Measu res\u201d below for additional information on our non-GAAP free cash flows financial measures.(2)\nWorking capital consists o f accounts receivable, inventory, and accounts payable.19",
+            "provenance": "AMAZON_2017_10K:page=19:line=41",
+            "receipt_id": "r2"
+          },
+          {
+            "document_id": "AMAZON_2017_10K",
+            "page": 20,
+            "line": 7,
+            "text": "r product mix, the mix of sales by us and by third-party sellers, our continuing focus on in-stock inventory availability andselection of product off\nerings, our investment in new geographies and product lines, and the extent to which we choose to utilize third-party fulfillment providers.We also expect some var\niability in accounts payable days over time since they are affected by several factors, including the mix of product sales, the mix of salesby third-party sellers, \nthe mix of suppliers,",
+            "provenance": "AMAZON_2017_10K:page=20:line=7",
+            "receipt_id": "r3"
+          },
+          {
+            "document_id": "AMAZON_2017_10K",
+            "page": 20,
+            "line": 36,
+            "text": "_______________________\n(3)\nThe operating cycle is th e number of days of sales in inventory plus the number of days of sales in accounts receivable minus accounts payable days.20",
+            "provenance": "AMAZON_2017_10K:page=20:line=36",
+            "receipt_id": "r4"
+          },
+          {
+            "document_id": "AMAZON_2017_10K",
+            "page": 37,
+            "line": 20,
+            "text": " Inventories\n(2,187 ) (1,426 ) (3,583 ) Accounts receivable, net and other\n(1,755 ) (3,367 ) (4,786 ) Accounts payable\n4,294 5,030 7,175 Accrued expenses and other\n913 1,724 283 Unearned revenue",
+            "provenance": "AMAZON_2017_10K:page=37:line=20",
+            "receipt_id": "r5"
+          },
+          {
+            "document_id": "AMAZON_2017_10K",
+            "page": 40,
+            "line": 21,
+            "text": "$ 83,402 $ 131,310 LIABILITIES AND STOCKH\nOLDERS\u2019 EQUITY Current liabilities:\n Accounts payable\n$ 25,309 $ 34,616 Accrued expenses and other\n13,739 18,170 Unearned revenue",
+            "provenance": "AMAZON_2017_10K:page=40:line=21",
+            "receipt_id": "r6"
+          }
+        ],
+        "turns_remaining": 6,
+        "observation": {
+          "raw_chars": 2653,
+          "truncated": false
+        }
+      },
+      "visible_chars": 2704
+    },
+    {
+      "name": "read",
+      "payload": {
+        "document_id": "AMAZON_2017_10K",
+        "page": 37,
+        "page_start": 37,
+        "page_end": 37,
+        "start": 0,
+        "end": 2000,
+        "total_chars": 2498,
+        "text": "Table of Contents\nAMAZON.COM, INC.\nCONSOLIDATED STATEMENTS OF\n CASH FLOWS(in millions)\n \n Year Ended December 31, \n2015 2016 2017 CASH AND CASH EQUIVALENTS, BEGINNING OF PERIOD\n$ 14,557 $ 15,890 $ 19,334 OPERATING ACTIVITIES:\n Net income\n596 2,371 3,033 Adjustments to reconcile net income to net cash from operating activities:\n Depreciation of property and equipment, including internal-use software and website development, and\nother amortization, including capitalized content costs\n6,281 8,116 11,478 Stock-based compensation\n2,119 2,975 4,215 Other operating expense, net\n155 160 202 Other expense (income), net\n250 (20 ) (292 ) Deferred income taxes\n81 (246 ) (29 ) Changes in operating assets and liabilities:\n Inventories\n(2,187 ) (1,426 ) (3,583 ) Accounts receivable, net and other\n(1,755 ) (3,367 ) (4,786 ) Accounts payable\n4,294 5,030 7,175 Accrued expenses and other\n913 1,724 283 Unearned revenue\n1,292 1,955 738 Net cash provided by (used in) operating activities\n12,039 17,272 18,434 INVESTING ACTIVITIES:\n Purchases of property and equipment, including internal-use software and website development\n(5,387 ) (7,804 ) (11,955 ) Proceeds from property and equipment incentives\n798 1,067 1,897 Acquisitions, net of cash acquired, and other\n(795 ) (116 ) (13,972 ) Sales and maturities of marketable securities\n3,025 4,733 9,988 Purchases of marketable securities\n(4,091 ) (7,756 ) (13,777 ) Net cash provided by (used in) investing activities\n(6,450 ) (9,876 ) (27,819 ) FINANCING ACTIVITIES:\n Proceeds from long-term debt and other\n353 621 16,231 Repayments of long-term debt and other\n(1,652 ) (354 ) (1,372 ) Principal repayments of capital lease obligations\n(2,462 ) (3,860 ) (4,799 ) Principal repayments of finance lease obligations\n(121 ) (147 ) (200 ) Net cash provided by (used in) financing activities\n(3,882 ) (3,740 ) 9,860 Foreign currency effect on cash and cash equivalents\n(374 ) (212 ) 713 Net increase (decrease) in ca\nsh and cash equivalents1,333 3,444 1,188 CASH A",
+        "next_start": 2000,
+        "has_more": true,
+        "turns_remaining": 5,
+        "receipt_id": "r7",
+        "observation": {
+          "raw_chars": 2233,
+          "truncated": false
+        }
+      },
+      "visible_chars": 2284
+    },
+    {
+      "name": "read",
+      "payload": {
+        "document_id": "AMAZON_2017_10K",
+        "page": 40,
+        "page_start": 40,
+        "page_end": 40,
+        "start": 0,
+        "end": 1356,
+        "total_chars": 1356,
+        "text": "Table of Contents\nAMAZON.COM, INC.\nCONSOLIDATED BALANCE SHEETS\n(in millions, except per share data)\n \n \nDecember 31, \n2016 2017 ASSETS\n Current assets:\n Cash and cash equivalents\n$ 19,334 $ 20,522 Marketable securities\n6,647 10,464 Inventories\n11,461 16,047 Accounts receivable, net \nand other8,339 13,164 Total current assets\n45,781 60,197 Property and equipment, net\n29,114 48,866 Goodwill\n3,784 13,350 Other assets\n4,723 8,897 Total assets\n$ 83,402 $ 131,310 LIABILITIES AND STOCKH\nOLDERS\u2019 EQUITY Current liabilities:\n Accounts payable\n$ 25,309 $ 34,616 Accrued expenses and other\n13,739 18,170 Unearned revenue\n4,768 5,097 Total current liabilities\n43,816 57,883 Long-term debt\n7,694 24,743 Other long-term liabilities\n12,607 20,975 Commitments and contingenc\nies (Note 7) Stockholders\u2019 equity:\n Preferred stock, $0.01 par valu\ne: Authorized shares \u2014 500\n Issued and outstanding shares \u2014 none\n\u2014 \u2014 Common stock, $0.01 par value:\n Authorized shares \u2014 5,000\n Issued shares \u2014 500 and 507\n Outstanding shares \u2014 477 and 484\n5 5 Treasury stock, at cost\n(1,837 ) (1,837 ) Additional paid-in capital\n17,186 21,389 Accumulated other compr\nehensive loss(985 ) (484 ) Retained earnings\n4,916 8,636 Total stockholders\u2019 equity\n19,285 27,709 Total liabilities \nand stockholders\u2019 equity$ 83,402 $ 131,310 See accompanying notes to consol\nidated financial statements.40",
+        "next_start": null,
+        "has_more": false,
+        "turns_remaining": 4,
+        "receipt_id": "r8",
+        "observation": {
+          "raw_chars": 1594,
+          "truncated": false
+        }
+      },
+      "visible_chars": 1645
+    },
+    {
+      "name": "grep_document",
+      "payload": {
+        "grep_type_requested": "text",
+        "backend_used": "page_text",
+        "matches": [
+          {
+            "document_id": "AMAZON_2017_10K",
+            "page": 27,
+            "line": 8,
+            "text": "Year Ended December 31, \n2015 2016 2017 Operating expenses:\n Cost of sales\n$ 71,651 $ 88,265 $ 111,934 Fulfillment\n13,410 17,619 25,249 Marketing",
+            "provenance": "AMAZON_2017_10K:page=27:line=8",
+            "receipt_id": "r9"
+          },
+          {
+            "document_id": "AMAZON_2017_10K",
+            "page": 27,
+            "line": 16,
+            "text": "171 167 214 Total operating expenses\n$ 104,773 $ 131,801 $ 173,760 Year-over-year Percen\ntage Growth: Cost of sales\n14 % 23 % 27 % Fulfillment\n25 31 43 Marketing",
+            "provenance": "AMAZON_2017_10K:page=27:line=16",
+            "receipt_id": "r10"
+          },
+          {
+            "document_id": "AMAZON_2017_10K",
+            "page": 27,
+            "line": 23,
+            "text": "13 39 51 Other operating expense, net\n28 (2 ) 28 Percent of Net Sales:\n Cost of sales\n67.0 % 64.9 % 62.9 % Fulfillment\n12.5 13.0 14.2 Marketing",
+            "provenance": "AMAZON_2017_10K:page=27:line=23",
+            "receipt_id": "r11"
+          },
+          {
+            "document_id": "AMAZON_2017_10K",
+            "page": 27,
+            "line": 29,
+            "text": "11.7 11.8 12.7 General and administrative\n1.6 1.8 2.1 Other operating expense, net\n0.2 0.1 0.1 Cost of Sales\nCost of sales primarily cons\nists of the purchase price of consumer products, digital media content costs where we record revenue gross, including video andmusic, packaging supplies, sort",
+            "provenance": "AMAZON_2017_10K:page=27:line=29",
+            "receipt_id": "r12"
+          },
+          {
+            "document_id": "AMAZON_2017_10K",
+            "page": 27,
+            "line": 30,
+            "text": "1.6 1.8 2.1 Other operating expense, net\n0.2 0.1 0.1 Cost of Sales\nCost of sales primarily cons\nists of the purchase price of consumer products, digital media content costs where we record revenue gross, including video andmusic, packaging supplies, sort\nation and delivery center and related equipment costs, and inbound and outbound shipping costs, including where we are thetransportation servic",
+            "provenance": "AMAZON_2017_10K:page=27:line=30",
+            "receipt_id": "r13"
+          },
+          {
+            "document_id": "AMAZON_2017_10K",
+            "page": 27,
+            "line": 34,
+            "text": "ation and delivery center and related equipment costs, and inbound and outbound shipping costs, including where we are thetransportation servic\ne provider.The \nincrease in cost of sales in absolute do llars in 2016 and 2017 , compared to the compar able prior year periods, is primarily due to increased product andshipping costs resulting from \nincreased sales.Shipping costs to receive produc\nts from our suppliers are included in our inventory and recognized as cost of sales upon sale of products",
+            "provenance": "AMAZON_2017_10K:page=27:line=34",
+            "receipt_id": "r14"
+          },
+          {
+            "document_id": "AMAZON_2017_10K",
+            "page": 27,
+            "line": 36,
+            "text": "increase in cost of sales in absolute do llars in 2016 and 2017 , compared to the compar able prior year periods, is primarily due to increased product andshipping costs resulting from \nincreased sales.Shipping costs to receive produc\nts from our suppliers are included in our inventory and recognized as cost of sales upon sale of products to our customers.Shipping costs, which include sortat\nion and delivery center and transportation costs, were $11.5 billion , $16.2 billion , and $21.7 billion ",
+            "provenance": "AMAZON_2017_10K:page=27:line=36",
+            "receipt_id": "r15"
+          },
+          {
+            "document_id": "AMAZON_2017_10K",
+            "page": 38,
+            "line": 12,
+            "text": "27,738 41,322 59,293 Total net sales\n107,006 135,987 177,866 Operating expenses:\n Cost of sales\n71,651 88,265 111,934 Fulfillment\n13,410 17,619 25,249 Marketing",
+            "provenance": "AMAZON_2017_10K:page=38:line=12",
+            "receipt_id": "r16"
+          }
+        ],
+        "turns_remaining": 3,
+        "observation": {
+          "raw_chars": 7432,
+          "truncated": true
+        }
+      },
+      "visible_chars": 3510
+    }
+  ],
+  "score": {}
+}
