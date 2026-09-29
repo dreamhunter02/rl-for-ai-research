@@ -5,7 +5,7 @@
 - Corrected implementation frozen at commit `61cd93a8048cb8d944d1da0ac1d27aaa592547fc` with review history `5ded6ac` and `61cd93a`.
 - Protocol conflicts are documented in `protocol_conflicts.md`. The frozen 96/12/42 question IDs remain unchanged in `split_frozen.json`; train/dev document overlap is disclosed in `protocol.md`.
 - The original automated audit found all 189 indexed support spans for 150 targets. This establishes source-span presence only; no human semantic review is claimed.
-- Rubric-v3 corpus/target preflight passed for all 150 questions and 12,013 indexed pages. The provider-capable suite now passes 63 tests with zero skips; its repeated root tests are not counted as an independent suite.
+- Rubric-v3 corpus/target preflight passed for all 150 questions and 12,013 indexed pages. The provider-capable suite now passes 67 tests with zero skips; its repeated root tests are not counted as an independent suite.
 - The B1 development smoke completed all 12 questions. It produced 2/12 accepted finishes, 0/12 correct-and-finished answers, 0/12 grounded successes, mean answer correctness `0.0000`, and mean grounding `0.0833`.
 - Offline diagnosis of the initial 64 saved training trajectories is preserved in `provider_smoke_lr1e5_v3/offline_diagnosis.md`: 35 hit the turn limit, 15 hit the token limit, 13 attempted `finish`, and the batch retained no groups or updates.
 - Focused sampling probes then established that Nemotron 3.5 Lightning can produce mixed, correct, source-grounded outcomes on the source-verified direct-numeric training question `q04209`.
@@ -16,6 +16,7 @@
 - The two source/answer conflicts, `q04672` and `q00283`, are explicitly marked unresolved. Training removes their groups; evaluation keeps them in the frozen denominator as unresolved.
 - Offline rubric-v3 replay of the original 64 trajectories still retains 0/8 groups. This confirms that the old batch cannot be rescued by label repair alone.
 - A deterministic 50-trajectory audit found 41 episodes without an accepted finish, 4 incorrect/incomplete finishes, and 5 semantically correct finishes conservatively left unresolved. It also identified and repaired one overly restrictive Boeing fact and two valid alternate evidence spans.
+- SparkyOne now supports a permission-checked headless judge credential file. A 0600 placeholder exists at `~/.config/financebench/deepinfra.key`; the loader was verified without retaining the diagnostic secret.
 
 ## Validity gates still open
 

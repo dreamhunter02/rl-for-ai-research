@@ -10,7 +10,7 @@ Status: automated and agent-assisted audit; **not human semantic review**. The f
 - Largest support span: 2,387 characters
 - Spans exceeding the 2,400-character read limit: 0
 - Multi-span targets with duplicate/alternative claim IDs: 0
-- Provider-capable tests: 63 passed, 0 skipped
+- Provider-capable tests: 67 passed, 0 skipped
 - Corpus preflight: 150 questions and 12,013 pages passed
 - Frozen target SHA-256: `0b3815caa2a33a2d84eb7ab9afd84a8a68ffc3d7338280a1707a0bc4bc69ec74`
 
