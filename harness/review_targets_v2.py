@@ -132,9 +132,20 @@ def repair_text_support(q,t):
   t['support']=[{**base,'quote':chunk,'claim':f'credit_facility_{i+1}'} for i,chunk in enumerate(chunks)]
  elif q=='financebench_id_00288':
   t['support'][0]['quote']=bounded_slice(t['support'][0]['quote'],'Cash and cash equivalents were as follows')
+ elif q=='financebench_id_01290':
+  # The question asks who the customers are; the recorded 40% share is useful
+  # context, not a required answer fact. Saved trajectories also exposed exact
+  # alternate filing passages for both required customer groups.
+  commercial,government=t['support'][:2]
+  commercial['claim']='commercial_airlines';government['claim']='us_government'
+  doc=commercial['document_id']
+  t['support']=[commercial,government,
+   {'document_id':doc,'page':3,'quote':'This segment develops, produces and markets commercial jet aircraft principally to the commercial airline industry worldwide.','claim':'commercial_airlines'},
+   {'document_id':doc,'page':40,'quote':'BGS’ major customer, the U.S. government, remains subject to the spending limits and uncertainty described on page 35, which could restrict\nthe execution of certain program activities and delay new programs or competitions.','claim':'us_government'}]
+  t['required_facts']=["Boeing's primary customers include a limited number of commercial airlines and the U.S. government."]
  for i,sp in enumerate(t.get('support',[])):
   if len(sp['quote'])>hb.MAX_READ: raise ValueError(f'{q} support exceeds read window')
-  if len(t['support'])>1 and not sp.get('claim','').startswith(('acquisition_','credit_facility_')):
+  if len(t['support'])>1 and not sp.get('claim','').startswith(('acquisition_','credit_facility_','commercial_airlines','us_government')):
    sp['claim']=f'answer_evidence_{i+1}'
 def build(split,old):
  rows={r['financebench_id']:r for gs in split.values() for r in gs}; out=copy.deepcopy(old)

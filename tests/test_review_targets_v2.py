@@ -28,6 +28,13 @@ class TextSupportRepairTests(unittest.TestCase):
         repair_text_support('financebench_id_other',target)
         self.assertEqual([s['claim'] for s in target['support']],['answer_evidence_1','answer_evidence_2'])
 
+    def test_boeing_customer_context_is_optional_and_evidence_has_alternatives(self):
+        target={'support':[{'document_id':'D','page':page,'quote':'short','claim':'answer'} for page in (8,10,14)]}
+        repair_text_support('financebench_id_01290',target)
+        self.assertEqual(len(target['required_facts']),1)
+        self.assertEqual({s['claim'] for s in target['support']},{'commercial_airlines','us_government'})
+        self.assertEqual({s['page'] for s in target['support']},{3,8,10,40})
+
     def test_oversized_unspecialized_support_fails_closed(self):
         target=self.target('x'*(hb.MAX_READ+1))
         with self.assertRaises(ValueError):
