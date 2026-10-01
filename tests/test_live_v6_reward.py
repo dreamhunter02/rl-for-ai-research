@@ -41,3 +41,18 @@ def test_live_reward_keeps_retrieval_credit_without_finish():
     result = asyncio.run(scorer.score("q1", "What is the ratio?", "9.5 times", None, receipts))
     assert result["F"] == 0
     assert result["reward"] == pytest.approx(0.15)
+
+
+def test_empty_gold_claims_use_reference_checked_core_rubric():
+    class EmptyGoldJudge(JudgeFixture):
+        async def make_rubric(self, question, reference):
+            return {"mode": "semantic", "numeric": [], "semantic": [
+                {"id": "s1", "expected": "American Express had no debt securities registered to trade on a national securities exchange as of 2022."}
+            ], "reference": reference}
+
+        async def _retry(self, prompt, payload):
+            return {"claims": []}
+
+    scorer = LiveAdditiveJudge(EmptyGoldJudge())
+    rubric = asyncio.run(scorer.rubric("financebench_id_00476", "Which debt securities are registered?", "There are none"))
+    assert rubric["gold_claims"] == [{"id": "b1", "expected": "American Express had no debt securities registered to trade on a national securities exchange as of 2022."}]

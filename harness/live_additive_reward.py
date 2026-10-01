@@ -17,6 +17,11 @@ class LiveAdditiveJudge:
             rubric = await self.judge.make_rubric(question, reference)
             gold = await self.judge._retry(GOLD_PROMPT, {"protocol": VERSION, "reference": reference})
             claims = gold.get("claims")
+            if claims == []:
+                core = rubric["numeric"] + rubric["semantic"]
+                claims = [{"id": f"b{n}", "expected": item["expected"]}
+                          for n, item in enumerate(core, 1) if item.get("expected")]
+                rubric["gold_claims_source"] = "reference_checked_core_rubric"
             if not isinstance(claims, list) or not claims or any(
                 not isinstance(c, dict) or not c.get("id") or not c.get("expected") for c in claims
             ) or len({c["id"] for c in claims}) != len(claims):
