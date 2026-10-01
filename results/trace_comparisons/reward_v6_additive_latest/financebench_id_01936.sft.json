@@ -1,0 +1,221 @@
+{
+  "E": 1.0,
+  "G": 0.5555555555555556,
+  "A": 0.0,
+  "B": 0,
+  "F": 1,
+  "N": null,
+  "S": 0.0,
+  "reward": 0.3111111111111111,
+  "answer_correct": 0,
+  "grounded_success": 0,
+  "unresolved": false,
+  "scorer_version": "workshop-rubric-v6-additive",
+  "judgment": {
+    "numeric": [],
+    "semantic": [
+      {
+        "id": "s1",
+        "correct": false,
+        "reason": "The candidate declines to answer the requested Q2 FY2023 question and incorrectly treats the December 31, 2022 filing as unrelated. Although it lists figures from which the employee-related majority can be inferred, its main conclusion does not state that the liability primarily relates to employee obligations."
+      }
+    ],
+    "retrieval": {
+      "coverage": "full",
+      "receipt_ids": [
+        "r1"
+      ],
+      "reason": "Receipt r1 provides the December 31, 2022 restructuring-liability table needed to determine the employee component is $81 million of the $93 million total, or approximately 87%."
+    },
+    "grounding": [
+      {
+        "claim": "The cited filing covers a period ended December 31, 2022.",
+        "supported": true,
+        "receipt_ids": [
+          "r1"
+        ],
+        "reason": "Receipt r1 explicitly discusses the three and six months ended December 31, 2022 and gives a liability balance at that date."
+      },
+      {
+        "claim": "The filing is Q4 FY2022 rather than Q2 FY2023.",
+        "supported": false,
+        "receipt_ids": [],
+        "reason": "Receipt r1 supports the December 31, 2022 date but does not support the asserted fiscal-quarter classification; the assertion conflicts with the document identifier and the relevant fiscal-year framing."
+      },
+      {
+        "claim": "The December 31, 2022 restructuring liability was $93 million, comprising $81 million employee costs, $2 million fixed-asset-related costs, and $10 million other costs.",
+        "supported": true,
+        "receipt_ids": [
+          "r1"
+        ],
+        "reason": "Receipt r1's restructuring-liability table reports exactly these amounts, in millions."
+      },
+      {
+        "claim": "The restructuring activities were primarily related to the Russia-Ukraine conflict.",
+        "supported": true,
+        "receipt_ids": [
+          "r1"
+        ],
+        "reason": "Receipt r1 states the restructuring activities in the three and six months ended December 31, 2022 were primarily comprised of activities related to the Russia-Ukraine conflict."
+      },
+      {
+        "claim": "The restructuring expenses primarily related to the Flexibles reportable segment.",
+        "supported": true,
+        "receipt_ids": [
+          "r1"
+        ],
+        "reason": "Receipt r1 states the restructuring and related expenses primarily relate to the Flexibles reportable segment."
+      },
+      {
+        "claim": "The restructuring liability was expected to be paid within the next twelve months.",
+        "supported": false,
+        "receipt_ids": [],
+        "reason": "Receipt r1 states that the majority of the liability was expected to be paid within twelve months, not necessarily all of the liability as the candidate's unqualified wording suggests."
+      },
+      {
+        "claim": "The restructuring accruals were recorded under other current liabilities and other non-current liabilities.",
+        "supported": true,
+        "receipt_ids": [
+          "r1"
+        ],
+        "reason": "Receipt r1 explicitly states this balance-sheet classification."
+      },
+      {
+        "claim": "The specific Q2 FY2023 10-Q was unavailable in the corpus, so a definitive answer could not be provided.",
+        "supported": false,
+        "receipt_ids": [],
+        "reason": "The cited receipt is from AMCOR_2023Q2_10Q and contains the relevant restructuring-liability data; it does not support the asserted absence of the filing."
+      },
+      {
+        "claim": "AMCOR's 2023 10-K provides restructuring-liability information only at June 30, 2020.",
+        "supported": false,
+        "receipt_ids": [],
+        "reason": "No valid final citation supports this assertion."
+      }
+    ],
+    "completeness": [
+      {
+        "id": "b1",
+        "correct": false,
+        "reason": "The candidate does not present the required conclusion that employee liabilities account for 87% of the total restructuring liability. Its cited figures imply 81/93 = 87.1%, but it instead says the relevant Q2 FY2023 answer cannot be provided."
+      }
+    ],
+    "material_contradiction": true,
+    "unresolved": false,
+    "_meta": {
+      "model": "openai/openai/gpt-5.6-terra",
+      "prompt_version": "component-judge-v4-question-led",
+      "input_hash": "fb5b9a9c9db3010c075b7a2ffff32d56061c807321e61b8ea8103c0d1f4fef27",
+      "usage": {
+        "completion_tokens": 1700,
+        "prompt_tokens": 3143,
+        "total_tokens": 4843,
+        "completion_tokens_details": {
+          "reasoning_tokens": 947
+        },
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "cache_write_tokens": 3140,
+          "cache_creation_tokens": 3140
+        }
+      }
+    }
+  },
+  "rubric": {
+    "mode": "semantic",
+    "numeric": [],
+    "semantic": [
+      {
+        "id": "s1",
+        "expected": "The restructuring liability primarily relates to employee-related obligations arising from AMCOR's restructuring activities."
+      }
+    ],
+    "_meta": {
+      "model": "openai/openai/gpt-5.6-terra",
+      "prompt_version": "component-judge-v4-question-led",
+      "input_hash": "0af75b6ed506f0c116a714743d21b30529d2390dcdd64ff2412bb6cdd0691e36",
+      "usage": {
+        "completion_tokens": 41,
+        "prompt_tokens": 476,
+        "total_tokens": 517,
+        "completion_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "cache_write_tokens": 0,
+          "cache_creation_tokens": 0
+        }
+      }
+    },
+    "requirements": {
+      "mode": "semantic",
+      "numeric": [],
+      "semantic": [
+        {
+          "id": "s1",
+          "expected": "Describe the nature and purpose of AMCOR's restructuring liability as of the close of Q2 FY2023."
+        }
+      ],
+      "_meta": {
+        "model": "openai/openai/gpt-5.6-terra",
+        "prompt_version": "component-judge-v4-question-led",
+        "input_hash": "27f88e5225ec94cb373a828fb9603f66f98e8721aba42ecb431b40b59394dff8",
+        "usage": {
+          "completion_tokens": 46,
+          "prompt_tokens": 338,
+          "total_tokens": 384,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens_details": {
+            "cached_tokens": 0,
+            "cache_write_tokens": 0,
+            "cache_creation_tokens": 0
+          }
+        }
+      }
+    },
+    "reference": "87% of the total restructuring liability is related Employee liabilities.",
+    "gold_claims": [
+      {
+        "id": "b1",
+        "expected": "Employee liabilities account for 87% of the total restructuring liability."
+      }
+    ],
+    "gold_claims_meta": {
+      "model": "openai/openai/gpt-5.6-terra",
+      "prompt_version": "component-judge-v4-question-led",
+      "input_hash": "13eb8ba6fae755a7cc4f504fea7b2741b035ca1251ccdd070a56cfdac68111e8",
+      "usage": {
+        "completion_tokens": 30,
+        "prompt_tokens": 135,
+        "total_tokens": 165,
+        "completion_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "cache_write_tokens": 0,
+          "cache_creation_tokens": 0
+        }
+      }
+    }
+  },
+  "tool_metrics": {
+    "total_calls": 8,
+    "by_tool": {
+      "bm25_search": 5,
+      "read": 1,
+      "grep_document": 1,
+      "finish": 1
+    },
+    "identical_repeat_calls": 0,
+    "tool_error_observations": 0,
+    "delivered_chars": 18742,
+    "note": "Diagnostics only: retries and errors are not automatically model faults; no diversity bonus."
+  },
+  "invalid_citations": [],
+  "financebench_id": "financebench_id_01936",
+  "source_hash": "4f3b91a4192c7a0fde2c3a0e53e784552dffd7b2b4011c7a0a79c2e25643f656"
+}

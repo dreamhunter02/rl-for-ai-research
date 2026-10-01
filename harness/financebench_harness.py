@@ -173,8 +173,10 @@ def _statement_kind(text: str) -> str:
     # pages that contain two statement blocks, the first title is the governing
     # statement kind because later blocks are subordinate summary rows.
     head = " ".join(" ".join(x.lower() for x in content_lines[:18]).split())
+    if re.search(r'notes?\s+to\s+(?:the\s+)?(?:consolidated\s+)?financial\s+statements', head):
+        return "other"
     cash_matches = list(re.finditer(r"state(\s*ment)?s?\s+(of|and)\s+cash\s*flows?|cash\s*flows?\s*statement", head))
-    operations_matches = list(re.finditer(r"state(\s*ment)?s?\s+of\s+operations|statement\s+of\s+income|income\s*statement", head))
+    operations_matches = list(re.finditer(r"state(\s*ment)?s?\s+of\s+operations|statements?\s+of\s+income|income\s*statements?", head))
     if cash_matches and (not operations_matches or cash_matches[0].start() < operations_matches[0].start()):
         return "cashflow"
     if operations_matches:
@@ -248,6 +250,8 @@ class StructuredIndex:
             if key == "company":
                 wanted = re.sub(r"[^a-z0-9]", "", wanted)
                 observed = re.sub(r"[^a-z0-9]", "", observed)
+                aliases = {"aescorporation": "aes", "theaescorporation": "aes"}
+                wanted, observed = aliases.get(wanted, wanted), aliases.get(observed, observed)
             if wanted and observed != wanted:
                 return False
         year = filters.get("year")
@@ -308,7 +312,9 @@ class StructuredIndex:
                 continue
             if page_end > 0 and page["page"] > page_end:
                 continue
-            lines = page["text"].splitlines() or [page["text"]]
+            lines = page["text"].splitlines(keepends=True) or [page["text"]]
+            offsets = [0]
+            for line in lines: offsets.append(offsets[-1] + len(line))
             for line_no, line in enumerate(lines):
                 try:
                     matched = any(re.search(pattern, line, re.I) for pattern in wanted)
@@ -321,7 +327,9 @@ class StructuredIndex:
                         "document_id": document_id,
                         "page": page["page"],
                         "line": line_no + 1,
-                        "text": "\n".join(lines[lo:hi]),
+                        "text": page["text"][offsets[lo]:offsets[hi]],
+                        "start": offsets[lo], "end": offsets[hi],
+                        "total_chars": len(page["text"]),
                         "provenance": f"{document_id}:page={page['page']}:line={line_no + 1}",
                     })
         return results[:30]

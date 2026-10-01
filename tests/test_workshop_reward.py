@@ -76,6 +76,20 @@ class ProvenanceTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             score_submission({**self.target, "reviewed": False}, {}, self.state)
 
+    def test_unresolved_target_fails_closed_without_scoring_negative(self):
+        target={"reviewed":True,"answer_type":"numeric","value":"8.70","unit":"USD",
+                "scale":"billion","precision":2,"adjudication_status":"unresolved",
+                "adjudication_reason":"source and recorded answer conflict"}
+        answer={"answer_type":"numeric","value":"8.738","unit":"USD","scale":"billion"}
+        result=score_submission(target,answer,self.state)
+        self.assertEqual((result['unresolved'],result['A'],result['reward']),(True,0,0))
+
+    def test_unresolved_target_requires_reason(self):
+        target={"reviewed":True,"answer_type":"numeric","value":"1","unit":"USD",
+                "scale":"ones","precision":0,"adjudication_status":"unresolved"}
+        with self.assertRaises(ValueError):
+            score_submission(target,None,self.state)
+
     def test_text_overlap_is_not_verified(self):
         result = score_submission({"answer_type": "text", "reviewed": True, "aliases": ["Packaging industry"]},
             {"answer_type": "text", "answer_text": "Packaging industry and oil exploration"}, self.state)
@@ -97,6 +111,37 @@ class ProvenanceAttackTests(unittest.TestCase):
             state.calculate('x*1',{'x':{'value':'100','unit':'USD','scale':'million','metric':'Profit','period':'2023','receipt_id':receipt,'quote':'Profit in 2023 was USD 100 million.'}})
 
 class ReviewRegressionTests(unittest.TestCase):
+    def test_direct_source_values_match_benchmark_rounding_precision(self):
+        cases = [
+            ('0.4', 1, '0.389', 'billion'),
+            ('382', 0, '381.603', 'million'),
+            ('1616', 0, '1615.9', 'million'),
+            ('303', 0, '302.578', 'million'),
+            ('5466', 0, '5466.312', 'million'),
+            ('4.6', 1, '4.625', 'billion'),
+        ]
+        for gold, precision, source_value, scale in cases:
+            target={'reviewed':True,'answer_type':'numeric','value':gold,
+                    'unit':'USD','scale':scale,'precision':precision}
+            for candidate in (gold, source_value):
+                answer={'answer_type':'numeric','value':candidate,
+                        'unit':'USD','scale':scale}
+                with self.subTest(gold=gold,candidate=candidate):
+                    self.assertEqual(score_submission(target,answer,EpisodeState())['A'],1)
+
+    def test_question_requested_precision_applies_to_derived_values(self):
+        cases = [
+            ('0.80', '0.798156'),
+            ('-3.70', '-3.70061'),
+        ]
+        for gold, calculated in cases:
+            target={'reviewed':True,'answer_type':'numeric','value':gold,
+                    'unit':'number','scale':'ones','precision':2}
+            answer={'answer_type':'numeric','value':calculated,
+                    'unit':'number','scale':'ones'}
+            with self.subTest(gold=gold,calculated=calculated):
+                self.assertEqual(score_submission(target,answer,EpisodeState())['A'],1)
+
     def test_unhashable_citation_ids_fail_validation(self):
         target={'reviewed':True,'answer_type':'numeric','value':'1','unit':'USD','scale':'ones','precision':0}
         for field in ('receipt_id','document_id'):

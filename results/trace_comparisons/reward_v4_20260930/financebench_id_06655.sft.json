@@ -1,0 +1,109 @@
+{
+  "financebench_id": "financebench_id_06655",
+  "model": "Qwen3.5-4B:qwen-sft",
+  "source_hash": "4a2c31448697c728c74ce3a01c2cc18a7387c8a4d666c9ac0802448e030a2933",
+  "original_score": {
+    "F": 1.0,
+    "A": 1.0,
+    "G": 0.0,
+    "Ret": 1.0,
+    "reward": 0.5,
+    "correct": 1,
+    "grounded_success": 0,
+    "unresolved": false,
+    "fabricated_citation": false,
+    "grader_version": "workshop-rubric-v3-source-rounding"
+  },
+  "new_score": {
+    "F": 1,
+    "N": 1.0,
+    "S": null,
+    "A": 1.0,
+    "G": 0.0,
+    "reward": 0.5,
+    "correct": 1,
+    "grounded_success": 0,
+    "unresolved": false,
+    "scorer_version": "workshop-rubric-v4-components",
+    "judgment": {
+      "numeric": [
+        {
+          "id": "n1",
+          "correct": true,
+          "reason": "Candidate final quantity is 93.86 days (unit inferred from the DPO question); reference quantity is 93.86 days."
+        }
+      ],
+      "semantic": [],
+      "grounding": [
+        {
+          "claim": "Amazon FY2017 DPO was 93.86 days.",
+          "supported": false,
+          "receipt_ids": [],
+          "reason": "The candidate provides no citations; although the retrieved statements contain the relevant inputs, no valid receipt IDs were cited by the candidate."
+        }
+      ],
+      "unresolved": false,
+      "_meta": {
+        "model": "openai/openai/gpt-5.6-terra",
+        "prompt_version": "component-judge-v3-contextual-units",
+        "input_hash": "a8eb302a5c10054156772b90bfc890abb8609e4a24f6a5b60fb3e0d9444dd809",
+        "usage": {
+          "completion_tokens": 146,
+          "prompt_tokens": 2168,
+          "total_tokens": 2314,
+          "completion_tokens_details": {
+            "reasoning_tokens": 32
+          },
+          "prompt_tokens_details": {
+            "cached_tokens": 0,
+            "cache_write_tokens": 2165,
+            "cache_creation_tokens": 2165
+          }
+        }
+      }
+    },
+    "rubric": {
+      "mode": "numeric",
+      "numeric": [
+        {
+          "id": "n1",
+          "expected": "93.86 days"
+        }
+      ],
+      "semantic": [],
+      "_meta": {
+        "model": "openai/openai/gpt-5.6-terra",
+        "prompt_version": "component-judge-v3-contextual-units",
+        "input_hash": "d73be6c17163f7c1f5a4106de0099cc80de7dfb60c50249dc9589de12bbaa077",
+        "usage": {
+          "completion_tokens": 28,
+          "prompt_tokens": 253,
+          "total_tokens": 281,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens_details": {
+            "cached_tokens": 0,
+            "cache_write_tokens": 0,
+            "cache_creation_tokens": 0
+          }
+        }
+      }
+    },
+    "invalid_citations": []
+  },
+  "tool_metrics": {
+    "total_calls": 8,
+    "by_tool": {
+      "bm25_search": 1,
+      "search_tables": 2,
+      "read_table": 2,
+      "calculate": 2,
+      "finish": 1
+    },
+    "identical_repeat_calls": 0,
+    "tool_error_observations": 2,
+    "delivered_chars": 9589,
+    "note": "Diagnostics only: retries and errors are not automatically model faults; no diversity bonus."
+  }
+}

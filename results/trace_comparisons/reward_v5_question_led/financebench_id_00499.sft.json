@@ -1,0 +1,210 @@
+{
+  "financebench_id": "financebench_id_00499",
+  "model": "Qwen3.5-4B:qwen-sft",
+  "source_hash": "8595297ca67c71dbd687277013e48d3410d4ca1d3e3dd816b107678449b8711a",
+  "original_score": {
+    "F": 1.0,
+    "A": 1.0,
+    "G": 0.0,
+    "Ret": 0.0,
+    "reward": 0.5,
+    "correct": 1,
+    "grounded_success": 0,
+    "unresolved": false,
+    "fabricated_citation": false,
+    "grader_version": "workshop-rubric-v3-source-rounding",
+    "judge_verdict": "entailed",
+    "judge_confidence": 0.95,
+    "judge_cache_hit": false,
+    "judge_numeric_ok": true
+  },
+  "new_score": {
+    "F": 1,
+    "N": null,
+    "S": 1.0,
+    "A": 1.0,
+    "G": 0.2,
+    "reward": 0.6,
+    "correct": 1,
+    "grounded_success": 0,
+    "unresolved": false,
+    "scorer_version": "workshop-rubric-v5-question-led",
+    "judgment": {
+      "numeric": [],
+      "semantic": [
+        {
+          "id": "s1",
+          "correct": true,
+          "reason": "The candidate reaches the required conclusion: 3M was not capital-intensive based on FY2022 data. The mislabeled CapEx/Net Assets ratio does not reverse that conclusion."
+        }
+      ],
+      "grounding": [
+        {
+          "claim": "3M was not a capital-intensive business in FY2022.",
+          "supported": false,
+          "receipt_ids": [
+            "r2",
+            "r3"
+          ],
+          "reason": "The cited receipts support FY2022 PP&E purchases, but do not support the cited revenue or total-assets figures needed for the candidate's capital-intensity analysis."
+        },
+        {
+          "claim": "FY2022 CapEx (purchases of PP&E) was $1,749 million.",
+          "supported": true,
+          "receipt_ids": [
+            "r2"
+          ],
+          "reason": "Receipt r2 reports 2022 purchases of property, plant and equipment of $1,749 million."
+        },
+        {
+          "claim": "FY2022 net sales were $34,229 million.",
+          "supported": false,
+          "receipt_ids": [],
+          "reason": "No valid cited receipt contains this net-sales figure."
+        },
+        {
+          "claim": "FY2022 net income was $5,791 million.",
+          "supported": false,
+          "receipt_ids": [],
+          "reason": "No valid candidate citation supports this figure; the cited r2/r3 receipts do not report it."
+        },
+        {
+          "claim": "FY2022 total assets were $42,666 million.",
+          "supported": false,
+          "receipt_ids": [
+            "r3"
+          ],
+          "reason": "Receipt r3 is a derivatives-offsetting disclosure and does not contain total assets."
+        },
+        {
+          "claim": "FY2022 CapEx/revenue was 5.1%.",
+          "supported": false,
+          "receipt_ids": [
+            "r2"
+          ],
+          "reason": "The arithmetic using the stated inputs is approximately 5.1%, but the $34,229 million revenue input is not supported by a valid cited receipt."
+        },
+        {
+          "claim": "FY2022 CapEx/net assets and CapEx/total assets were each 4.1%.",
+          "supported": false,
+          "receipt_ids": [
+            "r3"
+          ],
+          "reason": "$1,749 million divided by the stated $42,666 million is approximately 4.1%, but r3 does not support total assets, and the candidate incorrectly labels total assets as net assets."
+        },
+        {
+          "claim": "FY2021 CapEx was $1,603 million.",
+          "supported": true,
+          "receipt_ids": [
+            "r2"
+          ],
+          "reason": "Receipt r2 reports 2021 purchases of property, plant and equipment of $1,603 million."
+        },
+        {
+          "claim": "FY2021 revenue was $35,355 million and the CapEx/revenue ratio was 4.5%.",
+          "supported": false,
+          "receipt_ids": [
+            "r2"
+          ],
+          "reason": "Receipt r2 supports the CapEx numerator but not the revenue figure or resulting ratio."
+        },
+        {
+          "claim": "Typical capital-intensive industries often have CapEx/revenue ratios of 10%–20% or higher.",
+          "supported": false,
+          "receipt_ids": [],
+          "reason": "This empirical industry comparison is not supported by a cited source."
+        }
+      ],
+      "unresolved": false,
+      "_meta": {
+        "model": "openai/openai/gpt-5.6-terra",
+        "prompt_version": "component-judge-v4-question-led",
+        "input_hash": "d2e83d31a3b9175408c7d5b23ac7ab59e1a64e10ef7d5c38358485ff85c93e00",
+        "usage": {
+          "completion_tokens": 950,
+          "prompt_tokens": 3775,
+          "total_tokens": 4725,
+          "completion_tokens_details": {
+            "reasoning_tokens": 343
+          },
+          "prompt_tokens_details": {
+            "cached_tokens": 0,
+            "cache_write_tokens": 3772,
+            "cache_creation_tokens": 3772
+          }
+        }
+      }
+    },
+    "rubric": {
+      "mode": "semantic",
+      "numeric": [],
+      "semantic": [
+        {
+          "id": "s1",
+          "expected": "No. Based on FY2022 data, 3M should not be considered a capital-intensive business."
+        }
+      ],
+      "_meta": {
+        "model": "openai/openai/gpt-5.6-terra",
+        "prompt_version": "component-judge-v4-question-led",
+        "input_hash": "dafdc1525dac7e4321609651fabb15482b0303162f0b9a5c7fb28760c613067d",
+        "usage": {
+          "completion_tokens": 45,
+          "prompt_tokens": 508,
+          "total_tokens": 553,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens_details": {
+            "cached_tokens": 0,
+            "cache_write_tokens": 0,
+            "cache_creation_tokens": 0
+          }
+        }
+      },
+      "requirements": {
+        "mode": "semantic",
+        "numeric": [],
+        "semantic": [
+          {
+            "id": "s1",
+            "expected": "Determine whether 3M is a capital-intensive business based on FY2022 data."
+          }
+        ],
+        "_meta": {
+          "model": "openai/openai/gpt-5.6-terra",
+          "prompt_version": "component-judge-v4-question-led",
+          "input_hash": "b7baf2bd9df0ab29d5389bee8eb98e73f957fe765108a4bebdbef84e097a82b0",
+          "usage": {
+            "completion_tokens": 41,
+            "prompt_tokens": 330,
+            "total_tokens": 371,
+            "completion_tokens_details": {
+              "reasoning_tokens": 0
+            },
+            "prompt_tokens_details": {
+              "cached_tokens": 0,
+              "cache_write_tokens": 0,
+              "cache_creation_tokens": 0
+            }
+          }
+        }
+      },
+      "reference": "No, the company is managing its CAPEX and Fixed Assets pretty efficiently, which is evident from below key metrics:\nCAPEX/Revenue Ratio: 5.1%\nFixed assets/Total Assets: 20%\nReturn on Assets= 12.4%"
+    },
+    "invalid_citations": []
+  },
+  "tool_metrics": {
+    "total_calls": 8,
+    "by_tool": {
+      "bm25_search": 4,
+      "read_table": 2,
+      "read": 1,
+      "finish": 1
+    },
+    "identical_repeat_calls": 0,
+    "tool_error_observations": 0,
+    "delivered_chars": 15480,
+    "note": "Diagnostics only: retries and errors are not automatically model faults; no diversity bonus."
+  }
+}

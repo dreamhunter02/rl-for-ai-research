@@ -1,0 +1,141 @@
+{
+  "financebench_id": "financebench_id_02987",
+  "model": "Qwen3.5-4B:qwen-sft",
+  "source_hash": "7fa74ed13238d8c77f3161b11abe748440dfd8168f66c74153e884bbb20c1e3d",
+  "original_score": {
+    "F": 1.0,
+    "A": 0.0,
+    "G": 0.0,
+    "Ret": 1.0,
+    "reward": 0.0,
+    "correct": 0,
+    "grounded_success": 0,
+    "unresolved": false,
+    "fabricated_citation": false,
+    "grader_version": "workshop-rubric-v3-source-rounding"
+  },
+  "new_score": {
+    "F": 1,
+    "N": 1.0,
+    "S": null,
+    "A": 1.0,
+    "G": 1.0,
+    "reward": 1.0,
+    "correct": 1,
+    "grounded_success": 1,
+    "unresolved": false,
+    "scorer_version": "workshop-rubric-v5-question-led",
+    "judgment": {
+      "numeric": [
+        {
+          "id": "n1",
+          "correct": true,
+          "reason": "Candidate final quantity is 24.26 as a ratio (ones); reference quantity is 24.26. Using FY2019 revenue of $6,489 million and average PP&E of ($253 million + $282 million)/2 = $267.5 million gives 24.26."
+        }
+      ],
+      "semantic": [],
+      "grounding": [
+        {
+          "claim": "FY2019 fixed asset turnover ratio is 24.26.",
+          "supported": true,
+          "receipt_ids": [
+            "r1",
+            "r2"
+          ],
+          "reason": "r2 reports 2019 total net revenues of $6,489 million; r1 reports net property and equipment of $253 million in 2019 and $282 million in 2018. $6,489 / (($253 + $282)/2) = 24.26."
+        }
+      ],
+      "unresolved": false,
+      "_meta": {
+        "model": "openai/openai/gpt-5.6-terra",
+        "prompt_version": "component-judge-v4-question-led",
+        "input_hash": "7bba1311ad4e142bb7475a1d72166367b10c44f4e1b309af49a35ad76d2a13f1",
+        "usage": {
+          "completion_tokens": 235,
+          "prompt_tokens": 3022,
+          "total_tokens": 3257,
+          "completion_tokens_details": {
+            "reasoning_tokens": 49
+          },
+          "prompt_tokens_details": {
+            "cached_tokens": 0,
+            "cache_write_tokens": 3019,
+            "cache_creation_tokens": 3019
+          }
+        }
+      }
+    },
+    "rubric": {
+      "mode": "numeric",
+      "numeric": [
+        {
+          "id": "n1",
+          "expected": "24.26"
+        }
+      ],
+      "semantic": [],
+      "_meta": {
+        "model": "openai/openai/gpt-5.6-terra",
+        "prompt_version": "component-judge-v4-question-led",
+        "input_hash": "6cb0e7eba197c6b149e2759d780664e530f3e2ee35fbb3266538a91932e4a7d1",
+        "usage": {
+          "completion_tokens": 27,
+          "prompt_tokens": 527,
+          "total_tokens": 554,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens_details": {
+            "cached_tokens": 0,
+            "cache_write_tokens": 0,
+            "cache_creation_tokens": 0
+          }
+        }
+      },
+      "requirements": {
+        "mode": "numeric",
+        "numeric": [
+          {
+            "id": "n1",
+            "expected": "FY2019 fixed asset turnover ratio for Activision Blizzard, calculated as FY2019 revenue divided by average PP&E between FY2018 and FY2019, rounded to two decimal places"
+          }
+        ],
+        "semantic": [],
+        "_meta": {
+          "model": "openai/openai/gpt-5.6-terra",
+          "prompt_version": "component-judge-v4-question-led",
+          "input_hash": "7e12603e584efdeb768137225d414839612c1793ac5fb47b107a8e483ac1eb79",
+          "usage": {
+            "completion_tokens": 61,
+            "prompt_tokens": 384,
+            "total_tokens": 445,
+            "completion_tokens_details": {
+              "reasoning_tokens": 0
+            },
+            "prompt_tokens_details": {
+              "cached_tokens": 0,
+              "cache_write_tokens": 0,
+              "cache_creation_tokens": 0
+            }
+          }
+        }
+      },
+      "reference": "24.26"
+    },
+    "invalid_citations": []
+  },
+  "tool_metrics": {
+    "total_calls": 8,
+    "by_tool": {
+      "bm25_search": 1,
+      "search_tables": 2,
+      "read_table": 2,
+      "calculate": 2,
+      "finish": 1
+    },
+    "identical_repeat_calls": 0,
+    "tool_error_observations": 2,
+    "delivered_chars": 11314,
+    "note": "Diagnostics only: retries and errors are not automatically model faults; no diversity bonus."
+  }
+}

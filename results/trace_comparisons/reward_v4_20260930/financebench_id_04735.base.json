@@ -1,0 +1,111 @@
+{
+  "financebench_id": "financebench_id_04735",
+  "model": "Qwen3.5-4B",
+  "source_hash": "9767c78974b320a252825159b7364382faa10f1be4e911b6af337f5f35428312",
+  "original_score": {
+    "F": 1.0,
+    "A": 0.0,
+    "G": 0.0,
+    "Ret": 0.0,
+    "reward": 0.0,
+    "correct": 0,
+    "grounded_success": 0,
+    "unresolved": false,
+    "fabricated_citation": false,
+    "grader_version": "workshop-rubric-v3-source-rounding"
+  },
+  "new_score": {
+    "F": 1,
+    "N": 0.0,
+    "S": null,
+    "A": 0.0,
+    "G": 0.0,
+    "reward": 0.0,
+    "correct": 0,
+    "grounded_success": 0,
+    "unresolved": false,
+    "scorer_version": "workshop-rubric-v4-components",
+    "judgment": {
+      "numeric": [
+        {
+          "id": "n1",
+          "correct": false,
+          "reason": "Candidate final quantity is 660 (0.66 with scale=thousand), whereas the reference quantity is 0.66 as a dimensionless ratio. The stated scale makes the final answer incorrect."
+        }
+      ],
+      "semantic": [],
+      "grounding": [
+        {
+          "claim": "FY2015 operating cash flow ratio is 0.66 thousand (interpreted as 660).",
+          "supported": false,
+          "receipt_ids": [
+            "r2",
+            "r4"
+          ],
+          "reason": "r2 reports net cash provided by operating activities of 1,469,502 (thousands) and r4 reports total current liabilities of 2,213,556 (thousands), which calculate to approximately 0.66, not 660."
+        }
+      ],
+      "unresolved": false,
+      "_meta": {
+        "model": "openai/openai/gpt-5.6-terra",
+        "prompt_version": "component-judge-v3-contextual-units",
+        "input_hash": "27aa8fd2416e8ea00ac4ffc9bf0d17a606acea051022cb368153da631a9c7ebc",
+        "usage": {
+          "completion_tokens": 254,
+          "prompt_tokens": 3126,
+          "total_tokens": 3380,
+          "completion_tokens_details": {
+            "reasoning_tokens": 87
+          },
+          "prompt_tokens_details": {
+            "cached_tokens": 0,
+            "cache_write_tokens": 3123,
+            "cache_creation_tokens": 3123
+          }
+        }
+      }
+    },
+    "rubric": {
+      "mode": "numeric",
+      "numeric": [
+        {
+          "id": "n1",
+          "expected": "0.66"
+        }
+      ],
+      "semantic": [],
+      "_meta": {
+        "model": "openai/openai/gpt-5.6-terra",
+        "prompt_version": "component-judge-v3-contextual-units",
+        "input_hash": "92997422111dce8248fb06ad1e4ca032e01a74648c9702938121604a3c11f542",
+        "usage": {
+          "completion_tokens": 27,
+          "prompt_tokens": 238,
+          "total_tokens": 265,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens_details": {
+            "cached_tokens": 0,
+            "cache_write_tokens": 0,
+            "cache_creation_tokens": 0
+          }
+        }
+      }
+    },
+    "invalid_citations": []
+  },
+  "tool_metrics": {
+    "total_calls": 8,
+    "by_tool": {
+      "bm25_search": 3,
+      "read_table": 2,
+      "read": 2,
+      "finish": 1
+    },
+    "identical_repeat_calls": 0,
+    "tool_error_observations": 0,
+    "delivered_chars": 19790,
+    "note": "Diagnostics only: retries and errors are not automatically model faults; no diversity bonus."
+  }
+}

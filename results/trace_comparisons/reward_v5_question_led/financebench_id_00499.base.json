@@ -1,0 +1,182 @@
+{
+  "financebench_id": "financebench_id_00499",
+  "model": "Qwen3.5-4B",
+  "source_hash": "6584adf926ba5fe71a0a9c4753d83ed164b73dbf5e9f6a968bb3b3670424b219",
+  "original_score": {
+    "F": 1.0,
+    "A": 1.0,
+    "G": 0.0,
+    "Ret": 1.0,
+    "reward": 0.5,
+    "correct": 1,
+    "grounded_success": 0,
+    "unresolved": false,
+    "fabricated_citation": false,
+    "grader_version": "workshop-rubric-v3-source-rounding",
+    "judge_verdict": "entailed",
+    "judge_confidence": 0.95,
+    "judge_cache_hit": false,
+    "judge_numeric_ok": true
+  },
+  "new_score": {
+    "F": 1,
+    "N": null,
+    "S": 1.0,
+    "A": 1.0,
+    "G": 0.16666666666666666,
+    "reward": 0.5833333333333334,
+    "correct": 1,
+    "grounded_success": 0,
+    "unresolved": false,
+    "scorer_version": "workshop-rubric-v5-question-led",
+    "judgment": {
+      "numeric": [],
+      "semantic": [
+        {
+          "id": "s1",
+          "correct": true,
+          "reason": "The candidate’s final conclusion is No, matching the required determination that 3M was not capital-intensive based on FY2022 data."
+        }
+      ],
+      "grounding": [
+        {
+          "claim": "3M was not a capital-intensive business based on FY2022 data.",
+          "supported": false,
+          "receipt_ids": [
+            "r1",
+            "r3"
+          ],
+          "reason": "The cited evidence supports CapEx but does not provide the relevant total-assets figure or sufficiently support the overall conclusion."
+        },
+        {
+          "claim": "FY2022 purchases of property, plant and equipment were $1,749 million.",
+          "supported": true,
+          "receipt_ids": [
+            "r1"
+          ],
+          "reason": "The FY2022 cash-flow statement reports purchases of PP&E of $1,749 million."
+        },
+        {
+          "claim": "Total assets were $46,100 million from the balance sheet on page 91.",
+          "supported": false,
+          "receipt_ids": [
+            "r3"
+          ],
+          "reason": "Receipt r3 is a derivative-instruments table and does not report total assets."
+        },
+        {
+          "claim": "CapEx divided by total assets was approximately 3.8%.",
+          "supported": false,
+          "receipt_ids": [
+            "r1",
+            "r3"
+          ],
+          "reason": "The arithmetic is consistent with the stated figures, but the cited receipts do not support the $46,100 million total-assets input."
+        },
+        {
+          "claim": "Capital-intensive industries typically have capital-intensity ratios of 20% to 50% or higher.",
+          "supported": false,
+          "receipt_ids": [],
+          "reason": "No cited evidence supports this empirical industry benchmark."
+        },
+        {
+          "claim": "3M's diversified consumer-products business model requires modest capital investment relative to its asset base.",
+          "supported": false,
+          "receipt_ids": [],
+          "reason": "No cited evidence supports this characterization or comparison."
+        }
+      ],
+      "unresolved": false,
+      "_meta": {
+        "model": "openai/openai/gpt-5.6-terra",
+        "prompt_version": "component-judge-v4-question-led",
+        "input_hash": "90688fcbff2b544d8c3d5f642c2238e71ef81249c6f8f5ea04715388eee00b16",
+        "usage": {
+          "completion_tokens": 636,
+          "prompt_tokens": 5006,
+          "total_tokens": 5642,
+          "completion_tokens_details": {
+            "reasoning_tokens": 275
+          },
+          "prompt_tokens_details": {
+            "cached_tokens": 0,
+            "cache_write_tokens": 5003,
+            "cache_creation_tokens": 5003
+          }
+        }
+      }
+    },
+    "rubric": {
+      "mode": "semantic",
+      "numeric": [],
+      "semantic": [
+        {
+          "id": "s1",
+          "expected": "No. Based on FY2022 data, 3M should not be considered a capital-intensive business."
+        }
+      ],
+      "_meta": {
+        "model": "openai/openai/gpt-5.6-terra",
+        "prompt_version": "component-judge-v4-question-led",
+        "input_hash": "dafdc1525dac7e4321609651fabb15482b0303162f0b9a5c7fb28760c613067d",
+        "usage": {
+          "completion_tokens": 45,
+          "prompt_tokens": 508,
+          "total_tokens": 553,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens_details": {
+            "cached_tokens": 0,
+            "cache_write_tokens": 0,
+            "cache_creation_tokens": 0
+          }
+        }
+      },
+      "requirements": {
+        "mode": "semantic",
+        "numeric": [],
+        "semantic": [
+          {
+            "id": "s1",
+            "expected": "Determine whether 3M is a capital-intensive business based on FY2022 data."
+          }
+        ],
+        "_meta": {
+          "model": "openai/openai/gpt-5.6-terra",
+          "prompt_version": "component-judge-v4-question-led",
+          "input_hash": "b7baf2bd9df0ab29d5389bee8eb98e73f957fe765108a4bebdbef84e097a82b0",
+          "usage": {
+            "completion_tokens": 41,
+            "prompt_tokens": 330,
+            "total_tokens": 371,
+            "completion_tokens_details": {
+              "reasoning_tokens": 0
+            },
+            "prompt_tokens_details": {
+              "cached_tokens": 0,
+              "cache_write_tokens": 0,
+              "cache_creation_tokens": 0
+            }
+          }
+        }
+      },
+      "reference": "No, the company is managing its CAPEX and Fixed Assets pretty efficiently, which is evident from below key metrics:\nCAPEX/Revenue Ratio: 5.1%\nFixed assets/Total Assets: 20%\nReturn on Assets= 12.4%"
+    },
+    "invalid_citations": []
+  },
+  "tool_metrics": {
+    "total_calls": 8,
+    "by_tool": {
+      "bm25_search": 1,
+      "search_tables": 2,
+      "read_table": 2,
+      "read": 2,
+      "finish": 1
+    },
+    "identical_repeat_calls": 0,
+    "tool_error_observations": 0,
+    "delivered_chars": 20993,
+    "note": "Diagnostics only: retries and errors are not automatically model faults; no diversity bonus."
+  }
+}

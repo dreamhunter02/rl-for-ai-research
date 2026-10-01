@@ -8,6 +8,7 @@ import asyncio
 import json
 import os
 import unittest
+from unittest.mock import patch
 from pathlib import Path
 from types import SimpleNamespace
 from typing import Any, Annotated
@@ -32,6 +33,7 @@ def load_episode_classes():
     return namespace
 
 
+@patch.dict(os.environ, {'FINANCEBENCH_SCORER':'legacy'})
 class EpisodeLogicTests(unittest.TestCase):
     def setUp(self):
         self.classes=load_episode_classes()

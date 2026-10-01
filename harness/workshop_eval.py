@@ -30,6 +30,7 @@ async def evaluate(args):
     from tinker_cookbook.rl.rollouts import do_single_rollout
     from train_financebench import load_tinker_key
     from workshop_prepare import preflight
+    from workshop_reward import SCORER_VERSION
     if not os.environ.get('FINANCEBENCH_TARGETS'): raise ValueError('Set FINANCEBENCH_TARGETS')
     fingerprint = preflight(os.environ.get('FINANCEBENCH_SPLIT', str(fe.hb.BASE/'split.json')), os.environ['FINANCEBENCH_TARGETS'], corpus=True)
     out = Path(args.out)
@@ -72,7 +73,7 @@ async def evaluate(args):
         record={'condition': args.condition,'run_id':args.run_id,'checkpoint':args.checkpoint or args.model,
             'question_id':row['financebench_id'],'document_id':row['doc'],'split':args.split,
             'training_seed':args.training_seed,'sampling_seed':args.sampling_seed,'derived':bool(row['target'].get('derived')),
-            'evaluation_signature':evaluation_signature,'F':0,'A':0,'G':0,'Ret':0,'correct':0,'grounded_success':0,'reward':0,'unresolved':False,'grader_version':'workshop-v1'}
+            'evaluation_signature':evaluation_signature,'F':0,'A':0,'G':0,'Ret':0,'correct':0,'grounded_success':0,'reward':0,'unresolved':False,'grader_version':SCORER_VERSION}
         try:
             trajectory=await do_single_rollout(policy,env)
             record.update(state.last_score)

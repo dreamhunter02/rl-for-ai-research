@@ -1,0 +1,238 @@
+{
+  "base": {
+    "n": 12,
+    "v4_mean_reward": 0.3444444444444444,
+    "v5_mean_reward": 0.3666666666666667,
+    "correct": 5,
+    "grounded_success": 2,
+    "unresolved": 0,
+    "per_question": [
+      {
+        "id": "financebench_id_03029",
+        "mode": "numeric",
+        "N": 1.0,
+        "S": null,
+        "G": 1.0,
+        "v4_reward": 1.0,
+        "v5_reward": 1.0
+      },
+      {
+        "id": "financebench_id_00499",
+        "mode": "semantic",
+        "N": null,
+        "S": 1.0,
+        "G": 0.16666666666666666,
+        "v4_reward": 0.23333333333333336,
+        "v5_reward": 0.5833333333333334
+      },
+      {
+        "id": "financebench_id_00807",
+        "mode": "semantic",
+        "N": null,
+        "S": 0.0,
+        "G": 0.25,
+        "v4_reward": 0.0,
+        "v5_reward": 0.0
+      },
+      {
+        "id": "financebench_id_02987",
+        "mode": "numeric",
+        "N": 0.0,
+        "S": null,
+        "G": 0.0,
+        "v4_reward": 0.0,
+        "v5_reward": 0.0
+      },
+      {
+        "id": "financebench_id_04735",
+        "mode": "numeric",
+        "N": 0.0,
+        "S": null,
+        "G": 0.0,
+        "v4_reward": 0.0,
+        "v5_reward": 0.0
+      },
+      {
+        "id": "financebench_id_07507",
+        "mode": "numeric",
+        "N": 0.0,
+        "S": null,
+        "G": 0.0,
+        "v4_reward": 0.0,
+        "v5_reward": 0.0
+      },
+      {
+        "id": "financebench_id_00438",
+        "mode": "semantic",
+        "N": null,
+        "S": 1.0,
+        "G": 0.8333333333333334,
+        "v4_reward": 0.9,
+        "v5_reward": 0.9166666666666667
+      },
+      {
+        "id": "financebench_id_00540",
+        "mode": "numeric",
+        "N": 0.0,
+        "S": null,
+        "G": 0.4,
+        "v4_reward": 0.0,
+        "v5_reward": 0.0
+      },
+      {
+        "id": "financebench_id_06655",
+        "mode": "numeric",
+        "N": 0.0,
+        "S": null,
+        "G": 0.0,
+        "v4_reward": 0.0,
+        "v5_reward": 0.0
+      },
+      {
+        "id": "financebench_id_03882",
+        "mode": "numeric",
+        "N": 1.0,
+        "S": null,
+        "G": 1.0,
+        "v4_reward": 1.0,
+        "v5_reward": 1.0
+      },
+      {
+        "id": "financebench_id_01936",
+        "mode": "semantic",
+        "N": null,
+        "S": 0.0,
+        "G": 0.7142857142857143,
+        "v4_reward": 0.0,
+        "v5_reward": 0.0
+      },
+      {
+        "id": "financebench_id_00684",
+        "mode": "semantic",
+        "N": null,
+        "S": 1.0,
+        "G": 0.8,
+        "v4_reward": 1.0,
+        "v5_reward": 0.9
+      }
+    ]
+  },
+  "sft": {
+    "n": 12,
+    "v4_mean_reward": 0.5903769841269841,
+    "v5_mean_reward": 0.576388888888889,
+    "correct": 8,
+    "grounded_success": 4,
+    "unresolved": 0,
+    "per_question": [
+      {
+        "id": "financebench_id_03029",
+        "mode": "numeric",
+        "N": 1.0,
+        "S": null,
+        "G": 1.0,
+        "v4_reward": 1.0,
+        "v5_reward": 1.0
+      },
+      {
+        "id": "financebench_id_00499",
+        "mode": "semantic",
+        "N": null,
+        "S": 1.0,
+        "G": 0.2,
+        "v4_reward": 0.3428571428571428,
+        "v5_reward": 0.6
+      },
+      {
+        "id": "financebench_id_00807",
+        "mode": "semantic",
+        "N": null,
+        "S": 0.0,
+        "G": 0.4,
+        "v4_reward": 0.44999999999999996,
+        "v5_reward": 0.0
+      },
+      {
+        "id": "financebench_id_02987",
+        "mode": "numeric",
+        "N": 1.0,
+        "S": null,
+        "G": 1.0,
+        "v4_reward": 1.0,
+        "v5_reward": 1.0
+      },
+      {
+        "id": "financebench_id_04735",
+        "mode": "numeric",
+        "N": 1.0,
+        "S": null,
+        "G": 1.0,
+        "v4_reward": 1.0,
+        "v5_reward": 1.0
+      },
+      {
+        "id": "financebench_id_07507",
+        "mode": "numeric",
+        "N": 0.0,
+        "S": null,
+        "G": 0.0,
+        "v4_reward": 0.0,
+        "v5_reward": 0.0
+      },
+      {
+        "id": "financebench_id_00438",
+        "mode": "semantic",
+        "N": null,
+        "S": 1.0,
+        "G": 0.8,
+        "v4_reward": 0.875,
+        "v5_reward": 0.9
+      },
+      {
+        "id": "financebench_id_00540",
+        "mode": "numeric",
+        "N": 0.0,
+        "S": null,
+        "G": 0.0,
+        "v4_reward": 0.0,
+        "v5_reward": 0.0
+      },
+      {
+        "id": "financebench_id_06655",
+        "mode": "numeric",
+        "N": 1.0,
+        "S": null,
+        "G": 0.0,
+        "v4_reward": 0.5,
+        "v5_reward": 0.5
+      },
+      {
+        "id": "financebench_id_03882",
+        "mode": "numeric",
+        "N": 1.0,
+        "S": null,
+        "G": 1.0,
+        "v4_reward": 1.0,
+        "v5_reward": 1.0
+      },
+      {
+        "id": "financebench_id_01936",
+        "mode": "semantic",
+        "N": null,
+        "S": 0.0,
+        "G": 0.5,
+        "v4_reward": 0.0,
+        "v5_reward": 0.0
+      },
+      {
+        "id": "financebench_id_00684",
+        "mode": "semantic",
+        "N": null,
+        "S": 1.0,
+        "G": 0.8333333333333334,
+        "v4_reward": 0.9166666666666667,
+        "v5_reward": 0.9166666666666667
+      }
+    ]
+  }
+}

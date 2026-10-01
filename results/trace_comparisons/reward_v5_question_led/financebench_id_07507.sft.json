@@ -1,0 +1,147 @@
+{
+  "financebench_id": "financebench_id_07507",
+  "model": "Qwen3.5-4B:qwen-sft",
+  "source_hash": "f5f431a810c0cb3e7b4d5602610f3c37aa522cacbd98be78d493140c4ea76c2d",
+  "original_score": {
+    "F": 1.0,
+    "A": 0.0,
+    "G": 0.0,
+    "Ret": 0.0,
+    "reward": 0.0,
+    "correct": 0,
+    "grounded_success": 0,
+    "unresolved": false,
+    "fabricated_citation": false,
+    "grader_version": "workshop-rubric-v3-source-rounding"
+  },
+  "new_score": {
+    "F": 1,
+    "N": 0.0,
+    "S": null,
+    "A": 0.0,
+    "G": 0.0,
+    "reward": 0.0,
+    "correct": 0,
+    "grounded_success": 0,
+    "unresolved": false,
+    "scorer_version": "workshop-rubric-v5-question-led",
+    "judgment": {
+      "numeric": [
+        {
+          "id": "n1",
+          "correct": false,
+          "reason": "Candidate final quantity is a 10.4% increase; reference quantity is a 65.4% increase. The candidate used $2.068 billion and $1.873 billion, which are not the requested unadjusted operating-income figures."
+        }
+      ],
+      "semantic": [],
+      "grounding": [
+        {
+          "claim": "Adobe's unadjusted operating income increased 10.4% from FY2015 to FY2016.",
+          "supported": false,
+          "receipt_ids": [
+            "r2"
+          ],
+          "reason": "Receipt r2 is a consolidated balance sheet and does not provide operating income or support the stated percentage."
+        },
+        {
+          "claim": "FY2016 and FY2015 unadjusted operating income were $2,068,000 thousand and $1,873,000 thousand, respectively.",
+          "supported": false,
+          "receipt_ids": [
+            "r2"
+          ],
+          "reason": "Receipt r2 contains balance-sheet line items, not these operating-income amounts."
+        }
+      ],
+      "unresolved": false,
+      "_meta": {
+        "model": "openai/openai/gpt-5.6-terra",
+        "prompt_version": "component-judge-v4-question-led",
+        "input_hash": "1ee239cc815562670dfb2972cb112382f80806d973f012de1f889a34f5b37721",
+        "usage": {
+          "completion_tokens": 260,
+          "prompt_tokens": 2616,
+          "total_tokens": 2876,
+          "completion_tokens_details": {
+            "reasoning_tokens": 54
+          },
+          "prompt_tokens_details": {
+            "cached_tokens": 0,
+            "cache_write_tokens": 2613,
+            "cache_creation_tokens": 2613
+          }
+        }
+      }
+    },
+    "rubric": {
+      "mode": "numeric",
+      "numeric": [
+        {
+          "id": "n1",
+          "expected": "65.4%"
+        }
+      ],
+      "semantic": [],
+      "_meta": {
+        "model": "openai/openai/gpt-5.6-terra",
+        "prompt_version": "component-judge-v4-question-led",
+        "input_hash": "6305ec4fb7b9ee0b3594cc2dd299d17145503e33074525ae297a51f3c725b7c4",
+        "usage": {
+          "completion_tokens": 28,
+          "prompt_tokens": 504,
+          "total_tokens": 532,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens_details": {
+            "cached_tokens": 0,
+            "cache_write_tokens": 0,
+            "cache_creation_tokens": 0
+          }
+        }
+      },
+      "requirements": {
+        "mode": "numeric",
+        "numeric": [
+          {
+            "id": "n1",
+            "expected": "Adobe's year-over-year percentage change in unadjusted operating income from FY2015 to FY2016, rounded to one decimal place, using the income statement"
+          }
+        ],
+        "semantic": [],
+        "_meta": {
+          "model": "openai/openai/gpt-5.6-terra",
+          "prompt_version": "component-judge-v4-question-led",
+          "input_hash": "55acbc5e5f57abeb979dc012162309b9d3b50b3c94263cd8694080d4910b164b",
+          "usage": {
+            "completion_tokens": 56,
+            "prompt_tokens": 362,
+            "total_tokens": 418,
+            "completion_tokens_details": {
+              "reasoning_tokens": 0
+            },
+            "prompt_tokens_details": {
+              "cached_tokens": 0,
+              "cache_write_tokens": 0,
+              "cache_creation_tokens": 0
+            }
+          }
+        }
+      },
+      "reference": "65.4%"
+    },
+    "invalid_citations": []
+  },
+  "tool_metrics": {
+    "total_calls": 8,
+    "by_tool": {
+      "bm25_search": 3,
+      "search_tables": 2,
+      "read": 2,
+      "finish": 1
+    },
+    "identical_repeat_calls": 0,
+    "tool_error_observations": 0,
+    "delivered_chars": 12659,
+    "note": "Diagnostics only: retries and errors are not automatically model faults; no diversity bonus."
+  }
+}

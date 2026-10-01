@@ -1,0 +1,26 @@
+{
+  "base": {
+    "n": 12,
+    "old_mean_reward": 0.2916666666666667,
+    "new_mean_reward": 0.3444444444444444,
+    "old_correct": 4,
+    "new_correct": 4,
+    "old_grounded": 3,
+    "new_grounded": 3,
+    "answer_agreements": 12,
+    "grounding_agreements": 7,
+    "unresolved": 0
+  },
+  "sft": {
+    "n": 12,
+    "old_mean_reward": 0.375,
+    "new_mean_reward": 0.5903769841269841,
+    "old_correct": 6,
+    "new_correct": 7,
+    "old_grounded": 3,
+    "new_grounded": 4,
+    "answer_agreements": 12,
+    "grounding_agreements": 8,
+    "unresolved": 0
+  }
+}

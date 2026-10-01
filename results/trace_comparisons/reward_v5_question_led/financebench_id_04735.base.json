@@ -1,0 +1,140 @@
+{
+  "financebench_id": "financebench_id_04735",
+  "model": "Qwen3.5-4B",
+  "source_hash": "9767c78974b320a252825159b7364382faa10f1be4e911b6af337f5f35428312",
+  "original_score": {
+    "F": 1.0,
+    "A": 0.0,
+    "G": 0.0,
+    "Ret": 0.0,
+    "reward": 0.0,
+    "correct": 0,
+    "grounded_success": 0,
+    "unresolved": false,
+    "fabricated_citation": false,
+    "grader_version": "workshop-rubric-v3-source-rounding"
+  },
+  "new_score": {
+    "F": 1,
+    "N": 0.0,
+    "S": null,
+    "A": 0.0,
+    "G": 0.0,
+    "reward": 0.0,
+    "correct": 0,
+    "grounded_success": 0,
+    "unresolved": false,
+    "scorer_version": "workshop-rubric-v5-question-led",
+    "judgment": {
+      "numeric": [
+        {
+          "id": "n1",
+          "correct": false,
+          "reason": "Candidate final quantity is 0.66 thousand as a ratio, i.e. 660; reference quantity is 0.66 (ratio). The stated scale makes the final answer incorrect."
+        }
+      ],
+      "semantic": [],
+      "grounding": [
+        {
+          "claim": "Adobe FY2015 operating cash flow ratio is 0.66 thousand (660).",
+          "supported": false,
+          "receipt_ids": [
+            "r2",
+            "r4"
+          ],
+          "reason": "The cited cash from operations is 1,469,502 thousand and total current liabilities are 2,213,556 thousand; their quotient is approximately 0.66, not 660."
+        }
+      ],
+      "unresolved": false,
+      "_meta": {
+        "model": "openai/openai/gpt-5.6-terra",
+        "prompt_version": "component-judge-v4-question-led",
+        "input_hash": "0a9b45724bb2be8a8085b96fdb7f827f1997d8cd5d4d5bdbc1f007f7e2f7893b",
+        "usage": {
+          "completion_tokens": 247,
+          "prompt_tokens": 3637,
+          "total_tokens": 3884,
+          "completion_tokens_details": {
+            "reasoning_tokens": 97
+          },
+          "prompt_tokens_details": {
+            "cached_tokens": 0,
+            "cache_write_tokens": 3634,
+            "cache_creation_tokens": 3634
+          }
+        }
+      }
+    },
+    "rubric": {
+      "mode": "numeric",
+      "numeric": [
+        {
+          "id": "n1",
+          "expected": "0.66"
+        }
+      ],
+      "semantic": [],
+      "_meta": {
+        "model": "openai/openai/gpt-5.6-terra",
+        "prompt_version": "component-judge-v4-question-led",
+        "input_hash": "009c80905a40378dcd79bbe17103a887772c685ba07e3ba57cd4afc769b50d61",
+        "usage": {
+          "completion_tokens": 27,
+          "prompt_tokens": 523,
+          "total_tokens": 550,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens_details": {
+            "cached_tokens": 0,
+            "cache_write_tokens": 0,
+            "cache_creation_tokens": 0
+          }
+        }
+      },
+      "requirements": {
+        "mode": "numeric",
+        "numeric": [
+          {
+            "id": "n1",
+            "expected": "Adobe FY2015 operating cash flow ratio, defined as cash from operations divided by total current liabilities, rounded to two decimal places"
+          }
+        ],
+        "semantic": [],
+        "_meta": {
+          "model": "openai/openai/gpt-5.6-terra",
+          "prompt_version": "component-judge-v4-question-led",
+          "input_hash": "2e0acacfe8c1aa9878155561982c7cb82231f4bffd0a4e853d721d3cb1402ddb",
+          "usage": {
+            "completion_tokens": 49,
+            "prompt_tokens": 387,
+            "total_tokens": 436,
+            "completion_tokens_details": {
+              "reasoning_tokens": 0
+            },
+            "prompt_tokens_details": {
+              "cached_tokens": 0,
+              "cache_write_tokens": 0,
+              "cache_creation_tokens": 0
+            }
+          }
+        }
+      },
+      "reference": "0.66"
+    },
+    "invalid_citations": []
+  },
+  "tool_metrics": {
+    "total_calls": 8,
+    "by_tool": {
+      "bm25_search": 3,
+      "read_table": 2,
+      "read": 2,
+      "finish": 1
+    },
+    "identical_repeat_calls": 0,
+    "tool_error_observations": 0,
+    "delivered_chars": 19790,
+    "note": "Diagnostics only: retries and errors are not automatically model faults; no diversity bonus."
+  }
+}

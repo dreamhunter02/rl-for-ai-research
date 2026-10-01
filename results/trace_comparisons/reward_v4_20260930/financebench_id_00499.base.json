@@ -1,0 +1,178 @@
+{
+  "financebench_id": "financebench_id_00499",
+  "model": "Qwen3.5-4B",
+  "source_hash": "6584adf926ba5fe71a0a9c4753d83ed164b73dbf5e9f6a968bb3b3670424b219",
+  "original_score": {
+    "F": 1.0,
+    "A": 1.0,
+    "G": 0.0,
+    "Ret": 1.0,
+    "reward": 0.5,
+    "correct": 1,
+    "grounded_success": 0,
+    "unresolved": false,
+    "fabricated_citation": false,
+    "grader_version": "workshop-rubric-v3-source-rounding",
+    "judge_verdict": "entailed",
+    "judge_confidence": 0.95,
+    "judge_cache_hit": false,
+    "judge_numeric_ok": true
+  },
+  "new_score": {
+    "F": 1,
+    "N": 0.0,
+    "S": 1.0,
+    "A": 0.4,
+    "G": 0.16666666666666666,
+    "reward": 0.23333333333333336,
+    "correct": 0,
+    "grounded_success": 0,
+    "unresolved": false,
+    "scorer_version": "workshop-rubric-v4-components",
+    "judgment": {
+      "numeric": [
+        {
+          "id": "n1",
+          "correct": false,
+          "reason": "Candidate does not provide the requested CAPEX/Revenue ratio; it reports CAPEX/Total Assets of 3.8%. Reference quantity is 5.1%."
+        },
+        {
+          "id": "n2",
+          "correct": false,
+          "reason": "Candidate does not provide Fixed assets/Total Assets. Reference quantity is 20%."
+        },
+        {
+          "id": "n3",
+          "correct": false,
+          "reason": "Candidate does not provide Return on Assets. Reference quantity is 12.4%."
+        }
+      ],
+      "semantic": [
+        {
+          "id": "s1",
+          "correct": true,
+          "reason": "Candidate reaches the required conclusion that 3M was not capital-intensive based on FY2022 data, citing relatively modest capital investment."
+        }
+      ],
+      "grounding": [
+        {
+          "claim": "3M's FY2022 capital expenditures were $1,749 million.",
+          "supported": true,
+          "receipt_ids": [
+            "r1"
+          ],
+          "reason": "The cash-flow statement reports 2022 purchases of PP&E of $1,749 million."
+        },
+        {
+          "claim": "3M's FY2022 total assets were $46,100 million.",
+          "supported": false,
+          "receipt_ids": [],
+          "reason": "The cited receipt r3 contains derivative-instrument disclosures, not the consolidated balance sheet or total-assets figure."
+        },
+        {
+          "claim": "Capital expenditures divided by total assets were approximately 3.8%.",
+          "supported": false,
+          "receipt_ids": [
+            "r1"
+          ],
+          "reason": "The CAPEX numerator is supported by r1, but the asserted total-assets denominator is not supported by a valid cited receipt."
+        },
+        {
+          "claim": "3M was not a capital-intensive business based on FY2022 data.",
+          "supported": false,
+          "receipt_ids": [
+            "r1"
+          ],
+          "reason": "The cited CAPEX figure alone does not support the conclusion, and the supporting total-assets evidence is not present in the cited balance-sheet receipt."
+        },
+        {
+          "claim": "Capital-intensive industries typically have capital-intensity ratios of 20% to 50% or more.",
+          "supported": false,
+          "receipt_ids": [],
+          "reason": "No cited evidence supports this asserted industry benchmark."
+        },
+        {
+          "claim": "3M's diversified consumer-products business model requires modest capital investment compared with its asset base.",
+          "supported": false,
+          "receipt_ids": [],
+          "reason": "No cited evidence supports this business-model characterization or comparison."
+        }
+      ],
+      "unresolved": false,
+      "_meta": {
+        "model": "openai/openai/gpt-5.6-terra",
+        "prompt_version": "component-judge-v3-contextual-units",
+        "input_hash": "1500b14c9a6bf6351fb48979c0513ac6236bb2e15610408a7d7d6caeee60b9ba",
+        "usage": {
+          "completion_tokens": 865,
+          "prompt_tokens": 4530,
+          "total_tokens": 5395,
+          "completion_tokens_details": {
+            "reasoning_tokens": 401
+          },
+          "prompt_tokens_details": {
+            "cached_tokens": 0,
+            "cache_write_tokens": 4527,
+            "cache_creation_tokens": 4527
+          }
+        }
+      }
+    },
+    "rubric": {
+      "mode": "mixed",
+      "numeric": [
+        {
+          "id": "n1",
+          "expected": "CAPEX/Revenue Ratio: 5.1%"
+        },
+        {
+          "id": "n2",
+          "expected": "Fixed assets/Total Assets: 20%"
+        },
+        {
+          "id": "n3",
+          "expected": "Return on Assets: 12.4%"
+        }
+      ],
+      "semantic": [
+        {
+          "id": "s1",
+          "expected": "No, 3M was not a capital-intensive business based on FY2022 data; it managed CAPEX and fixed assets efficiently."
+        }
+      ],
+      "_meta": {
+        "model": "openai/openai/gpt-5.6-terra",
+        "prompt_version": "component-judge-v3-contextual-units",
+        "input_hash": "8c7802e727cb1b93398caf1f707e0a00ce7d6f8c4513c6dade8e2edb9a89eecd",
+        "usage": {
+          "completion_tokens": 105,
+          "prompt_tokens": 233,
+          "total_tokens": 338,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens_details": {
+            "cached_tokens": 0,
+            "cache_write_tokens": 0,
+            "cache_creation_tokens": 0
+          }
+        }
+      }
+    },
+    "invalid_citations": []
+  },
+  "tool_metrics": {
+    "total_calls": 8,
+    "by_tool": {
+      "bm25_search": 1,
+      "search_tables": 2,
+      "read_table": 2,
+      "read": 2,
+      "finish": 1
+    },
+    "identical_repeat_calls": 0,
+    "tool_error_observations": 0,
+    "delivered_chars": 20993,
+    "note": "Diagnostics only: retries and errors are not automatically model faults; no diversity bonus."
+  }
+}

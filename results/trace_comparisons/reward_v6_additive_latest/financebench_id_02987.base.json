@@ -1,0 +1,168 @@
+{
+  "E": 1.0,
+  "G": 0.0,
+  "A": 0.0,
+  "B": 0,
+  "F": 0,
+  "N": 0.0,
+  "S": null,
+  "reward": 0.15,
+  "answer_correct": 0,
+  "grounded_success": 0,
+  "unresolved": false,
+  "scorer_version": "workshop-rubric-v6-additive",
+  "judgment": {
+    "numeric": [
+      {
+        "id": "n1",
+        "correct": false,
+        "reason": "FY2019 revenue of $6,489 million divided by average PP&E of $267.5 million (($253m + $282m)/2) equals 24.26, not 20.15."
+      }
+    ],
+    "semantic": [],
+    "retrieval": {
+      "coverage": "full",
+      "receipt_ids": [
+        "r1",
+        "r2"
+      ],
+      "reason": "r2 provides FY2019 consolidated net revenues of $6,489 million, and r1 provides 2019 and 2018 property and equipment, net, of $253 million and $282 million."
+    },
+    "grounding": [
+      {
+        "claim": "The FY2019 fixed asset turnover ratio is 20.15.",
+        "supported": false,
+        "receipt_ids": [
+          "r1",
+          "r2"
+        ],
+        "reason": "The cited receipts provide revenue of $6,489 million and PP&E of $253 million and $282 million. Average PP&E is $267.5 million, and 6,489 / 267.5 = 24.2579, which rounds to 24.26 rather than 20.15."
+      }
+    ],
+    "completeness": [
+      {
+        "id": "b1",
+        "correct": false,
+        "reason": "The candidate states 20.15 instead of the required 24.26."
+      }
+    ],
+    "material_contradiction": true,
+    "unresolved": false,
+    "_meta": {
+      "model": "openai/openai/gpt-5.6-terra",
+      "prompt_version": "component-judge-v4-question-led",
+      "input_hash": "8adb236cb4c429f23ce3966fcadff3b649a087b2d6642d753f25e85650c7a59b",
+      "usage": {
+        "completion_tokens": 359,
+        "prompt_tokens": 3099,
+        "total_tokens": 3458,
+        "completion_tokens_details": {
+          "reasoning_tokens": 80
+        },
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "cache_write_tokens": 3096,
+          "cache_creation_tokens": 3096
+        }
+      }
+    }
+  },
+  "rubric": {
+    "mode": "numeric",
+    "numeric": [
+      {
+        "id": "n1",
+        "expected": "24.26"
+      }
+    ],
+    "semantic": [],
+    "_meta": {
+      "model": "openai/openai/gpt-5.6-terra",
+      "prompt_version": "component-judge-v4-question-led",
+      "input_hash": "6cb0e7eba197c6b149e2759d780664e530f3e2ee35fbb3266538a91932e4a7d1",
+      "usage": {
+        "completion_tokens": 27,
+        "prompt_tokens": 527,
+        "total_tokens": 554,
+        "completion_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "cache_write_tokens": 0,
+          "cache_creation_tokens": 0
+        }
+      }
+    },
+    "requirements": {
+      "mode": "numeric",
+      "numeric": [
+        {
+          "id": "n1",
+          "expected": "FY2019 fixed asset turnover ratio for Activision Blizzard, calculated as FY2019 revenue divided by average PP&E between FY2018 and FY2019, rounded to two decimal places"
+        }
+      ],
+      "semantic": [],
+      "_meta": {
+        "model": "openai/openai/gpt-5.6-terra",
+        "prompt_version": "component-judge-v4-question-led",
+        "input_hash": "7e12603e584efdeb768137225d414839612c1793ac5fb47b107a8e483ac1eb79",
+        "usage": {
+          "completion_tokens": 61,
+          "prompt_tokens": 384,
+          "total_tokens": 445,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens_details": {
+            "cached_tokens": 0,
+            "cache_write_tokens": 0,
+            "cache_creation_tokens": 0
+          }
+        }
+      }
+    },
+    "reference": "24.26",
+    "gold_claims": [
+      {
+        "id": "b1",
+        "expected": "24.26"
+      }
+    ],
+    "gold_claims_meta": {
+      "model": "openai/openai/gpt-5.6-terra",
+      "prompt_version": "component-judge-v4-question-led",
+      "input_hash": "906ae923523396193a005b0541dfe3e256846fb458e64a3cc777ba7a25140d21",
+      "usage": {
+        "completion_tokens": 45,
+        "prompt_tokens": 126,
+        "total_tokens": 171,
+        "completion_tokens_details": {
+          "reasoning_tokens": 23
+        },
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "cache_write_tokens": 0,
+          "cache_creation_tokens": 0
+        }
+      }
+    }
+  },
+  "tool_metrics": {
+    "total_calls": 8,
+    "by_tool": {
+      "bm25_search": 1,
+      "search_tables": 2,
+      "read_table": 2,
+      "calculate": 2,
+      "finish": 1
+    },
+    "identical_repeat_calls": 0,
+    "tool_error_observations": 3,
+    "delivered_chars": 13889,
+    "note": "Diagnostics only: retries and errors are not automatically model faults; no diversity bonus."
+  },
+  "invalid_citations": [],
+  "financebench_id": "financebench_id_02987",
+  "source_hash": "26669effc827c34cf03af719fb13f0801b5f30fb50b0a15dec405a6cfd875711"
+}

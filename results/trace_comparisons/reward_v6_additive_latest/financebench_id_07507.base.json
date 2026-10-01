@@ -1,0 +1,166 @@
+{
+  "E": 1.0,
+  "G": 0.0,
+  "A": 0.0,
+  "B": 0,
+  "F": 0,
+  "N": 0.0,
+  "S": null,
+  "reward": 0.15,
+  "answer_correct": 0,
+  "grounded_success": 0,
+  "unresolved": false,
+  "scorer_version": "workshop-rubric-v6-additive",
+  "judgment": {
+    "numeric": [
+      {
+        "id": "n1",
+        "correct": false,
+        "reason": "FY2016 operating income was 1,493,602 thousand and FY2015 was 903,095 thousand; (1,493,602 - 903,095) / 903,095 = 65.386...%, which rounds to 65.4%, not 65.0%."
+      }
+    ],
+    "semantic": [],
+    "retrieval": {
+      "coverage": "full",
+      "receipt_ids": [
+        "r2"
+      ],
+      "reason": "The FY2016 income statement contains operating income for both FY2016 (1,493,602 thousand) and FY2015 (903,095 thousand), sufficient to calculate the requested change."
+    },
+    "grounding": [
+      {
+        "claim": "Adobe's year-over-year change in unadjusted operating income from FY2015 to FY2016 was 65.0%.",
+        "supported": false,
+        "receipt_ids": [
+          "r1",
+          "r2"
+        ],
+        "reason": "The cited income statements show operating income of 903,095 thousand in FY2015 and 1,493,602 thousand in FY2016. The calculation is (1,493,602 - 903,095) / 903,095 = 65.386...%, which rounds to 65.4%, not 65.0%."
+      }
+    ],
+    "completeness": [
+      {
+        "id": "b1",
+        "correct": false,
+        "reason": "The candidate gives 65.0%, while the required one-decimal result is 65.4%."
+      }
+    ],
+    "material_contradiction": true,
+    "unresolved": false,
+    "_meta": {
+      "model": "openai/openai/gpt-5.6-terra",
+      "prompt_version": "component-judge-v4-question-led",
+      "input_hash": "469dce81e991a8d0c0fc0c51c0661610acc4ca54559ccc6728b56995d516571a",
+      "usage": {
+        "completion_tokens": 403,
+        "prompt_tokens": 3091,
+        "total_tokens": 3494,
+        "completion_tokens_details": {
+          "reasoning_tokens": 83
+        },
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "cache_write_tokens": 3088,
+          "cache_creation_tokens": 3088
+        }
+      }
+    }
+  },
+  "rubric": {
+    "mode": "numeric",
+    "numeric": [
+      {
+        "id": "n1",
+        "expected": "65.4%"
+      }
+    ],
+    "semantic": [],
+    "_meta": {
+      "model": "openai/openai/gpt-5.6-terra",
+      "prompt_version": "component-judge-v4-question-led",
+      "input_hash": "6305ec4fb7b9ee0b3594cc2dd299d17145503e33074525ae297a51f3c725b7c4",
+      "usage": {
+        "completion_tokens": 28,
+        "prompt_tokens": 504,
+        "total_tokens": 532,
+        "completion_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "cache_write_tokens": 0,
+          "cache_creation_tokens": 0
+        }
+      }
+    },
+    "requirements": {
+      "mode": "numeric",
+      "numeric": [
+        {
+          "id": "n1",
+          "expected": "Adobe's year-over-year percentage change in unadjusted operating income from FY2015 to FY2016, rounded to one decimal place, using the income statement"
+        }
+      ],
+      "semantic": [],
+      "_meta": {
+        "model": "openai/openai/gpt-5.6-terra",
+        "prompt_version": "component-judge-v4-question-led",
+        "input_hash": "55acbc5e5f57abeb979dc012162309b9d3b50b3c94263cd8694080d4910b164b",
+        "usage": {
+          "completion_tokens": 56,
+          "prompt_tokens": 362,
+          "total_tokens": 418,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens_details": {
+            "cached_tokens": 0,
+            "cache_write_tokens": 0,
+            "cache_creation_tokens": 0
+          }
+        }
+      }
+    },
+    "reference": "65.4%",
+    "gold_claims": [
+      {
+        "id": "b1",
+        "expected": "65.4%"
+      }
+    ],
+    "gold_claims_meta": {
+      "model": "openai/openai/gpt-5.6-terra",
+      "prompt_version": "component-judge-v4-question-led",
+      "input_hash": "d1a3d88c41fc5b6f73310f694e7d0ae8f83c5997a94f5319f2f9b084e93dce14",
+      "usage": {
+        "completion_tokens": 48,
+        "prompt_tokens": 127,
+        "total_tokens": 175,
+        "completion_tokens_details": {
+          "reasoning_tokens": 25
+        },
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "cache_write_tokens": 0,
+          "cache_creation_tokens": 0
+        }
+      }
+    }
+  },
+  "tool_metrics": {
+    "total_calls": 8,
+    "by_tool": {
+      "bm25_search": 3,
+      "search_tables": 2,
+      "read_table": 2,
+      "finish": 1
+    },
+    "identical_repeat_calls": 0,
+    "tool_error_observations": 1,
+    "delivered_chars": 18579,
+    "note": "Diagnostics only: retries and errors are not automatically model faults; no diversity bonus."
+  },
+  "invalid_citations": [],
+  "financebench_id": "financebench_id_07507",
+  "source_hash": "b55a847dd72b25332ff36c722b850d1953402ccafc2e0d6f2da258ad8ff3bd5a"
+}

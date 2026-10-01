@@ -1,0 +1,18 @@
+{
+  "phase": "post_sft",
+  "adapter": "/home/dreamhunter/qwen4b_financebench_qlora_24k_20260930/final_adapter",
+  "served_adapter_name": "qwen-sft",
+  "base_model": "Qwen3.5-4B",
+  "split": "dev12",
+  "max_turns": 8,
+  "max_tokens_per_call": 1024,
+  "temperature": 0.0,
+  "seed": 0,
+  "judge_backend": "deepinfra",
+  "targets": "targets_frozen_rubric-v3.json",
+  "serving": "SGLang 0.5.20, BF16 base with LoRA adapter",
+  "caveats": [
+    "Historical baseline lacks a complete launch manifest; 8 turns are verified from traces, other decoding parameters use evaluator defaults.",
+    "Serving uses FLASHINFER_DISABLE_VERSION_CHECK=1 because installed flashinfer-python 0.6.18 and flashinfer-cubin 0.6.17 differ."
+  ]
+}

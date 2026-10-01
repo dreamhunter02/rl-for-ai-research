@@ -1,0 +1,22 @@
+{
+  "base": {
+    "total": 12,
+    "resolved": 11,
+    "unresolved_ids": [
+      "financebench_id_00684"
+    ],
+    "mean_reward_resolved_only": 0.45262626262626265,
+    "core_correct_resolved": 4,
+    "full_reference_resolved": 2
+  },
+  "sft": {
+    "total": 12,
+    "resolved": 11,
+    "unresolved_ids": [
+      "financebench_id_00684"
+    ],
+    "mean_reward_resolved_only": 0.6328643578643578,
+    "core_correct_resolved": 7,
+    "full_reference_resolved": 5
+  }
+}

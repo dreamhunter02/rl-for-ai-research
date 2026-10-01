@@ -29,6 +29,7 @@ The split manifest is authoritative and is preserved without reallocation. The 4
 - Rollouts: max 8 turns, max 1,024 generated tokens, train temperature 1.0, evaluation temperature 0.2, LoRA rank 32.
 - Selection: update-zero B1 and matched dev checkpoints; grounded success first, correctness second, lower cost third; base is a candidate. Final R1 restarts from base.
 - Evaluation: one rollout per scheduled question, fixed policy, no best-of-k; SDK sampling seed support is recorded rather than assumed.
+- Judge: DeepInfra `deepseek-ai/DeepSeek-V4.1-Flash`, temperature 0, confidence threshold 0.85, used only for qualitative residuals after deterministic vetoes. Provider failures remain unresolved rather than negative labels. The live credential and five saved-case calibration gates passed before LR pilots.
 
 ## Scoring
 

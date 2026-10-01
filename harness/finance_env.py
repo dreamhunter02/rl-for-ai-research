@@ -54,6 +54,17 @@ class CoercingTool:
             except ValueError:
                 parsed = value
             arguments[key] = parsed if isinstance(parsed, list) else [value]
+        for key, value in list(arguments.items()):
+            kind = schema.get(key, {}).get("type")
+            if kind == "object" and isinstance(value, str):
+                try:
+                    parsed = json.loads(value)
+                except ValueError:
+                    continue
+                if isinstance(parsed, dict):
+                    arguments[key] = parsed
+            elif kind == "string" and value is not None and not isinstance(value, str):
+                arguments[key] = str(value)
         return await self._tool.run(ToolInput(arguments=arguments, call_id=getattr(call, "call_id", None)))
 
 import sys
@@ -68,27 +79,29 @@ FINANCE_TASK_INSTRUCTIONS = """You are a financial-filings retrieval agent.
 Your job is to answer the user's question using the SEC filing corpus. Search
 before answering. Start with bm25_search to identify the likely document and
 passages, then use grep_document for exact accounting terms or regexes and
-read/read_table to inspect bounded evidence. Any derived numeric answer must come from calculate using named, source-backed operands. Direct extraction needs no calculation.
+read/read_table to inspect bounded evidence. Do arithmetic yourself using retrieved
+values, their units and periods. Give the requested final result, not just operands.
 You may switch documents or issue refined searches when the evidence is not
 sufficient. Do not invent values or rely on outside knowledge.
 
 Available tools:
 - bm25_search: ranked keyword search with optional company/year/document filters
-- grep_document: document-scoped exact or regex search; choose grep_type text, pdfgrep, or rga
+- grep_document: document-scoped regex search over indexed page text; locate terms, then read context
 - search_tables: ranked search over table-like pages in one or all filings
 - read: bounded page/passage retrieval with provenance
-- read_table: retrieve a table candidate with neighboring headers and footnotes
-- calculate: safe arithmetic for ratios, changes, and unit conversions
+- read_table: read a table-like page by table_id; returns page text, not a parsed table;
+  neighbor_pages are pointers only, use read to obtain their content
 
 When you have enough evidence, call finish exactly once. For numeric answers use
 answer_type="numeric", value as a decimal string, unit and scale; leave answer_text
 empty. For yes/no-only answers use answer_type="boolean", decision="yes" or "no".
 For text or multipart answers use answer_type="text", answer_text with all requested
 facts. Cite receipt_id, document_id and one-based page from read/grep results.
-For arithmetic, calculate accepts an expression with named variables and an operands
-object mapping each variable to value, unit, scale, metric, period, receipt_id and an
-exact quote. Include its calc_id in finish. Do not use constant-only calculations as
-support. Read beyond snippets when needed. Use the final available turn to finish;
+For arithmetic, optionally include a concise derivation with source values. For
+questions requiring a number AND conclusion, use text and include both. Verify year
+headers and units; fiscal quarters need not match calendar quarters. Search snippets
+are discovery hints, not full evidence. Read beyond snippets when needed. Avoid
+identical repeated calls unless circumstances changed. Use the final available turn to finish;
 never continue searching when only one turn remains.
 """
 
@@ -118,7 +131,12 @@ class Bm25Tool:
         if name == "grep_document":
             for i, hit in enumerate(payload.get("matches", []), 1):
                 hit["receipt_id"] = f"r{len(self.state.receipts)+i}"
+                original_length = len(hit.get("text", ""))
                 hit["text"] = hit.get("text", "")[:500]
+                hit["truncated"] = original_length > len(hit["text"])
+                hit["end"] = hit.get("start", 0) + len(hit["text"])
+                hit["next_start"] = hit["end"] if hit["truncated"] else None
+                if hit["truncated"]: hit["continuation"] = "Use read(document_id, page, start=next_start) for remaining context."
         raw = bounded_observation(payload)
         delivered = json.loads(raw)
         if name in ("read", "read_table") and delivered.get("receipt_id"):
@@ -146,6 +164,8 @@ class Bm25Tool:
         filters = {"company": company, "year": year, "filing_type": filing_type, "document_id": document_id}
         top_k = max(1, min(int(top_k), 5))
         scope = (scope or "both").lower()
+        if scope not in ('prose','tables','table','both'):
+            return self._result({'error':'scope must be prose, tables, or both; correct scope and retry.'}, 'bm25_search')
         out: dict[str, object] = {"queries": query_list, "filters": filters}
         if scope in ("prose", "both"):
             out["prose_hits"] = self.index.search_prose(query_list, filters, top_k)
@@ -165,7 +185,7 @@ class Bm25Tool:
         page_start: Annotated[int, "First page to search, or -1 for all pages."] = -1,
         page_end: Annotated[int, "Last page to search, or -1 for all pages."] = -1,
         context_lines: Annotated[int, "Number of surrounding lines per match."] = 2,
-        grep_type: Annotated[str, "Backend choice: text, pdfgrep, or rga."] = "text",
+        grep_type: Annotated[str, "Legacy hint only; all values use indexed page_text, not an external backend."] = "text",
     ) -> ToolResult:
         result = self.index.grep_document(document_id, patterns, page_start, page_end, context_lines)
         return self._result({"grep_type_requested": grep_type, "backend_used": "page_text", "matches": result}, "grep_document")
@@ -205,17 +225,6 @@ class Bm25Tool:
         return self._result(self.index.read_table(table_id, include_neighbors, start, None if end < 0 else end), "read_table")
 
     @tool
-    async def calculate(
-        self,
-        expression: Annotated[str, "Arithmetic using named source-backed operands and + - * /."],
-        operands: Annotated[dict[str, Any], "Variable to value/unit/scale/metric/period/receipt_id/quote mapping."] = {},
-    ) -> ToolResult:
-        try:
-            return self._result(self.state.calculate(expression, operands), "calculate")
-        except Exception as exc:
-            return self._result({"error": str(exc)}, "calculate")
-
-    @tool
     async def finish(
         self,
         answer_type: Annotated[str, "numeric, boolean, or text"],
@@ -225,7 +234,7 @@ class Bm25Tool:
         decision: Annotated[str, "yes or no for boolean answers."] = "",
         answer_text: Annotated[str, "Text/multipart answer; empty for numeric and boolean."] = "",
         citations: Annotated[list[dict[str, Any]], "Each contains receipt_id, document_id and one-based page."] = [],
-        calc_id: Annotated[str, "Calculation record for a derived numeric result."] = "",
+        derivation: Annotated[str, "Optional concise arithmetic using retrieved values, units and periods."] = "",
     ) -> ToolResult:
         if self.state.accepted is not None or self.state.terminal_ambiguous:
             self.state.accepted = None
@@ -234,7 +243,7 @@ class Bm25Tool:
             return self._result({"error": "Multiple terminal submissions are ambiguous"}, "finish", True)
         try:
             self.state.accepted = validate_submission(dict(answer_type=answer_type, value=value, unit=unit,
-                scale=scale, decision=decision, answer_text=answer_text, citations=citations, calc_id=calc_id))
+                scale=scale, decision=decision, answer_text=answer_text, citations=citations, derivation=derivation))
         except ValueError as exc:
             self.state.validation_errors += 1
             return self._result({"error": str(exc)}, "finish")
@@ -398,6 +407,16 @@ class FinanceAnswerReward:
         }
 
     async def __call__(self, history: list[Message]) -> tuple[float, dict[str, Any]]:
+        if os.environ.get('FINANCEBENCH_SCORER', 'components') != 'legacy':
+            from component_reward import score_live
+            state = self.episode_state
+            if self.target is None or state is None: raise ValueError('Target and episode state required')
+            result = await score_live(question=self.question, target=self.target, submission=state.accepted,
+                                      receipts=state.receipts, judge=self.judge, reference=self.gold_answers)
+            state.last_score = result
+            # SDK requires a float; unresolved is preserved and entire GRPO group is excluded.
+            return result['reward'] if result['reward'] is not None else 0.0, {
+                k:float(v) for k,v in result.items() if isinstance(v,(int,float,bool))}
         if self.target is not None:
             state = self.episode_state
             result = score_submission(self.target, state.accepted, state, float(os.environ.get("RETRIEVAL_WEIGHT", "0")))
@@ -461,7 +480,7 @@ def _initial_messages(datum: dict, renderer: Renderer, tool_obj: Bm25Tool) -> li
     schemas = [
         tool_obj.bm25_search.to_spec(), tool_obj.grep_document.to_spec(),
         tool_obj.search_tables.to_spec(), tool_obj.read.to_spec(),
-        tool_obj.read_table.to_spec(), tool_obj.calculate.to_spec(), tool_obj.finish.to_spec(),
+        tool_obj.read_table.to_spec(), tool_obj.finish.to_spec(),
     ]
     prefix = renderer.create_conversation_prefix_with_tools(tools=schemas, system_prompt=FINANCE_TASK_INSTRUCTIONS)
     return prefix + [{"role": "user", "content": datum["question"]}]
@@ -491,7 +510,7 @@ class FinanceSearchEnvGroupBuilder(EnvGroupBuilder):
             initial_messages = _initial_messages(self.datum, renderer, tool_obj)
             reward_fn = FinanceAnswerReward(gold_answers=self.datum["answer"], question=self.datum.get("question", ""),
                 judge=self.judge, reward_config=self.reward_config, episode_state=tool_obj.state, target=self.datum.get("target"))
-            tools = [CoercingTool(getattr(tool_obj, name)) for name in ("bm25_search", "grep_document", "search_tables", "read", "read_table", "calculate", "finish")]
+            tools = [CoercingTool(getattr(tool_obj, name)) for name in ("bm25_search", "grep_document", "search_tables", "read", "read_table", "finish")]
             env = build_agent_tool_env(renderer=renderer, tools=tools, initial_messages=initial_messages,
                 reward_fn=reward_fn, model_name=self.model_name, max_turns=self.max_turns,
                 max_trajectory_tokens=self.max_trajectory_tokens, failed_parse_reward=0.0, context_overflow_reward=0.0,
@@ -607,6 +626,8 @@ class FinanceDatasetBuilder(RLDatasetBuilder):
     async def __call__(self):
         reward_config = RewardConfig.from_env()
         judge = build_judge(reward_config)
+        from run_identity import require_current_judge
+        require_current_judge(judge)
         data = load_financebench(self.split_name)
         tool_obj = await Bm25Tool.build(doc_names=sorted({d['doc'] for d in data}))
         rng = random.Random(self.seed)

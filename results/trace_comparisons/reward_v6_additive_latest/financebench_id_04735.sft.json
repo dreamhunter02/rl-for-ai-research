@@ -1,0 +1,168 @@
+{
+  "E": 1.0,
+  "G": 1.0,
+  "A": 1.0,
+  "B": 1,
+  "F": 1,
+  "N": 1.0,
+  "S": null,
+  "reward": 1.0,
+  "answer_correct": 1,
+  "grounded_success": 1,
+  "unresolved": false,
+  "scorer_version": "workshop-rubric-v6-additive",
+  "judgment": {
+    "numeric": [
+      {
+        "id": "n1",
+        "correct": true,
+        "reason": "Adobe FY2015 operating cash flow ratio is 1,469,502 / 2,213,556 = 0.6639, which rounds to 0.66."
+      }
+    ],
+    "semantic": [],
+    "retrieval": {
+      "coverage": "full",
+      "receipt_ids": [
+        "r3",
+        "r4"
+      ],
+      "reason": "r3 provides FY2015 net cash provided by operating activities and r4 provides FY2015 total current liabilities."
+    },
+    "grounding": [
+      {
+        "claim": "Adobe FY2015 operating cash flow ratio is 0.66.",
+        "supported": true,
+        "receipt_ids": [
+          "r3",
+          "r4"
+        ],
+        "reason": "r3 reports operating cash flow of 1,469,502 thousand and r4 reports total current liabilities of 2,213,556 thousand. 1,469,502 / 2,213,556 = 0.6639, which rounds to 0.66."
+      }
+    ],
+    "completeness": [
+      {
+        "id": "b1",
+        "correct": true,
+        "reason": "The candidate provides 0.66, the required FY2015 operating cash flow ratio rounded to two decimal places."
+      }
+    ],
+    "material_contradiction": false,
+    "unresolved": false,
+    "_meta": {
+      "model": "openai/openai/gpt-5.6-terra",
+      "prompt_version": "component-judge-v4-question-led",
+      "input_hash": "ba7a52e654cd4b99644c0d3ac249c7df86e09e883dc3869fe91094ee5fcca44e",
+      "usage": {
+        "completion_tokens": 314,
+        "prompt_tokens": 3773,
+        "total_tokens": 4087,
+        "completion_tokens_details": {
+          "reasoning_tokens": 59
+        },
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "cache_write_tokens": 3770,
+          "cache_creation_tokens": 3770
+        }
+      }
+    }
+  },
+  "rubric": {
+    "mode": "numeric",
+    "numeric": [
+      {
+        "id": "n1",
+        "expected": "0.66"
+      }
+    ],
+    "semantic": [],
+    "_meta": {
+      "model": "openai/openai/gpt-5.6-terra",
+      "prompt_version": "component-judge-v4-question-led",
+      "input_hash": "009c80905a40378dcd79bbe17103a887772c685ba07e3ba57cd4afc769b50d61",
+      "usage": {
+        "completion_tokens": 27,
+        "prompt_tokens": 523,
+        "total_tokens": 550,
+        "completion_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "cache_write_tokens": 0,
+          "cache_creation_tokens": 0
+        }
+      }
+    },
+    "requirements": {
+      "mode": "numeric",
+      "numeric": [
+        {
+          "id": "n1",
+          "expected": "Adobe FY2015 operating cash flow ratio, defined as cash from operations divided by total current liabilities, rounded to two decimal places"
+        }
+      ],
+      "semantic": [],
+      "_meta": {
+        "model": "openai/openai/gpt-5.6-terra",
+        "prompt_version": "component-judge-v4-question-led",
+        "input_hash": "2e0acacfe8c1aa9878155561982c7cb82231f4bffd0a4e853d721d3cb1402ddb",
+        "usage": {
+          "completion_tokens": 49,
+          "prompt_tokens": 387,
+          "total_tokens": 436,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens_details": {
+            "cached_tokens": 0,
+            "cache_write_tokens": 0,
+            "cache_creation_tokens": 0
+          }
+        }
+      }
+    },
+    "reference": "0.66",
+    "gold_claims": [
+      {
+        "id": "b1",
+        "expected": "0.66"
+      }
+    ],
+    "gold_claims_meta": {
+      "model": "openai/openai/gpt-5.6-terra",
+      "prompt_version": "component-judge-v4-question-led",
+      "input_hash": "98929fba928f5403a9950b96a4b94ee75be7bf67b03450b8f8b2edfea684ad13",
+      "usage": {
+        "completion_tokens": 41,
+        "prompt_tokens": 126,
+        "total_tokens": 167,
+        "completion_tokens_details": {
+          "reasoning_tokens": 19
+        },
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "cache_write_tokens": 0,
+          "cache_creation_tokens": 0
+        }
+      }
+    }
+  },
+  "tool_metrics": {
+    "total_calls": 10,
+    "by_tool": {
+      "bm25_search": 2,
+      "read_table": 2,
+      "read": 2,
+      "calculate": 3,
+      "finish": 1
+    },
+    "identical_repeat_calls": 1,
+    "tool_error_observations": 3,
+    "delivered_chars": 15725,
+    "note": "Diagnostics only: retries and errors are not automatically model faults; no diversity bonus."
+  },
+  "invalid_citations": [],
+  "financebench_id": "financebench_id_04735",
+  "source_hash": "cc0303c8605e05247ca917d2f39001e5ad1e430d02c2da085cc010cabe9840fe"
+}

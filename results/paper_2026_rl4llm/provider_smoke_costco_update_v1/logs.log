@@ -1,0 +1,45 @@
+root:680 [INFO] Command line invocation: harness/train_financebench.py
+tinker_cookbook.utils.ml_log:618 [INFO] Logging to: /home/dreamhunter/Documents/Research/rl-for-ai-research/results/paper_2026_rl4llm/provider_smoke_costco_update_v1
+tinker_cookbook.rl.train:1920 [INFO] Tracing is enabled. Trace events will be saved to /home/dreamhunter/Documents/Research/rl-for-ai-research/results/paper_2026_rl4llm/provider_smoke_costco_update_v1/trace_events.jsonl
+tinker_cookbook.rl.train:1921 [INFO] Run `python tinker_cookbook/utils/trace.py /home/dreamhunter/Documents/Research/rl-for-ai-research/results/paper_2026_rl4llm/provider_smoke_costco_update_v1/trace_events.jsonl trace.json` and visualize in chrome://tracing or https://ui.perfetto.dev/
+tinker_cookbook.checkpoint_utils:396 [INFO] No checkpoints found at /home/dreamhunter/Documents/Research/rl-for-ai-research/results/paper_2026_rl4llm/provider_smoke_costco_update_v1/checkpoints.jsonl
+tinker_cookbook.checkpoint_utils:427 [INFO] No checkpoints found with key state_path in /home/dreamhunter/Documents/Research/rl-for-ai-research/results/paper_2026_rl4llm/provider_smoke_costco_update_v1
+tinker.lib.public_interfaces.service_client:131 [INFO] ServiceClient initialized for session 4575ec57-1389-5821-b7df-9c44c1a184c2
+tinker.lib.public_interfaces.service_client:270 [INFO] TrainingClient initialized for model 4575ec57-1389-5821-b7df-9c44c1a184c2:train:0
+huggingface_hub.utils._http:993 [WARNING] Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+tinker_cookbook.rl.train:1991 [INFO] Will train on 1 batches
+tinker_cookbook.checkpoint_utils:467 [INFO] Saved checkpoints: {'state_path': 'tinker://4575ec57-1389-5821-b7df-9c44c1a184c2:train:0/weights/000001', 'sampler_path': 'tinker://4575ec57-1389-5821-b7df-9c44c1a184c2:train:0/sampler_weights/000001'}
+tinker_cookbook.utils.ml_log:206 [INFO] Wrote metrics to /home/dreamhunter/Documents/Research/rl-for-ai-research/results/paper_2026_rl4llm/provider_smoke_costco_update_v1/metrics.jsonl
+tinker_cookbook.utils.ml_log:279 [INFO] 
+                             Step 0                             
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━┓
+┃ Metric                                           ┃ Value     ┃
+┡━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━┩
+│ optim/lr                                         │ 0.000010  │
+│ progress/batch                                   │ 0         │
+│ progress/done_frac                               │ 1.000000  │
+│ time/compute_group_rewards                       │ 0.000949  │
+│ time/do_group_rollout_and_filter_constant_reward │ 18.259387 │
+│ time/env_initial_observation:max                 │ 0.009990  │
+│ time/env_initial_observation:mean                │ 0.006430  │
+│ time/env_step:max                                │ 0.080322  │
+│ time/env_step:mean                               │ 0.021206  │
+│ time/policy_sample:max                           │ 7.732681  │
+│ time/policy_sample:mean                          │ 4.546176  │
+│ time/sample_async:max                            │ 7.732627  │
+│ time/sample_async:mean                           │ 4.546110  │
+│ time/sampling                                    │ 18.278014 │
+│ time/save_checkpoint                             │ 8.765316  │
+│ time/save_checkpoint_and_get_sampling_client     │ 8.950385  │
+│ time/save_checkpoint_async                       │ 8.765297  │
+│ time/save_state_async                            │ 0.000048  │
+│ time/save_weights_for_sampler_async              │ 0.000007  │
+│ time/total                                       │ 27.229021 │
+│ workshop/calls                                   │ 1         │
+│ workshop/optimizer_updates                       │ 0         │
+│ workshop/skipped_batches                         │ 1         │
+│ workshop/zero_signal_batch                       │ 1         │
+└──────────────────────────────────────────────────┴───────────┘
+tinker_cookbook.checkpoint_utils:467 [INFO] Saved checkpoints: {'state_path': 'tinker://4575ec57-1389-5821-b7df-9c44c1a184c2:train:0/weights/final', 'sampler_path': 'tinker://4575ec57-1389-5821-b7df-9c44c1a184c2:train:0/sampler_weights/final'}
+tinker_cookbook.rl.train:2052 [INFO] Training completed successfully
+tinker.lib.public_interfaces.service_client:131 [INFO] ServiceClient initialized for session 676c1c72-8818-5b94-9033-0b3d99b497d8

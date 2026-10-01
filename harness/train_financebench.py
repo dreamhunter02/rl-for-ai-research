@@ -78,6 +78,8 @@ async def main():
     if os.environ.get("ZERO_REWARD_ON_LIMIT", "true").lower() not in ("1", "true", "yes", "on"):
         raise ValueError("Validated runs require ZERO_REWARD_ON_LIMIT=true")
     # Label validation occurs before creating a paid training client.
+    from run_identity import require_current_judge
+    require_current_judge(finance_env.build_judge(finance_env.RewardConfig.from_env()))
     from workshop_prepare import preflight
     fingerprint = preflight(os.environ.get("FINANCEBENCH_SPLIT", str(finance_env.hb.BASE / "split.json")), os.environ["FINANCEBENCH_TARGETS"], corpus=True)
     finance_env.load_financebench(split_name)
