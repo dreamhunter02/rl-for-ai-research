@@ -153,6 +153,10 @@ def main():
     ap.add_argument("--split", required=True)
     ap.add_argument("--teacher-dataset", required=True, help="Schema source only; not training examples")
     ap.add_argument("--ids", default="financebench_id_04672,financebench_id_01865")
+    ap.add_argument("--all-train-corpus", action="store_true",
+                    help="Index every filing named by frozen train96, not just this batch")
+    ap.add_argument("--full-corpus", action="store_true",
+                    help="Index the complete configured filing corpus")
     ap.add_argument("--output-dir", required=True)
     ap.add_argument("--rollouts-from", default="", help="Resume exact saved on-policy rollouts")
     ap.add_argument("--group-size", type=int, default=2)
@@ -173,7 +177,10 @@ def main():
     out.mkdir(parents=True, exist_ok=False)
     (out / "config.json").write_text(json.dumps(vars(args), indent=2))
     (out / "split.sha256").write_text(hashlib.sha256(Path(args.split).read_bytes()).hexdigest())
-    corpus_docs = sorted({row["doc_name"] for row in rows})
+    if args.full_corpus and args.all_train_corpus:
+        raise ValueError("choose only one corpus scope")
+    corpus_rows = json.loads(Path(args.split).read_text())["train"] if args.all_train_corpus else rows
+    corpus_docs = sorted({row["doc_name"] for row in corpus_rows})
     if args.rollouts_from:
         previous = Path(args.rollouts_from)
         prior_config = json.loads((previous.parent / "config.json").read_text())
@@ -194,8 +201,10 @@ def main():
                           "source_sha256": hashlib.sha256(previous.read_bytes()).hexdigest()}), flush=True)
         index = None
     else:
-        print(json.dumps({"stage": "index", "questions": ids, "diagnostic_corpus_docs": corpus_docs}), flush=True)
-        index = hb.build_index(doc_names=corpus_docs)
+        print(json.dumps({"stage": "index", "questions": ids,
+                          "corpus_scope": "full" if args.full_corpus else "selected",
+                          "diagnostic_corpus_docs": None if args.full_corpus else corpus_docs}), flush=True)
+        index = hb.build_index() if args.full_corpus else hb.build_index(doc_names=corpus_docs)
     print(json.dumps({"stage": "model_load", "adapter": args.model}), flush=True)
     model, tokenizer = FastLanguageModel.from_pretrained(model_name=args.model,
         max_seq_length=args.max_seq_length, load_in_4bit=True, load_in_16bit=False,
