@@ -1,0 +1,39 @@
+{
+  "rows": 247,
+  "unique_questions": 73,
+  "selection_reward": "v4",
+  "native_rollouts": false,
+  "missing_train_ids": [
+    "financebench_id_00070",
+    "financebench_id_00080",
+    "financebench_id_00206",
+    "financebench_id_00215",
+    "financebench_id_00216",
+    "financebench_id_00585",
+    "financebench_id_00669",
+    "financebench_id_00678",
+    "financebench_id_00705",
+    "financebench_id_00711",
+    "financebench_id_00790",
+    "financebench_id_00917",
+    "financebench_id_01107",
+    "financebench_id_01328",
+    "financebench_id_01346",
+    "financebench_id_01351",
+    "financebench_id_01911",
+    "financebench_id_02119",
+    "financebench_id_04302",
+    "financebench_id_04458",
+    "financebench_id_04481",
+    "financebench_id_04672",
+    "financebench_id_06247"
+  ],
+  "source_archive_manifest_sha256": "5837f6d7ae5f91796a43c877030ee6f7c7b29b938d8c67b45f94f5e62e6b00d3",
+  "split_sha256": "3c311997ae8f7bc01cadcc771dc7ff843d3cc2b56a9e8d3a96b2d3eae64f5810",
+  "files": {
+    "sft.jsonl": "af4df81dcac6b4f4cae91a655c55d0fc47cf825e22d040bac24eae0eccab6c1c",
+    "provenance.jsonl": "833bae0fd015b20b579239bf469247958a0a77498be40a4cec507af091d5dae9",
+    "migration_manifest.json": "3771e19104991a8c926fd98da89ed89ec73f33a274f11ae71c4029b921b07593",
+    "selection_summary.json": "efde9ad9d091e7e742bcf26fb4e05e6472df21588787a67fd0887ecf4c14a0d1"
+  }
+}

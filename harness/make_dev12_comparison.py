@@ -44,7 +44,7 @@ def panel(row, label):
 def main():
     before = load('qwen35_4b_current_harness_baseline_dev12_v2.jsonl')
     after = load('qwen35_4b_qlora_dev12_20260930.jsonl')
-    frozen = json.loads((ROOT / 'artifacts/workshop/split.json').read_text())
+    frozen = json.loads((ROOT / 'split.json').read_text())
     assert set(before) == set(after) == {r['financebench_id'] for r in frozen['dev']}
     table, cards = [], []
     for fid, base in before.items():

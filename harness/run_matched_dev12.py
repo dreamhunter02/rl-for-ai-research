@@ -18,8 +18,8 @@ import urllib.request
 def eval_command(args,phase):
     root=Path(args.root);run=Path(args.run_dir)
     return [sys.executable,'-u',str(Path(__file__).with_name('eval_current_harness.py')),
-            '--split','dev','--split-file',str(root/'artifacts/workshop/split.json'),
-            '--targets',str(root/'results/paper_2026_rl4llm/targets_frozen_rubric-v3.json'),
+            '--split','dev','--split-file',str(root/'split.json'),
+            '--targets',str(root/'data/targets.json'),
             '--base-url',args.base_url,'--model',args.base_model if phase=='base' else args.sft_model,
             '--phase','baseline' if phase=='base' else 'post_sft',
             '--max-turns',str(args.max_turns),'--max-tokens',str(args.max_tokens),
@@ -39,7 +39,7 @@ def main():
         print(json.dumps(data),flush=True)
     status('preflight')
     try:
-        root=Path(args.root);split=root/'artifacts/workshop/split.json'
+        root=Path(args.root);split=root/'split.json'
         manifest=dict(vars(args),temperature=0,seed=0,calculator=False,
             split_sha256=hashlib.sha256(split.read_bytes()).hexdigest(),
             judge_model=os.environ.get('COMPONENT_JUDGE_MODEL'),

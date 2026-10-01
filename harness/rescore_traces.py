@@ -157,7 +157,7 @@ async def run(args):
 
 if __name__=='__main__':
     p=argparse.ArgumentParser();p.add_argument('--before',required=True);p.add_argument('--after',required=True)
-    p.add_argument('--split',default='artifacts/workshop/split.json');p.add_argument('--out',required=True);p.add_argument('--concurrency',type=int,default=3)
+    p.add_argument('--split',default='split.json');p.add_argument('--out',required=True);p.add_argument('--concurrency',type=int,default=3)
     p.add_argument('--rubric-from',default='',help='Previous sidecar directory: reuse the exact candidate-blind rubrics for an independent judge')
     p.add_argument('--merge-secondary',default='',help='Offline: attach independent sidecars to existing --out without replacing primary scores')
     asyncio.run(run(p.parse_args()))

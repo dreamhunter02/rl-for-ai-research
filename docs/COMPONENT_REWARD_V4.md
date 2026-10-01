@@ -1,5 +1,13 @@
 # Calculator-free harness and component rewards
 
+This document describes the live v5 diagnostic scorer and its v4 origins.
+The latest offline comparison uses `additive_rescore.py` (v6):
+`R = 0.15E + F*(0.20G + 0.45A + 0.15B + 0.05)`.
+E measures retrieved evidence coverage; G candidate-claim groundedness;
+A the core answer; B binary full reference coverage; F accepted finish.
+Do not confuse the offline v6 report with the reward currently wired into
+the training environment. No scoring behavior is changed by this cleanup.
+
 ## Tool review
 
 | Tool | Job | Necessity and repair |
@@ -60,8 +68,8 @@ Offline regrading:
 
 ```sh
 PYTHONPATH=harness python harness/rescore_traces.py \
-  --before results/paper_2026_rl4llm/qwen35_4b_current_harness_baseline_dev12_v2.jsonl \
-  --after results/paper_2026_rl4llm/qwen35_4b_qlora_dev12_20260930.jsonl \
+  --before /path/to/saved-base-dev12.jsonl \
+  --after /path/to/saved-sft-dev12.jsonl \
   --out results/trace_comparisons/new_reward_review
 ```
 
@@ -74,8 +82,8 @@ Migration writes new outputs and refuses an existing output directory:
 
 ```sh
 PYTHONPATH=harness python harness/migrate_teacher_traces.py \
-  --root results/teacher_traces --split artifacts/workshop/split.json \
-  --targets results/paper_2026_rl4llm/targets_frozen_rubric-v3.json \
+  --root /path/to/raw-teacher-traces --split split.json \
+  --targets data/targets.json \
   --out results/teacher_traces/new_migration --judge --concurrency 4
 ```
 

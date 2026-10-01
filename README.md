@@ -1,75 +1,43 @@
-# FinanceBench agentic GRPO
+# FinanceBench search agent
 
+Train and evaluate a financial-filings search agent with Qwen3.5-4B SFT and
+GRPO experiments. The active harness exposes search, bounded evidence reads,
+and structured `finish`; no calculator tool.
 
-**September 28 review correction:** the recorded E0/E1 gate claims and 5/42 grounded-accuracy classification are provisional because review reproduced reward and grounding bugs. Apply the validated-target workflow in [docs/REVIEW_FIXES.md](docs/REVIEW_FIXES.md); historical results are diagnostics, not corrected benchmark evidence.
+## Repository map
 
-This repository contains the reproducible FinanceBench retrieval harness, teacher-trace artifacts, baseline evaluations, Unsloth/TRL smoke tests, and the minimal FinanceBench-to-LoRA optimizer-step bridge.
+| Path | Purpose |
+|---|---|
+| `harness/` | Retrieval environment, judge, teacher preparation, training and evaluation entry points |
+| `data/teacher_traces/` | One selected calculator-free SFT dataset, provenance and limitations |
+| `data/targets.json`, `split.json` | Frozen targets and **96 train / 12 dev / 42 eval** questions |
+| `configs/`, `requirements-workshop.txt` | Runtime configuration and pinned Tinker cookbook dependency |
+| `tests/`, `docs/` | Regression tests, recipes and reward contracts |
 
-The corpus PDFs, extracted text, page-cache index, large Tinker run logs, and generated adapter weights are intentionally excluded from GitHub. They are local or regenerable artifacts; the tracked JSONL traces and metrics preserve the experiment evidence without publishing the corpus or a large binary checkpoint.
+## Start here
 
-## Active execution brief: repaired causal comparison
+1. Follow [the recipes](docs/RECIPES.md) for corpus setup, SFT and matched dev12 evaluation.
+2. Read [teacher data notes](data/teacher_traces/README.md) before selecting training data.
+3. Read [the reward contract](docs/COMPONENT_REWARD_V4.md): live generation uses
+   v5 diagnostic scoring; the latest offline report uses v6 additive scoring.
+   These are **not yet one unified GRPO reward path**.
 
-`NEMOTRON_FINANCEBENCH_GRPO_EXECUTION_BRIEF-3.md` is the authoritative execution contract for the ICAIF RL4LLM-Agents workshop study. It supersedes the earlier direct-full-run plan and defines the causal comparison `B0` (base/original harness), `B1` (base/repaired harness), and `R1` (GRPO/repaired harness), with optional SFT and retrieval-shaping arms kept separate.
+The selected teacher file contains **247 traces across 73 training questions**.
+It was selected under v4, not revalidated under v6. It is not a new native-rollout
+dataset, and it is not evidence that the existing SFT adapter was trained on
+this exact file. No benchmark improvement is claimed here.
 
-The repaired protocol is recorded in `results/paper_2026_rl4llm_agents/protocol.md`, the exact 96/12/42 split IDs in `split_manifest.json`, and the E0 preflight in `e0_preflight.json`. Historical status at f29df1a: the old suite passed and a base/pilot run completed. Subsequent review invalidated the scorer/grounding gates; rerun B1 and the pilot under the corrected evaluator before making accuracy or learning claims.
+The frozen eval42 is held out from prompt, reward and checkpoint selection.
+Targets are preserved inputs, not a claim that every annotation is correct.
 
-## Current status: Reward-v2 FinanceBench GRPO review (2026-09-27)
+## Outputs stay out of Git
 
-The reward-v2 implementation, audit harness, teacher-trace scoring, Tinker integration, and full-run artifact capture are complete and available in this repository. The full run completed technically, but it is a diagnostic/training regression rather than evidence of model improvement; the 42-question holdout evaluation is still pending.
+`results/`, `artifacts/`, corpus files, caches and adapters are local/ignored.
+Historical reports, run logs and plans were moved to a verified external archive;
+see [archive and recovery](docs/ARCHIVE.md). Git history is unchanged.
+The old `make_split.py` was archived to prevent accidentally regenerating the split.
 
-### Implementation
-
-- `harness/reward_calculation.py` — deterministic finish, contradiction, direction, numeric/unit/date/arithmetic checks; DeepSeek residual semantic judging through DeepInfra; strict JSON parsing; confidence thresholding; asynchronous cache writes; ephemeral GNOME Keyring retrieval; audit metadata.
-- `harness/finance_env.py` — Tinker reward bridge, finish handling, grounded-reward metrics, and numeric-only reducer-safe metrics.
-- `harness/train_financebench.py` — Tinker training entry point and run metadata.
-- `harness/audit_deepseek_reward.py` — known-case reward audit, including qualitative paraphrases and hard negatives.
-- `harness/score_teacher_traces.py` — scoring harness for the 91 saved teacher traces.
-- `harness/test_reward_redesign.py`, `harness/test_reward_design.py`, and `harness/test_tinker_reward.py` — regression coverage; latest suite result was 20 tests passing.
-- `configs/nemotron35_lightning_grpo_reward_v2.json` — full Reward-v2 configuration.
-- `REWARD_REDESIGN.md` — reward contract and stability notes.
-
-### Trace and audit results
-
-- Teacher set: `results/teacher_traces/sft_judged_strict.jsonl` contains 91 traces.
-- Teacher audit: `results/reward_audits/teacher91_reward_v2_summary_final.json` and `teacher91_reward_v2_scores_final.json`.
-- Teacher audit outcome: mean answer quality `0.9893`, mean evidence quality `0.5545`, mean grounded reward without the finish gate `0.7699`, `83/83` strict Opus-correct cases retained, and `0/91` teacher traces containing a terminal finish call.
-- Live semantic audit: `results/reward_audits/deepseek_v41_reward_audit_small_live.json` and `deepseek_v41_reward_v2_summary.json`; the 20-case audit recovered the Amcor qualitative paraphrase and preserved the Verizon directional hard negative.
-- Judge cache: `results/reward_judgments/deepseek_v41_flash_audit_live_cache.json` and `deepseek_v41_flash_teacher91_final_cache.json`; credential values are not stored.
-
-### Full Reward-v2 run
-
-Run identity: `nemotron35_financebench_grpo_reward_v2_full_seed0_20260927`
-
-- Configuration: 108 questions, 27 optimizer steps, batch size 4, group size 8, 864 trajectories, maximum 8 turns, learning rate `1e-5`, seed `0`.
-- Outcome: 220/864 valid finishes (`25.5%`), 187 positive trajectories, 616 zero-reward trajectories, 61 trajectories at `-0.1`, mean authoritative total reward `0.1475`, and 38 all-zero groups out of 108.
-- Trace volume: 38,760 low-level trace events, six checkpoints, and 32 DeepSeek cache records with zero observed judge errors.
-- Comparison: the prior grounded v11 run had 213/864 valid finishes, 319 positive trajectories, and mean reward `0.2573`; Reward-v2 slightly improved finishing but produced a weaker learning signal.
-- Interpretation: the dominant issue is sparse reward and a mismatch between the required terminal finish action and the demonstrations; rollout count alone is not the immediate fix.
-
-The canonical report is `results/tinker_runs/nemotron35_lightning_grpo_reward_v2_full_20260927/EXPERIMENT_REPORT.md`. The large local Tinker logs, rollout summaries, checkpoints, and trace files remain in that run directory and are intentionally ignored by GitHub; the report records their exact paths and checkpoint URIs.
-
-### Proposed resolution under review
-
-`REWARD_V2_PROBLEM_AND_RESOLUTION.md` contains the complete problem statement and proposed resolution, including the DeepSeek review. The current recommendation is:
-
-1. Create 91–200 finish-annotated SFT examples; use them for format/termination behavior, not as a claim of broad finance-reasoning supervision.
-2. Run short 10–15-step controlled ablations before another full run: gated factorized reward, gated reward plus verified trajectory shaping capped at `0.05`, label-noise control, and an unfinished-credit comparison.
-3. Keep answer correctness, evidence grounding, finish behavior, and trajectory/process reward as separate metrics; treat numeric zero as valid; retain hard contradiction vetoes for answer quality.
-4. Add trajectory reward only for verifiable behaviors such as evidence actually cited, evidence carried across turns, no repeated identical tool calls, and a valid finish; do not reward tool volume or termination alone.
-5. Require improvement on the untouched 42-question holdout against the untrained base-model baseline before claiming success.
-
-DeepSeek's detailed review is tracked at `results/reward_audits/deepseek_v41_reward_design_review_final_20260927.md`.
-
-Key files:
-
-- `harness/financebench_harness.py` — page-aware BM25/table retrieval, reads, calculations, provenance, and answer/evidence scoring.
-- `harness/finance_env.py` — typed FinanceBench environment and reward integration.
-- `harness/generate_teacher_traces.py` — multi-turn trace generation with finish handling, seeds, and grounded rewards.
-- `harness/financebench_grpo_trial.py` — minimal harness-to-Unsloth optimizer-step bridge.
-- `harness/unsloth_qwen4b_grpo_smoke.py` — Unsloth/TRL toy GRPO smoke test.
-- `results/teacher_traces/` — teacher candidates, judgments, and strict selected traces.
-- `results/local_eval/` — baseline and rollout evaluation JSONL artifacts.
-- `GRPO_PROGRESS.md` — experiment record and next steps.
-- `SFT_PLAN.md` — supervised warm-start plan; it is now the recommended next diagnostic because the teacher traces lack finish calls.
-
-The current project status is documented in `GRPO_PROGRESS.md`; no claim of FinanceBench model improvement should be made from the toy smoke test or the one-step bridge proof alone.
+Some older harness entry points remain for compatibility and regression coverage.
+Use the entry points documented in the recipes; historical commands may require
+inputs restored from the archive. This cleanup does not refactor reward logic or
+remove legacy code that current tests/imports still exercise.

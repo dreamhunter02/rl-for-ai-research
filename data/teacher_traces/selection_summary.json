@@ -1,0 +1,8 @@
+{
+  "input_rows": 272,
+  "selected_rows": 247,
+  "excluded_rows": 25,
+  "require_identified_teacher": true,
+  "unique_questions": 73,
+  "out": "../migration_final/sft_identified_teachers.jsonl"
+}
