@@ -36,14 +36,14 @@ def summarize(records: list[dict[str, Any]]) -> dict[str, int | float]:
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--split", choices=("train", "dev"), default="dev")
-    parser.add_argument("--split-file", default=os.environ.get("FINANCEBENCH_SPLIT", "artifacts/workshop/split.json"))
+    parser.add_argument("--split-file", default=os.environ.get("FINANCEBENCH_SPLIT", "split.json"))
     parser.add_argument("--model", required=True)
     parser.add_argument("--base-url", required=True)
     parser.add_argument("--api-key", default="")
     parser.add_argument("--api-key-env", default="EVAL_ENDPOINT_API_KEY")
     parser.add_argument("--targets", default=os.environ.get(
         "FINANCEBENCH_TARGETS",
-        "results/paper_2026_rl4llm/targets_frozen_rubric-v3.json",
+        "data/targets.json",
     ))
     parser.add_argument("--out", required=True)
     parser.add_argument("--phase", choices=("baseline", "post_sft"), required=True)

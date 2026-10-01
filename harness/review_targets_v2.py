@@ -203,7 +203,7 @@ def check(ts):
   except Exception as e:bad.append((q,type(e).__name__,str(e)))
  return bad
 def main():
- a=argparse.ArgumentParser();a.add_argument('--split',default='artifacts/workshop/split.json');a.add_argument('--old',default='artifacts/workshop/targets.reviewed.json');a.add_argument('--out',default='artifacts/workshop/targets.reviewed.v2.json');x=a.parse_args();ts=build(json.loads(Path(x.split).read_text()),json.loads(Path(x.old).read_text()));bad=check(ts)
+ a=argparse.ArgumentParser();a.add_argument('--split',default='split.json');a.add_argument('--old',default='artifacts/workshop/targets.reviewed.json');a.add_argument('--out',default='artifacts/workshop/targets.reviewed.v2.json');x=a.parse_args();ts=build(json.loads(Path(x.split).read_text()),json.loads(Path(x.old).read_text()));bad=check(ts)
  if bad:raise SystemExit(json.dumps({'failures':bad},indent=2))
  Path(x.out).write_text(json.dumps(ts,indent=2,ensure_ascii=False)+'\n');print(json.dumps({'out':x.out,'targets':len(ts),'derived':sum(bool(t.get('derived')) for t in ts.values()),'text_facts':sum(bool(t.get('required_facts')) for t in ts.values() if t.get('answer_type')=='text'),'rubric_version':RUBRIC_VERSION},indent=2))
 if __name__=='__main__':main()

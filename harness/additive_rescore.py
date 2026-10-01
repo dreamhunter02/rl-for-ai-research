@@ -164,7 +164,7 @@ async def run(args):
     root=Path(args.root);out=Path(args.out);out.mkdir(parents=True,exist_ok=False)
     paths=input_paths(root,args.before,args.after)
     groups=[[json.loads(x) for x in p.read_text().splitlines() if x.strip()] for p in paths]
-    expected={r['financebench_id'] for r in json.loads((root/'artifacts/workshop/split.json').read_text())['dev']}
+    expected={r['financebench_id'] for r in json.loads((root/'split.json').read_text())['dev']}
     for rows in groups:
         if len(rows)!=12 or {r['financebench_id'] for r in rows}!=expected: raise ValueError('frozen dev12 mismatch')
     groups[1]=[{r['financebench_id']:r for r in groups[1]}[b['financebench_id']] for b in groups[0]]

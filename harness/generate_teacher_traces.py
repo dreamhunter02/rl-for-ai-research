@@ -353,7 +353,7 @@ def run_teacher(index: hb.StructuredIndex, row: dict[str, Any], model: str, max_
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--split", default="train")
-    ap.add_argument("--split-file", default=os.environ.get("FINANCEBENCH_SPLIT", "artifacts/workshop/split.json"))
+    ap.add_argument("--split-file", default=os.environ.get("FINANCEBENCH_SPLIT", "split.json"))
     ap.add_argument("--model", default="gpt-5.6-terra")
     ap.add_argument("--base-url", default="", help="OpenAI-compatible endpoint (e.g. vLLM). If set, the local OPENAI_API_KEY is not used.")
     ap.add_argument("--api-key", default="", help="API key for the --base-url endpoint.")
@@ -375,7 +375,7 @@ def main() -> None:
     ap.add_argument("--request-timeout", type=float, default=120.0, help="Per-request endpoint timeout in seconds.")
     ap.add_argument("--endpoint-max-retries", type=int, default=1, help="Transport retries performed by the endpoint client.")
     ap.add_argument("--stop-on-rate-limit", action="store_true", help="Exit with status 75 on HTTP 429 so a supervisor can retry the same id after cooldown.")
-    ap.add_argument("--targets", default=os.environ.get("FINANCEBENCH_TARGETS", "results/paper_2026_rl4llm/targets_frozen_rubric-v3.json"))
+    ap.add_argument("--targets", default=os.environ.get("FINANCEBENCH_TARGETS", "data/targets.json"))
     ap.add_argument("--no-finish", action="store_true", help="Run matched legacy control without exposing the finish tool.")
     args = ap.parse_args()
     args.api_key = resolve_api_key(args.api_key, args.api_key_env)

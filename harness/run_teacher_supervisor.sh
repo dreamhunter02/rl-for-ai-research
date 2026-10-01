@@ -19,7 +19,7 @@ while true; do
   echo "SUPERVISOR_START $(date -Is)"
   .venv-workshop/bin/python harness/generate_teacher_traces.py \
     --split train \
-    --split-file artifacts/workshop/split.json \
+    --split-file split.json \
     --model "$model" \
     --base-url https://inference-api.nvidia.com/v1 \
     --api-key-env TEACHER_ENDPOINT_API_KEY \

@@ -454,7 +454,7 @@ def main() -> None:
     (out/"git_diff.patch").write_text(git_text(["git","diff","HEAD"]))
     (out/"environment.json").write_text(json.dumps(environment_metadata(),indent=2,default=str))
     save_rng_state(out/"rng_state_initial.pt")
-    (out/"corpus_manifest.json").write_text(json.dumps(file_manifest([hb.BASE/"split.json",hb.DATA,hb.CACHE,Path(__file__),hb.BASE/"GRPO_PLAN.md"]),indent=2))
+    (out/"corpus_manifest.json").write_text(json.dumps(file_manifest([hb.BASE/"split.json",hb.DATA,hb.CACHE,Path(__file__),hb.BASE/"README.md"]),indent=2))
     rows=load_rows(args.ids)
     teacher_by_id={}
     if args.teacher_traces:

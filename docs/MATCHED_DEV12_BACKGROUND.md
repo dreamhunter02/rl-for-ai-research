@@ -18,8 +18,9 @@ scores are presented in the new report. Provider failures and gold conflicts
 remain unresolved, not silently zero. Every phase must contain the exact 12
 unique frozen IDs. Generation errors remain in the denominator and are reported.
 
-Cleanup keeps virtual environments and bulky raw teacher artifacts local and
-ignored. No checkpoint, source corpus, raw evidence or pre-existing user file is
-deleted. Code, tests, documentation and compact saved-dev reports are versioned.
+Cleanup keeps virtual environments local and ignored, and moves historical raw
+evidence and reports to the checksum-verified external archive in ARCHIVE.md.
+The selected teacher dataset, frozen split and targets remain versioned.
+New generated reports belong in ignored results/ or an external run directory.
 The remote original working checkout is not reset or overwritten; the run uses
 a separate code snapshot and reads its corpus from the original checkout.
