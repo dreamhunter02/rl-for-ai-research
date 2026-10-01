@@ -38,7 +38,7 @@ def test_train96_coordinator_covers_split_and_resumes(tmp_path, monkeypatch):
         "--output-dir", str(output)])
     run_train96_grpo.main()
     assert len(calls) == 48
-    assert all("--full-corpus" in call for call in calls)
+    assert all("--all-train-corpus" in call for call in calls)
     assert json.loads((output / "complete.json").read_text())["questions_processed"] == 96
     run_train96_grpo.main()
     assert len(calls) == 48  # Completed batches are not launched twice.

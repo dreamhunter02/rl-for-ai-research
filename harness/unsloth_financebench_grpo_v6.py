@@ -77,7 +77,15 @@ def rollout(model, tokenizer, index, tools, row, seed, args):
     model.eval()
     for turn in range(args.max_turns):
         session.start_turn()
-        ids = prompt_ids(tokenizer, messages, tools, args.max_seq_length, args.max_new_tokens)
+        try:
+            ids = prompt_ids(tokenizer, messages, tools, args.max_seq_length, args.max_new_tokens)
+        except RuntimeError as exc:
+            if not str(exc).startswith("context would exceed "):
+                raise
+            termination = "context_limit"
+            print(json.dumps({"stage": "context_limit", "id": row["financebench_id"],
+                              "seed": seed, "turn": turn + 1}), flush=True)
+            break
         print(json.dumps({"stage": "turn_start", "id": row["financebench_id"],
                           "seed": seed, "turn": turn + 1, "prompt_tokens": int(ids.shape[1])}), flush=True)
         ids = ids.to(next(model.parameters()).device)

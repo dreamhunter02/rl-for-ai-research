@@ -37,7 +37,7 @@ def main() -> None:
                 "group_size": args.group_size, "max_turns": args.max_turns,
                 "max_new_tokens": args.max_new_tokens, "max_seq_length": args.max_seq_length,
                 "learning_rate": args.learning_rate, "seed": args.seed,
-                "corpus_scope": "full"}
+                "corpus_scope": "train96_sources"}
     args.output_dir.mkdir(parents=True, exist_ok=True)
     manifest = args.output_dir / "identity.json"
     if manifest.exists():
@@ -62,7 +62,7 @@ def main() -> None:
                        "--max-new-tokens", str(args.max_new_tokens),
                        "--max-seq-length", str(args.max_seq_length),
                        "--learning-rate", str(args.learning_rate),
-                       "--seed", str(args.seed + start * 1000), "--full-corpus"]
+                       "--seed", str(args.seed + start * 1000), "--all-train-corpus"]
             with (args.output_dir / f"batch-{batch_no:03d}.log").open("a") as log:
                 print(json.dumps({"stage": "batch_start", "batch": batch_no,
                                   "ids": batch_ids, "model": model}), flush=True)
