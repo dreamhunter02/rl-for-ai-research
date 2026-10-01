@@ -290,12 +290,13 @@ def action_logprobs(model: torch.nn.Module, prompt_ids: list[int], action_ids: l
     full=torch.tensor([prompt_ids+action_ids],device=device,dtype=torch.long)
     if full.shape[1]>max_seq_length:
         raise RuntimeError(f"action sequence exceeds max_seq_length: {full.shape[1]} > {max_seq_length}")
-    out=model(input_ids=full,attention_mask=torch.ones_like(full))
+    if not action_ids:
+        return torch.empty(0, device=device)
+    out=model(input_ids=full,attention_mask=torch.ones_like(full),logits_to_keep=len(action_ids)+1)
     logits=out.logits[:,:-1,:].float()
-    labels=full[:,1:]
+    labels=full[:,-len(action_ids):]
     logps=torch.log_softmax(logits,dim=-1).gather(-1,labels.unsqueeze(-1)).squeeze(0).squeeze(-1)
-    start=max(0,len(prompt_ids)-1)
-    return logps[start:start+len(action_ids)]
+    return logps
 
 
 def reference_logprobs(model: torch.nn.Module, records: list[dict[str,Any]], max_seq_length: int) -> None:

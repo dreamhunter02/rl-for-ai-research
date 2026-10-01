@@ -55,3 +55,41 @@ def test_train96_coordinator_rejects_overlap(tmp_path, monkeypatch):
         "--output-dir", str(tmp_path / "run")])
     with pytest.raises(ValueError, match="overlaps"):
         run_train96_grpo.main()
+
+
+def test_train96_coordinator_recovers_complete_rollouts_without_regeneration(tmp_path, monkeypatch):
+    split = tmp_path / "split.json"
+    split.write_text(json.dumps({
+        "train": [{"financebench_id": f"train-{i:03d}"} for i in range(96)],
+        "dev": [], "eval": [],
+    }))
+    teacher = tmp_path / "sft.jsonl"
+    teacher.write_text("{}\n")
+    adapter = tmp_path / "sft_adapter"
+    adapter.mkdir()
+    output = tmp_path / "run"
+    original = output / "batch-001"
+    original.mkdir(parents=True)
+    (original / "rollouts.jsonl").write_text("{}\n" * 4)
+    calls = []
+
+    def fake_run(command, **kwargs):
+        calls.append(command)
+        batch = Path(command[command.index("--output-dir") + 1])
+        batch.mkdir()
+        next_adapter = batch / "adapter-step-1"
+        next_adapter.mkdir()
+        (batch / "summary.json").write_text(json.dumps({
+            "records": 4, "optimizer_steps": 1, "retained_groups": 2,
+            "adapter": str(next_adapter),
+        }))
+
+    monkeypatch.setattr(run_train96_grpo.subprocess, "run", fake_run)
+    monkeypatch.setattr(sys, "argv", ["run_train96_grpo.py", "--split", str(split),
+        "--teacher-dataset", str(teacher), "--model", str(adapter),
+        "--output-dir", str(output)])
+    run_train96_grpo.main()
+    assert len(calls) == 48
+    assert calls[0][calls[0].index("--rollouts-from") + 1] == str(original / "rollouts.jsonl")
+    assert calls[0][calls[0].index("--output-dir") + 1] == str(output / "batch-001-recovery-001")
+    assert calls[1][calls[1].index("--model") + 1] == str(output / "batch-001-recovery-001" / "adapter-step-1")

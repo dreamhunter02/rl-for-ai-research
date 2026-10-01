@@ -52,18 +52,28 @@ def main() -> None:
         batch_ids = ids[start:start + args.batch_size]
         batch_dir = args.output_dir / f"batch-{batch_no:03d}"
         summary_path = batch_dir / "summary.json"
+        run_dir = batch_dir
+        rollouts_from = None
         if batch_dir.exists() and not summary_path.exists():
-            raise RuntimeError(f"incomplete batch {batch_dir}; inspect before retrying")
-        if not batch_dir.exists():
+            rollouts_from = batch_dir / "rollouts.jsonl"
+            if not rollouts_from.is_file():
+                raise RuntimeError(f"incomplete batch {batch_dir}; no saved rollouts to recover")
+            run_dir = args.output_dir / f"batch-{batch_no:03d}-recovery-001"
+            summary_path = run_dir / "summary.json"
+            if run_dir.exists() and not summary_path.exists():
+                raise RuntimeError(f"incomplete recovery {run_dir}; inspect before retrying")
+        if not summary_path.exists():
             command = [sys.executable, str(trainer), "--model", model,
                        "--split", str(args.split), "--teacher-dataset", str(args.teacher_dataset),
-                       "--ids", ",".join(batch_ids), "--output-dir", str(batch_dir),
+                       "--ids", ",".join(batch_ids), "--output-dir", str(run_dir),
                        "--group-size", str(args.group_size), "--max-turns", str(args.max_turns),
                        "--max-new-tokens", str(args.max_new_tokens),
                        "--max-seq-length", str(args.max_seq_length),
                        "--learning-rate", str(args.learning_rate),
                        "--seed", str(args.seed + start * 1000), "--all-train-corpus"]
-            with (args.output_dir / f"batch-{batch_no:03d}.log").open("a") as log:
+            if rollouts_from is not None:
+                command += ["--rollouts-from", str(rollouts_from)]
+            with (args.output_dir / f"{run_dir.name}.log").open("a") as log:
                 print(json.dumps({"stage": "batch_start", "batch": batch_no,
                                   "ids": batch_ids, "model": model}), flush=True)
                 subprocess.run(command, stdout=log, stderr=subprocess.STDOUT, check=True)
