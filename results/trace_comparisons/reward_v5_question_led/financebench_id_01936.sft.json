@@ -1,0 +1,181 @@
+{
+  "financebench_id": "financebench_id_01936",
+  "model": "Qwen3.5-4B:qwen-sft",
+  "source_hash": "4f3b91a4192c7a0fde2c3a0e53e784552dffd7b2b4011c7a0a79c2e25643f656",
+  "original_score": {
+    "F": 1.0,
+    "A": 0.0,
+    "G": 1.0,
+    "Ret": 1.0,
+    "reward": 0.0,
+    "correct": 0,
+    "grounded_success": 0,
+    "unresolved": true,
+    "fabricated_citation": false,
+    "grader_version": "workshop-rubric-v3-source-rounding",
+    "judge_verdict": "insufficient",
+    "judge_confidence": 0.9,
+    "judge_cache_hit": false,
+    "judge_numeric_ok": true
+  },
+  "new_score": {
+    "F": 1,
+    "N": null,
+    "S": 0.0,
+    "A": 0.0,
+    "G": 0.5,
+    "reward": 0.0,
+    "correct": 0,
+    "grounded_success": 0,
+    "unresolved": false,
+    "scorer_version": "workshop-rubric-v5-question-led",
+    "judgment": {
+      "numeric": [],
+      "semantic": [
+        {
+          "id": "s1",
+          "correct": false,
+          "reason": "The response does not provide the requested conclusion. It incorrectly treats the December 31, 2022 filing as Q4 FY2022 rather than AMCOR's Q2 FY2023 and declines to answer; the liability was primarily employee-related."
+        }
+      ],
+      "grounding": [
+        {
+          "claim": "A definitive answer cannot be provided because the specific Q2 FY2023 10-Q is unavailable.",
+          "supported": false,
+          "receipt_ids": [
+            "r1"
+          ],
+          "reason": "r1 is from AMCOR_2023Q2_10Q and provides the December 31, 2022 restructuring-liability analysis."
+        },
+        {
+          "claim": "Q2 FY2023 was June 30, 2023, while the available filing is Q4 FY2022.",
+          "supported": false,
+          "receipt_ids": [
+            "r1"
+          ],
+          "reason": "r1 identifies the relevant reporting date as December 31, 2022; it does not support the asserted fiscal-quarter characterization or June 30 Q2 date."
+        },
+        {
+          "claim": "At December 31, 2022, the restructuring liability was $93 million, comprising $81 million employee costs, $2 million fixed-asset-related costs, and $10 million other costs.",
+          "supported": true,
+          "receipt_ids": [
+            "r1"
+          ],
+          "reason": "r1's restructuring-liability table reports these balances in millions."
+        },
+        {
+          "claim": "The restructuring activities were primarily related to the Russia-Ukraine conflict and the Flexibles reportable segment.",
+          "supported": true,
+          "receipt_ids": [
+            "r1"
+          ],
+          "reason": "r1 states the activities were primarily related to the Russia-Ukraine conflict and that restructuring expenses primarily relate to Flexibles."
+        },
+        {
+          "claim": "The majority of the liability was expected to be paid within twelve months and was recorded in other current and other non-current liabilities.",
+          "supported": true,
+          "receipt_ids": [
+            "r1"
+          ],
+          "reason": "r1 explicitly states both the expected payment timing and balance-sheet classifications."
+        },
+        {
+          "claim": "The 2023 10-K contains restructuring-liability information only at June 30, 2020.",
+          "supported": false,
+          "receipt_ids": [],
+          "reason": "No valid cited receipt supports this assertion."
+        }
+      ],
+      "unresolved": false,
+      "_meta": {
+        "model": "openai/openai/gpt-5.6-terra",
+        "prompt_version": "component-judge-v4-question-led",
+        "input_hash": "b12a7b2f23dc4d8e13166e59e09c474d250273b6e5457d6cc46b47c9b049c9a5",
+        "usage": {
+          "completion_tokens": 610,
+          "prompt_tokens": 2987,
+          "total_tokens": 3597,
+          "completion_tokens_details": {
+            "reasoning_tokens": 159
+          },
+          "prompt_tokens_details": {
+            "cached_tokens": 0,
+            "cache_write_tokens": 2984,
+            "cache_creation_tokens": 2984
+          }
+        }
+      }
+    },
+    "rubric": {
+      "mode": "semantic",
+      "numeric": [],
+      "semantic": [
+        {
+          "id": "s1",
+          "expected": "The restructuring liability primarily relates to employee-related obligations arising from AMCOR's restructuring activities."
+        }
+      ],
+      "_meta": {
+        "model": "openai/openai/gpt-5.6-terra",
+        "prompt_version": "component-judge-v4-question-led",
+        "input_hash": "0af75b6ed506f0c116a714743d21b30529d2390dcdd64ff2412bb6cdd0691e36",
+        "usage": {
+          "completion_tokens": 41,
+          "prompt_tokens": 476,
+          "total_tokens": 517,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens_details": {
+            "cached_tokens": 0,
+            "cache_write_tokens": 0,
+            "cache_creation_tokens": 0
+          }
+        }
+      },
+      "requirements": {
+        "mode": "semantic",
+        "numeric": [],
+        "semantic": [
+          {
+            "id": "s1",
+            "expected": "Describe the nature and purpose of AMCOR's restructuring liability as of the close of Q2 FY2023."
+          }
+        ],
+        "_meta": {
+          "model": "openai/openai/gpt-5.6-terra",
+          "prompt_version": "component-judge-v4-question-led",
+          "input_hash": "27f88e5225ec94cb373a828fb9603f66f98e8721aba42ecb431b40b59394dff8",
+          "usage": {
+            "completion_tokens": 46,
+            "prompt_tokens": 338,
+            "total_tokens": 384,
+            "completion_tokens_details": {
+              "reasoning_tokens": 0
+            },
+            "prompt_tokens_details": {
+              "cached_tokens": 0,
+              "cache_write_tokens": 0,
+              "cache_creation_tokens": 0
+            }
+          }
+        }
+      },
+      "reference": "87% of the total restructuring liability is related Employee liabilities."
+    },
+    "invalid_citations": []
+  },
+  "tool_metrics": {
+    "total_calls": 8,
+    "by_tool": {
+      "bm25_search": 5,
+      "read": 1,
+      "grep_document": 1,
+      "finish": 1
+    },
+    "identical_repeat_calls": 0,
+    "tool_error_observations": 0,
+    "delivered_chars": 18742,
+    "note": "Diagnostics only: retries and errors are not automatically model faults; no diversity bonus."
+  }
+}

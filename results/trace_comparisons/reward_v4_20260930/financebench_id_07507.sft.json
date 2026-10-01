@@ -1,0 +1,118 @@
+{
+  "financebench_id": "financebench_id_07507",
+  "model": "Qwen3.5-4B:qwen-sft",
+  "source_hash": "f5f431a810c0cb3e7b4d5602610f3c37aa522cacbd98be78d493140c4ea76c2d",
+  "original_score": {
+    "F": 1.0,
+    "A": 0.0,
+    "G": 0.0,
+    "Ret": 0.0,
+    "reward": 0.0,
+    "correct": 0,
+    "grounded_success": 0,
+    "unresolved": false,
+    "fabricated_citation": false,
+    "grader_version": "workshop-rubric-v3-source-rounding"
+  },
+  "new_score": {
+    "F": 1,
+    "N": 0.0,
+    "S": null,
+    "A": 0.0,
+    "G": 0.0,
+    "reward": 0.0,
+    "correct": 0,
+    "grounded_success": 0,
+    "unresolved": false,
+    "scorer_version": "workshop-rubric-v4-components",
+    "judgment": {
+      "numeric": [
+        {
+          "id": "n1",
+          "correct": false,
+          "reason": "Candidate final quantity is a 10.4% increase; reference quantity is a 65.4% increase. The cited operating-income figures are not the unadjusted operating income amounts for FY2016 and FY2015."
+        }
+      ],
+      "semantic": [],
+      "grounding": [
+        {
+          "claim": "Adobe's unadjusted operating income increased 10.4% from FY2015 to FY2016.",
+          "supported": false,
+          "receipt_ids": [
+            "r2"
+          ],
+          "reason": "Receipt r2 is a consolidated balance sheet, not the income statement, and does not support the stated operating-income change."
+        },
+        {
+          "claim": "FY2016 and FY2015 unadjusted operating income were $2,068,000 thousand and $1,873,000 thousand, respectively.",
+          "supported": false,
+          "receipt_ids": [
+            "r2"
+          ],
+          "reason": "Receipt r2 contains no operating-income line or these asserted income-statement values."
+        }
+      ],
+      "unresolved": false,
+      "_meta": {
+        "model": "openai/openai/gpt-5.6-terra",
+        "prompt_version": "component-judge-v3-contextual-units",
+        "input_hash": "2a39d970e1a37f9fcc5f7da8694df4eccc91a71219535cc4b7ee9027be2c82dc",
+        "usage": {
+          "completion_tokens": 371,
+          "prompt_tokens": 2094,
+          "total_tokens": 2465,
+          "completion_tokens_details": {
+            "reasoning_tokens": 164
+          },
+          "prompt_tokens_details": {
+            "cached_tokens": 0,
+            "cache_write_tokens": 2091,
+            "cache_creation_tokens": 2091
+          }
+        }
+      }
+    },
+    "rubric": {
+      "mode": "numeric",
+      "numeric": [
+        {
+          "id": "n1",
+          "expected": "65.4%"
+        }
+      ],
+      "semantic": [],
+      "_meta": {
+        "model": "openai/openai/gpt-5.6-terra",
+        "prompt_version": "component-judge-v3-contextual-units",
+        "input_hash": "36658bca56705d6130d5924ad7306a20515096fb7bb909da5d1677b46378199d",
+        "usage": {
+          "completion_tokens": 28,
+          "prompt_tokens": 214,
+          "total_tokens": 242,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens_details": {
+            "cached_tokens": 0,
+            "cache_write_tokens": 0,
+            "cache_creation_tokens": 0
+          }
+        }
+      }
+    },
+    "invalid_citations": []
+  },
+  "tool_metrics": {
+    "total_calls": 8,
+    "by_tool": {
+      "bm25_search": 3,
+      "search_tables": 2,
+      "read": 2,
+      "finish": 1
+    },
+    "identical_repeat_calls": 0,
+    "tool_error_observations": 0,
+    "delivered_chars": 12659,
+    "note": "Diagnostics only: retries and errors are not automatically model faults; no diversity bonus."
+  }
+}

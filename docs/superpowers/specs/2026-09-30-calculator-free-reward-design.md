@@ -1,6 +1,22 @@
 # Calculator-free FinanceBench harness and reward migration
 
-Status: proposed; awaiting written-spec approval. No implementation or rescoring yet.
+Status: approved; user authorized tool review, plan amendments, and implementation.
+
+## Tool-review amendment
+
+Keep six tools: bm25_search discovers documents/passages; grep_document locates
+terms inside a known document; search_tables prioritizes table-like pages; read
+delivers source windows; read_table resolves table IDs to page windows with
+metadata (not a parsed table); finish submits the answer. Keep table shortcuts
+until removal ablations justify merging them. No reward for tool diversity.
+
+Record call validity, errors, repeated identical calls, total calls and delivered
+characters separately from outcome reward. These are diagnostics, not an added
+efficiency reward yet: a bounded search miss is not a model error, and successful
+grounded task completion must precede cost optimization. Use the same-question
+successful trajectories for future efficiency comparisons. Provider failures must
+not be charged as malformed model calls. The authorized judge is an Inference
+Hub model configured through environment variables, never a hard-coded secret.
 
 ## Outcome and constraints
 

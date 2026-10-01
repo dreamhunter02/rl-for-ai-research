@@ -1,0 +1,193 @@
+{
+  "E": null,
+  "G": null,
+  "A": null,
+  "B": null,
+  "F": 1,
+  "reward": null,
+  "unresolved": true,
+  "reason": "judge_unresolved",
+  "scorer_version": "workshop-rubric-v6-additive",
+  "judgment": {
+    "numeric": [],
+    "semantic": [
+      {
+        "id": "s1",
+        "correct": true,
+        "reason": "The answer correctly concludes that AMCOR's gross-margin profile was not improving in FY2023, identifies the decline, and states that gross margin remains useful with caveats."
+      }
+    ],
+    "retrieval": {
+      "coverage": "full",
+      "receipt_ids": [
+        "r2"
+      ],
+      "reason": "r2 provides the FY2022 and FY2023 gross-margin figures and management's explanation for the decline, sufficient to answer the question."
+    },
+    "grounding": [
+      {
+        "claim": "AMCOR's gross margin declined from 19.4% in FY2022 to 18.5% in FY2023.",
+        "supported": true,
+        "receipt_ids": [
+          "r2"
+        ],
+        "reason": "r2's Consolidated Gross Profit table reports 19.4% for 2022 and 18.5% for 2023."
+      },
+      {
+        "claim": "Gross profit decreased by $95 million, or 3%, in FY2023 versus FY2022.",
+        "supported": true,
+        "receipt_ids": [
+          "r2"
+        ],
+        "reason": "r2 explicitly states gross profit decreased by $95 million, or 3%."
+      },
+      {
+        "claim": "The gross-margin decline was mainly affected by pass-through of higher raw-material costs and disposed operations.",
+        "supported": true,
+        "receipt_ids": [
+          "r2"
+        ],
+        "reason": "r2 explicitly attributes the percentage-of-sales decline mainly to higher raw-material-cost pass-through and disposed operations."
+      },
+      {
+        "claim": "AMCOR has a significant pass-through cost structure such that a substantial portion of cost of goods sold is passed through to customers rather than representing its manufacturing costs.",
+        "supported": false,
+        "receipt_ids": [],
+        "reason": "r2 identifies pass-through of higher raw-material costs as an impact on the gross-margin calculation, but does not establish the asserted broader cost-structure characterization or the claimed substantial portion of COGS."
+      },
+      {
+        "claim": "Adjusted EBIT decreased 8% in FY2023, excluding negative currency impacts.",
+        "supported": true,
+        "receipt_ids": [
+          "r2"
+        ],
+        "reason": "r2 states adjusted EBIT decreased 8%; after excluding $2 million of negative currency impacts, the remaining variation was also an 8% decrease."
+      },
+      {
+        "claim": "Management highlighted unfavorable volumes as a driver of the gross-profit decline, with favorable operating-cost performance only partially offsetting it.",
+        "supported": false,
+        "receipt_ids": [],
+        "reason": "r2 discusses unfavorable volumes in a preceding adjusted-EBIT discussion, while its gross-profit discussion instead says that, after specified exclusions, gross profit increased $56 million reflecting favorable operating-cost performance. It does not support this combined characterization of gross-profit drivers."
+      }
+    ],
+    "completeness": [
+      {
+        "id": "b1",
+        "correct": true,
+        "reason": "The candidate clearly answers no."
+      },
+      {
+        "id": "b2",
+        "correct": false,
+        "reason": "The candidate states a decline from 19.4% to 18.5%, which is a 0.9-percentage-point decline, rather than the reference gold claim of 0.8%."
+      }
+    ],
+    "material_contradiction": true,
+    "unresolved": true,
+    "_meta": {
+      "model": "openai/openai/gpt-5.6-terra",
+      "prompt_version": "component-judge-v4-question-led",
+      "input_hash": "b55efc492d8edfa3a80075b76e1a815264c375ce6d122073c121bcd4a8f61bc2",
+      "usage": {
+        "completion_tokens": 1132,
+        "prompt_tokens": 4325,
+        "total_tokens": 5457,
+        "completion_tokens_details": {
+          "reasoning_tokens": 516
+        },
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "cache_write_tokens": 4322,
+          "cache_creation_tokens": 4322
+        }
+      }
+    }
+  },
+  "rubric": {
+    "mode": "semantic",
+    "numeric": [],
+    "semantic": [
+      {
+        "id": "s1",
+        "expected": "Conclude that AMCOR does not have an improving gross margin profile as of FY2023; its gross margin has slightly declined. Gross margin is a useful metric for assessing this aspect of the company."
+      }
+    ],
+    "_meta": {
+      "model": "openai/openai/gpt-5.6-terra",
+      "prompt_version": "component-judge-v4-question-led",
+      "input_hash": "93c956c653220ea9d263716eed9b20ba326ce2aa13ce422838899c9670ab4ff6",
+      "usage": {
+        "completion_tokens": 64,
+        "prompt_tokens": 505,
+        "total_tokens": 569,
+        "completion_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "cache_write_tokens": 0,
+          "cache_creation_tokens": 0
+        }
+      }
+    },
+    "requirements": {
+      "mode": "semantic",
+      "numeric": [],
+      "semantic": [
+        {
+          "id": "s1",
+          "expected": "Determine whether AMCOR has an improving gross margin profile as of FY2023; if gross margin is not useful for this company, state that and explain why."
+        }
+      ],
+      "_meta": {
+        "model": "openai/openai/gpt-5.6-terra",
+        "prompt_version": "component-judge-v4-question-led",
+        "input_hash": "df984371bded3dee259baa9f60459ace457288d3836b579cbb8ab6b3fd96e777",
+        "usage": {
+          "completion_tokens": 56,
+          "prompt_tokens": 351,
+          "total_tokens": 407,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens_details": {
+            "cached_tokens": 0,
+            "cache_write_tokens": 0,
+            "cache_creation_tokens": 0
+          }
+        }
+      }
+    },
+    "reference": "No. For AMCOR there has been a slight decline in gross margins by 0.8%.",
+    "gold_claims": [
+      {
+        "id": "b1",
+        "expected": "No."
+      },
+      {
+        "id": "b2",
+        "expected": "AMCOR's gross margins declined slightly by 0.8%."
+      }
+    ],
+    "gold_claims_meta": {
+      "model": "openai/openai/gpt-5.6-terra",
+      "prompt_version": "component-judge-v4-question-led",
+      "input_hash": "3788a3cdc52fa19c95a4156ecc7cdf42852c566c887372e86818189f580eb44a",
+      "usage": {
+        "completion_tokens": 103,
+        "prompt_tokens": 144,
+        "total_tokens": 247,
+        "completion_tokens_details": {
+          "reasoning_tokens": 60
+        },
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "cache_write_tokens": 0,
+          "cache_creation_tokens": 0
+        }
+      }
+    }
+  },
+  "financebench_id": "financebench_id_00684",
+  "source_hash": "4ae9043322c819d1004a050a26c7ac0830b6c2db9d8a90d67216a05b424c035e"
+}

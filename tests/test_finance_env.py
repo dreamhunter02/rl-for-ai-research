@@ -3,6 +3,8 @@ import asyncio
 import importlib.util
 import json
 import unittest
+import os
+from unittest.mock import patch
 
 SDK_AVAILABLE = importlib.util.find_spec('tinker_cookbook') is not None
 
@@ -70,6 +72,7 @@ class FinanceEnvTests(unittest.TestCase):
         for _ in range(3): asyncio.run(tools.finish.run(call))
         self.assertIsNone(tools.state.accepted)
 
+    @patch.dict(os.environ, {'FINANCEBENCH_SCORER':'legacy'})
     def test_judge_receives_alias_when_required_facts_empty(self):
         from finance_env import FinanceAnswerReward
         from workshop_reward import EpisodeState

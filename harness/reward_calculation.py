@@ -328,6 +328,9 @@ factual correctness.
 
 
 def build_judge(config: RewardConfig | None = None) -> DeepSeekJudge | None:
+    if os.environ.get('COMPONENT_JUDGE_ENDPOINT'):
+        from component_reward import ComponentJudge
+        return ComponentJudge()
     config = config or RewardConfig.from_env()
     if config.judge_backend in {"", "none", "off", "disabled"}:
         return None

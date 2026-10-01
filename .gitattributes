@@ -1,0 +1,3 @@
+# Saved HTML embeds historical answer text verbatim, including trailing spaces.
+results/trace_comparisons/*.html whitespace=-blank-at-eol
+results/trace_comparisons/**/*.html whitespace=-blank-at-eol

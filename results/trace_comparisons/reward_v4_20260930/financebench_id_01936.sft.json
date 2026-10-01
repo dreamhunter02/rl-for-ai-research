@@ -1,0 +1,154 @@
+{
+  "financebench_id": "financebench_id_01936",
+  "model": "Qwen3.5-4B:qwen-sft",
+  "source_hash": "4f3b91a4192c7a0fde2c3a0e53e784552dffd7b2b4011c7a0a79c2e25643f656",
+  "original_score": {
+    "F": 1.0,
+    "A": 0.0,
+    "G": 1.0,
+    "Ret": 1.0,
+    "reward": 0.0,
+    "correct": 0,
+    "grounded_success": 0,
+    "unresolved": true,
+    "fabricated_citation": false,
+    "grader_version": "workshop-rubric-v3-source-rounding",
+    "judge_verdict": "insufficient",
+    "judge_confidence": 0.9,
+    "judge_cache_hit": false,
+    "judge_numeric_ok": true
+  },
+  "new_score": {
+    "F": 1,
+    "N": null,
+    "S": 0.0,
+    "A": 0.0,
+    "G": 0.42857142857142855,
+    "reward": 0.0,
+    "correct": 0,
+    "grounded_success": 0,
+    "unresolved": false,
+    "scorer_version": "workshop-rubric-v4-components",
+    "judgment": {
+      "numeric": [],
+      "semantic": [
+        {
+          "id": "s1",
+          "correct": false,
+          "reason": "The response does not provide the required conclusion that 87% of the restructuring liability was employee-related. It incorrectly treats December 31, 2022 as Q4 FY2022 rather than Q2 FY2023."
+        }
+      ],
+      "grounding": [
+        {
+          "claim": "A definitive answer for Q2 FY2023 cannot be provided because the relevant filing is unavailable.",
+          "supported": false,
+          "receipt_ids": [],
+          "reason": "Receipt r1 is from the Q2 FY2023 filing and contains the December 31, 2022 restructuring-liability table."
+        },
+        {
+          "claim": "The filing is for Q4 FY2022, not Q2 FY2023.",
+          "supported": false,
+          "receipt_ids": [],
+          "reason": "This fiscal-period characterization is incorrect; the cited filing reports the three and six months ended December 31, 2022, corresponding to Amcor's Q2 FY2023."
+        },
+        {
+          "claim": "At December 31, 2022, restructuring liability was $93 million: $81 million employee costs, $2 million fixed-asset-related costs, and $10 million other costs.",
+          "supported": true,
+          "receipt_ids": [
+            "r1"
+          ],
+          "reason": "r1 presents these liability balances in its restructuring plan liability table."
+        },
+        {
+          "claim": "The restructuring activities were primarily related to the Russia-Ukraine conflict and primarily concerned the Flexibles reportable segment.",
+          "supported": true,
+          "receipt_ids": [
+            "r1"
+          ],
+          "reason": "r1 states both points."
+        },
+        {
+          "claim": "Most of the December 31, 2022 restructuring liability was expected to be paid within twelve months and was recorded in other current and other non-current liabilities.",
+          "supported": true,
+          "receipt_ids": [
+            "r1"
+          ],
+          "reason": "r1 explicitly states this."
+        },
+        {
+          "claim": "The 2023 10-K only provides restructuring-liability information as of June 30, 2020.",
+          "supported": false,
+          "receipt_ids": [],
+          "reason": "No valid cited receipt supports this assertion."
+        },
+        {
+          "claim": "Q2 FY2023 close was June 30, 2023.",
+          "supported": false,
+          "receipt_ids": [],
+          "reason": "This is an incorrect fiscal-quarter date characterization."
+        }
+      ],
+      "unresolved": false,
+      "_meta": {
+        "model": "openai/openai/gpt-5.6-terra",
+        "prompt_version": "component-judge-v3-contextual-units",
+        "input_hash": "8848e02a8e35cf5e936e4f729cb9f9f13d741eb4ee34d1f293f23efeb4da39b8",
+        "usage": {
+          "completion_tokens": 651,
+          "prompt_tokens": 2485,
+          "total_tokens": 3136,
+          "completion_tokens_details": {
+            "reasoning_tokens": 200
+          },
+          "prompt_tokens_details": {
+            "cached_tokens": 0,
+            "cache_write_tokens": 2482,
+            "cache_creation_tokens": 2482
+          }
+        }
+      }
+    },
+    "rubric": {
+      "mode": "semantic",
+      "numeric": [],
+      "semantic": [
+        {
+          "id": "s1",
+          "expected": "As of Q2 FY2023 close, AMCOR's restructuring liability is primarily employee-related; 87% of the total restructuring liability relates to employee liabilities."
+        }
+      ],
+      "_meta": {
+        "model": "openai/openai/gpt-5.6-terra",
+        "prompt_version": "component-judge-v3-contextual-units",
+        "input_hash": "86575961dee265786856a9a3f4e582d19842eab8ef44183da4053f60670e1917",
+        "usage": {
+          "completion_tokens": 56,
+          "prompt_tokens": 198,
+          "total_tokens": 254,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens_details": {
+            "cached_tokens": 0,
+            "cache_write_tokens": 0,
+            "cache_creation_tokens": 0
+          }
+        }
+      }
+    },
+    "invalid_citations": []
+  },
+  "tool_metrics": {
+    "total_calls": 8,
+    "by_tool": {
+      "bm25_search": 5,
+      "read": 1,
+      "grep_document": 1,
+      "finish": 1
+    },
+    "identical_repeat_calls": 0,
+    "tool_error_observations": 0,
+    "delivered_chars": 18742,
+    "note": "Diagnostics only: retries and errors are not automatically model faults; no diversity bonus."
+  }
+}

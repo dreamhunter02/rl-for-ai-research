@@ -1,0 +1,173 @@
+{
+  "financebench_id": "financebench_id_00807",
+  "model": "Qwen3.5-4B:qwen-sft",
+  "source_hash": "0f6175d9dd79fb155d8aa0a28a1aa127c3856cd69ddd3c01c24fd40a74db9133",
+  "original_score": {
+    "F": 1.0,
+    "A": 0.0,
+    "G": 1.0,
+    "Ret": 1.0,
+    "reward": 0.0,
+    "correct": 0,
+    "grounded_success": 0,
+    "unresolved": false,
+    "fabricated_citation": false,
+    "grader_version": "workshop-rubric-v3-source-rounding",
+    "judge_verdict": "contradicted",
+    "judge_confidence": 0.95,
+    "judge_cache_hit": false,
+    "judge_numeric_ok": true
+  },
+  "new_score": {
+    "F": 1,
+    "N": null,
+    "S": 0.0,
+    "A": 0.0,
+    "G": 0.4,
+    "reward": 0.0,
+    "correct": 0,
+    "grounded_success": 0,
+    "unresolved": false,
+    "scorer_version": "workshop-rubric-v5-question-led",
+    "judgment": {
+      "numeric": [],
+      "semantic": [
+        {
+          "id": "s1",
+          "correct": false,
+          "reason": "The candidate concludes 3M's liquidity was reasonably healthy, but the requested conclusion is that the 0.96 quick ratio was slightly below the conventional 1.0 threshold and thus not reasonably healthy."
+        }
+      ],
+      "grounding": [
+        {
+          "claim": "3M had a reasonably healthy liquidity profile based on its Q2 FY2023 quick ratio.",
+          "supported": false,
+          "receipt_ids": [
+            "r1"
+          ],
+          "reason": "The cited balance-sheet amounts yield approximately 0.96 using current assets less inventory divided by current liabilities, which is below 1.0 and does not support the stated healthy conclusion."
+        },
+        {
+          "claim": "3M's quick ratio was approximately 0.96, calculated as ($15,754 million - $5,280 million) / $10,936 million.",
+          "supported": true,
+          "receipt_ids": [
+            "r1"
+          ],
+          "reason": "The cited balance sheet reports total current assets of $15,754 million, inventories of $5,280 million, and total current liabilities of $10,936 million; the calculation is approximately 0.96."
+        },
+        {
+          "claim": "The $10,474 million amount represents cash, marketable securities, and accounts receivable.",
+          "supported": false,
+          "receipt_ids": [
+            "r1"
+          ],
+          "reason": "Cash, current marketable securities, and accounts receivable total $9,261 million, not $10,474 million. The latter is total current assets less inventory and includes prepaids and other current assets."
+        },
+        {
+          "claim": "3M's current ratio was 1.43, calculated as $15,754 million / $10,936 million.",
+          "supported": true,
+          "receipt_ids": [
+            "r1"
+          ],
+          "reason": "The cited amounts produce a current ratio of approximately 1.44, commonly displayed as 1.43 depending on unrounded underlying values; the source supports the stated inputs and a ratio around 1.43–1.44."
+        },
+        {
+          "claim": "The quick ratio is a relevant liquidity measure because it assesses capacity to meet short-term obligations without selling inventory.",
+          "supported": true,
+          "receipt_ids": [],
+          "reason": "This is a standard financial-metric definition and is correctly applied as a general liquidity assessment concept."
+        }
+      ],
+      "unresolved": false,
+      "_meta": {
+        "model": "openai/openai/gpt-5.6-terra",
+        "prompt_version": "component-judge-v4-question-led",
+        "input_hash": "63d53ff33b3f2846c05c5d5df6ecc89b229050d9bb187ac60d8dad69807512f6",
+        "usage": {
+          "completion_tokens": 629,
+          "prompt_tokens": 2712,
+          "total_tokens": 3341,
+          "completion_tokens_details": {
+            "reasoning_tokens": 169
+          },
+          "prompt_tokens_details": {
+            "cached_tokens": 0,
+            "cache_write_tokens": 2709,
+            "cache_creation_tokens": 2709
+          }
+        }
+      }
+    },
+    "rubric": {
+      "mode": "semantic",
+      "numeric": [],
+      "semantic": [
+        {
+          "id": "s1",
+          "expected": "Conclude that 3M's liquidity profile was not reasonably healthy based on its Q2 FY2023 quick ratio, because the ratio was slightly below the conventional 1.0 threshold and therefore indicated insufficient immediately liquid assets relative to current liabilities."
+        }
+      ],
+      "_meta": {
+        "model": "openai/openai/gpt-5.6-terra",
+        "prompt_version": "component-judge-v4-question-led",
+        "input_hash": "08199ff950a8a4221d5f92869efd2741e543cda2b4d6b88626739f9f656b7706",
+        "usage": {
+          "completion_tokens": 73,
+          "prompt_tokens": 532,
+          "total_tokens": 605,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens_details": {
+            "cached_tokens": 0,
+            "cache_write_tokens": 0,
+            "cache_creation_tokens": 0
+          }
+        }
+      },
+      "requirements": {
+        "mode": "semantic",
+        "numeric": [],
+        "semantic": [
+          {
+            "id": "s1",
+            "expected": "Determine whether 3M has a reasonably healthy liquidity profile based on its Q2 FY2023 quick ratio, or state and explain why the quick ratio is not relevant for measuring liquidity."
+          }
+        ],
+        "_meta": {
+          "model": "openai/openai/gpt-5.6-terra",
+          "prompt_version": "component-judge-v4-question-led",
+          "input_hash": "139f334dd01ada3dffe2c22dca82cef14fa5c6cb2daad3fc3f12fea06478cd4f",
+          "usage": {
+            "completion_tokens": 61,
+            "prompt_tokens": 356,
+            "total_tokens": 417,
+            "completion_tokens_details": {
+              "reasoning_tokens": 0
+            },
+            "prompt_tokens_details": {
+              "cached_tokens": 0,
+              "cache_write_tokens": 0,
+              "cache_creation_tokens": 0
+            }
+          }
+        }
+      },
+      "reference": "No. The quick ratio for 3M was 0.96 by Jun'23 close, which needs a bit of an improvement to touch the 1x mark"
+    },
+    "invalid_citations": []
+  },
+  "tool_metrics": {
+    "total_calls": 8,
+    "by_tool": {
+      "bm25_search": 1,
+      "read": 1,
+      "calculate": 5,
+      "finish": 1
+    },
+    "identical_repeat_calls": 0,
+    "tool_error_observations": 5,
+    "delivered_chars": 7917,
+    "note": "Diagnostics only: retries and errors are not automatically model faults; no diversity bonus."
+  }
+}

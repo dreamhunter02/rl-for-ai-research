@@ -1,0 +1,109 @@
+{
+  "financebench_id": "financebench_id_03029",
+  "model": "Qwen3.5-4B:qwen-sft",
+  "source_hash": "567052b0f1377098aa23f78e53d7e5a65b930bda0a2ddaae5b08e90d4e3650ce",
+  "original_score": {
+    "F": 1.0,
+    "A": 1.0,
+    "G": 1.0,
+    "Ret": 1.0,
+    "reward": 1.0,
+    "correct": 1,
+    "grounded_success": 1,
+    "unresolved": false,
+    "fabricated_citation": false,
+    "grader_version": "workshop-rubric-v3-source-rounding"
+  },
+  "new_score": {
+    "F": 1,
+    "N": 1.0,
+    "S": null,
+    "A": 1.0,
+    "G": 1.0,
+    "reward": 1.0,
+    "correct": 1,
+    "grounded_success": 1,
+    "unresolved": false,
+    "scorer_version": "workshop-rubric-v4-components",
+    "judgment": {
+      "numeric": [
+        {
+          "id": "n1",
+          "correct": true,
+          "reason": "Candidate interpreted final quantity is $1,577 million USD, matching the reference quantity of $1,577.00 USD millions."
+        }
+      ],
+      "semantic": [],
+      "grounding": [
+        {
+          "claim": "FY2018 capital expenditure was $1,577 million USD.",
+          "supported": true,
+          "receipt_ids": [
+            "r1"
+          ],
+          "reason": "The FY2018 cash flow statement is in millions and reports purchases of property, plant and equipment of (1,577), corresponding to capital expenditures."
+        }
+      ],
+      "unresolved": false,
+      "_meta": {
+        "model": "openai/openai/gpt-5.6-terra",
+        "prompt_version": "component-judge-v3-contextual-units",
+        "input_hash": "e1c9fef416c2aaec01cf33478a0c2e2caee48ab3ab552f35ead336d193894296",
+        "usage": {
+          "completion_tokens": 119,
+          "prompt_tokens": 2240,
+          "total_tokens": 2359,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens_details": {
+            "cached_tokens": 0,
+            "cache_write_tokens": 2237,
+            "cache_creation_tokens": 2237
+          }
+        }
+      }
+    },
+    "rubric": {
+      "mode": "numeric",
+      "numeric": [
+        {
+          "id": "n1",
+          "expected": "$1577.00 USD millions"
+        }
+      ],
+      "semantic": [],
+      "_meta": {
+        "model": "openai/openai/gpt-5.6-terra",
+        "prompt_version": "component-judge-v3-contextual-units",
+        "input_hash": "8b7079d036938e7417365f7db335c8e85a93b6beac85cc17e31e10861dfe9e40",
+        "usage": {
+          "completion_tokens": 31,
+          "prompt_tokens": 204,
+          "total_tokens": 235,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens_details": {
+            "cached_tokens": 0,
+            "cache_write_tokens": 0,
+            "cache_creation_tokens": 0
+          }
+        }
+      }
+    },
+    "invalid_citations": []
+  },
+  "tool_metrics": {
+    "total_calls": 3,
+    "by_tool": {
+      "bm25_search": 1,
+      "read_table": 1,
+      "finish": 1
+    },
+    "identical_repeat_calls": 0,
+    "tool_error_observations": 0,
+    "delivered_chars": 6135,
+    "note": "Diagnostics only: retries and errors are not automatically model faults; no diversity bonus."
+  }
+}

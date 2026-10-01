@@ -1,0 +1,203 @@
+{
+  "E": 1.0,
+  "G": 0.8333333333333334,
+  "A": 0.0,
+  "B": 0,
+  "F": 1,
+  "N": null,
+  "S": 0.0,
+  "reward": 0.3666666666666667,
+  "answer_correct": 0,
+  "grounded_success": 0,
+  "unresolved": false,
+  "scorer_version": "workshop-rubric-v6-additive",
+  "judgment": {
+    "numeric": [],
+    "semantic": [
+      {
+        "id": "s1",
+        "correct": false,
+        "reason": "The answer does not state that the Q2 FY2023 restructuring liability primarily related to employee obligations (87% of the total). It instead discusses a later 2023 Restructuring Plan announced after Q2."
+      }
+    ],
+    "retrieval": {
+      "coverage": "full",
+      "receipt_ids": [
+        "r1"
+      ],
+      "reason": "r1 provides the December 31, 2022 (Q2 FY2023 close) restructuring-liability balances: $81 million employee costs out of $93 million total, sufficient to establish that employee liabilities comprise about 87%."
+    },
+    "grounding": [
+      {
+        "claim": "AMCOR's restructuring liability as of Q2 FY2023 was primarily associated with the 2023 Restructuring Plan announced February 7, 2023.",
+        "supported": false,
+        "receipt_ids": [],
+        "reason": "The cited receipts discuss the plan in fiscal-year-2023 context, but it was announced after the Q2 FY2023 close; they do not support characterizing the December 31, 2022 liability this way."
+      },
+      {
+        "claim": "The 2023 Restructuring Plan allocated approximately $110 million to $130 million of Russian-business sale proceeds to cost-saving initiatives to partly offset divested earnings.",
+        "supported": true,
+        "receipt_ids": [
+          "r2"
+        ],
+        "reason": "r2 expressly states this purpose and amount."
+      },
+      {
+        "claim": "The plan had projects with approximately $150 million expected net cost, including $65 million employee-related, $15 million fixed-asset-related, $55 million other restructuring, and $15 million restructuring-related expenses.",
+        "supported": true,
+        "receipt_ids": [
+          "r2"
+        ],
+        "reason": "r2 states these amounts for projects initiated by the end of fiscal 2023. It does not identify them as the Q2 liability composition."
+      },
+      {
+        "claim": "The plan was expected to result in $80 million of net cash expenditures and total cash and non-cash net expenses of $200 million to $220 million.",
+        "supported": true,
+        "receipt_ids": [
+          "r2"
+        ],
+        "reason": "r2 expressly provides both expected amounts."
+      },
+      {
+        "claim": "Restructuring-related costs do not qualify for special accounting treatment as exit or disposal activities and were presented as restructuring, impairment, and other related activities, net.",
+        "supported": true,
+        "receipt_ids": [
+          "r2"
+        ],
+        "reason": "r2 states both the accounting-treatment point and the income-statement presentation."
+      },
+      {
+        "claim": "The 2023 Restructuring Plan included both the Flexibles and Rigid Packaging reportable segments.",
+        "supported": true,
+        "receipt_ids": [
+          "r2"
+        ],
+        "reason": "r2 states that the plan includes both segments."
+      }
+    ],
+    "completeness": [
+      {
+        "id": "b1",
+        "correct": false,
+        "reason": "The answer does not state that employee liabilities were 87% of total restructuring liability; its cited $65 million figure concerns later plan projects rather than the Q2 liability balance."
+      }
+    ],
+    "material_contradiction": true,
+    "unresolved": false,
+    "_meta": {
+      "model": "openai/openai/gpt-5.6-terra",
+      "prompt_version": "component-judge-v4-question-led",
+      "input_hash": "f1cccb4d5825db924aedddc96141ff07062d426f040d4967349085f0f767a0b5",
+      "usage": {
+        "completion_tokens": 914,
+        "prompt_tokens": 3833,
+        "total_tokens": 4747,
+        "completion_tokens_details": {
+          "reasoning_tokens": 308
+        },
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "cache_write_tokens": 3830,
+          "cache_creation_tokens": 3830
+        }
+      }
+    }
+  },
+  "rubric": {
+    "mode": "semantic",
+    "numeric": [],
+    "semantic": [
+      {
+        "id": "s1",
+        "expected": "The restructuring liability primarily relates to employee-related obligations arising from AMCOR's restructuring activities."
+      }
+    ],
+    "_meta": {
+      "model": "openai/openai/gpt-5.6-terra",
+      "prompt_version": "component-judge-v4-question-led",
+      "input_hash": "0af75b6ed506f0c116a714743d21b30529d2390dcdd64ff2412bb6cdd0691e36",
+      "usage": {
+        "completion_tokens": 41,
+        "prompt_tokens": 476,
+        "total_tokens": 517,
+        "completion_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "cache_write_tokens": 0,
+          "cache_creation_tokens": 0
+        }
+      }
+    },
+    "requirements": {
+      "mode": "semantic",
+      "numeric": [],
+      "semantic": [
+        {
+          "id": "s1",
+          "expected": "Describe the nature and purpose of AMCOR's restructuring liability as of the close of Q2 FY2023."
+        }
+      ],
+      "_meta": {
+        "model": "openai/openai/gpt-5.6-terra",
+        "prompt_version": "component-judge-v4-question-led",
+        "input_hash": "27f88e5225ec94cb373a828fb9603f66f98e8721aba42ecb431b40b59394dff8",
+        "usage": {
+          "completion_tokens": 46,
+          "prompt_tokens": 338,
+          "total_tokens": 384,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens_details": {
+            "cached_tokens": 0,
+            "cache_write_tokens": 0,
+            "cache_creation_tokens": 0
+          }
+        }
+      }
+    },
+    "reference": "87% of the total restructuring liability is related Employee liabilities.",
+    "gold_claims": [
+      {
+        "id": "b1",
+        "expected": "Employee liabilities account for 87% of the total restructuring liability."
+      }
+    ],
+    "gold_claims_meta": {
+      "model": "openai/openai/gpt-5.6-terra",
+      "prompt_version": "component-judge-v4-question-led",
+      "input_hash": "13eb8ba6fae755a7cc4f504fea7b2741b035ca1251ccdd070a56cfdac68111e8",
+      "usage": {
+        "completion_tokens": 30,
+        "prompt_tokens": 135,
+        "total_tokens": 165,
+        "completion_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "cache_write_tokens": 0,
+          "cache_creation_tokens": 0
+        }
+      }
+    }
+  },
+  "tool_metrics": {
+    "total_calls": 8,
+    "by_tool": {
+      "bm25_search": 4,
+      "read_table": 1,
+      "read": 2,
+      "finish": 1
+    },
+    "identical_repeat_calls": 0,
+    "tool_error_observations": 0,
+    "delivered_chars": 19283,
+    "note": "Diagnostics only: retries and errors are not automatically model faults; no diversity bonus."
+  },
+  "invalid_citations": [],
+  "financebench_id": "financebench_id_01936",
+  "source_hash": "102df36cc07578a32886e4292e6c4699e6aeb166a4aefe60e45fb03522bb5447"
+}

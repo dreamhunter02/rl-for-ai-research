@@ -13,6 +13,9 @@ __pycache__/
 *.py[cod]
 .pytest_cache/
 .mypy_cache/
+.venv-workshop/
+.venv/
+.codex-sync/
 
 # Local configuration and credentials
 .env
@@ -31,3 +34,10 @@ client_secret*.json
 # Evaluator-only gold targets and local execution logs
 results/paper_2026_rl4llm_agents/targets_*.jsonl
 results/paper_2026_rl4llm_agents/*.log
+
+# Preserve local bulk teacher evidence; publish compact manifests/reports separately.
+results/teacher_traces/calculator_free_v4_20260930/
+results/teacher_traces/current_harness_train96*
+results/teacher_traces/inference_hub_train96_shards/
+results/teacher_traces/inference_hub_smoke_id.txt
+results/teacher_traces/retry_probe_ids.txt

@@ -1,0 +1,219 @@
+{
+  "E": 0.5,
+  "G": 0.2,
+  "A": 1.0,
+  "B": 0,
+  "F": 1,
+  "N": null,
+  "S": 1.0,
+  "reward": 0.615,
+  "answer_correct": 1,
+  "grounded_success": 0,
+  "unresolved": false,
+  "scorer_version": "workshop-rubric-v6-additive",
+  "judgment": {
+    "numeric": [],
+    "semantic": [
+      {
+        "id": "s1",
+        "correct": true,
+        "reason": "The candidate directly concludes that 3M was not a capital-intensive business based on FY2022 data."
+      }
+    ],
+    "retrieval": {
+      "coverage": "partial",
+      "receipt_ids": [
+        "r1"
+      ],
+      "reason": "r1 provides FY2022 PP&E purchases/CapEx, but the retrieved evidence does not provide the balance-sheet total assets or the reference metrics needed to substantiate the capital-intensity assessment."
+    },
+    "grounding": [
+      {
+        "claim": "3M's FY2022 purchases of property, plant and equipment were $1,749 million.",
+        "supported": true,
+        "receipt_ids": [
+          "r1"
+        ],
+        "reason": "r1's FY2022 cash-flow statement reports purchases of PP&E of $(1,749) million."
+      },
+      {
+        "claim": "3M's FY2022 total assets were $46,100 million.",
+        "supported": false,
+        "receipt_ids": [],
+        "reason": "The cited r3 page contains derivative-instrument disclosures, not a consolidated balance sheet or total-assets figure."
+      },
+      {
+        "claim": "3M's capital-intensity ratio, defined as CapEx divided by total assets, was approximately 3.8%.",
+        "supported": false,
+        "receipt_ids": [
+          "r1"
+        ],
+        "reason": "Using the asserted operands, 1,749/46,100 = 0.037939, which rounds to 3.8%, but the asserted $46,100 million total-assets operand is not supported by a valid citation."
+      },
+      {
+        "claim": "Capital-intensive industries such as utilities, telecommunications, or heavy manufacturing typically have capital-intensity ratios of 20% to 50% or higher.",
+        "supported": false,
+        "receipt_ids": [],
+        "reason": "No valid citation supports this industry benchmark."
+      },
+      {
+        "claim": "3M has a diversified consumer-products business model requiring relatively modest capital investment compared with its asset base.",
+        "supported": false,
+        "receipt_ids": [],
+        "reason": "No valid citation supports this business-model characterization or comparison."
+      }
+    ],
+    "completeness": [
+      {
+        "id": "b1",
+        "correct": false,
+        "reason": "The answer concludes low capital intensity but does not state that CapEx and fixed assets are being managed efficiently."
+      },
+      {
+        "id": "b2",
+        "correct": false,
+        "reason": "The 5.1% CapEx-to-revenue ratio is not provided."
+      },
+      {
+        "id": "b3",
+        "correct": false,
+        "reason": "The 20% fixed-assets-to-total-assets ratio is not provided."
+      },
+      {
+        "id": "b4",
+        "correct": false,
+        "reason": "The 12.4% return on assets is not provided."
+      }
+    ],
+    "material_contradiction": true,
+    "unresolved": false,
+    "_meta": {
+      "model": "openai/openai/gpt-5.6-terra",
+      "prompt_version": "component-judge-v4-question-led",
+      "input_hash": "c72167c7b97583550803b14298a6df71114c996e5b9e5dab813080e1c3044401",
+      "usage": {
+        "completion_tokens": 1043,
+        "prompt_tokens": 5237,
+        "total_tokens": 6280,
+        "completion_tokens_details": {
+          "reasoning_tokens": 516
+        },
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "cache_write_tokens": 5234,
+          "cache_creation_tokens": 5234
+        }
+      }
+    }
+  },
+  "rubric": {
+    "mode": "semantic",
+    "numeric": [],
+    "semantic": [
+      {
+        "id": "s1",
+        "expected": "No. Based on FY2022 data, 3M should not be considered a capital-intensive business."
+      }
+    ],
+    "_meta": {
+      "model": "openai/openai/gpt-5.6-terra",
+      "prompt_version": "component-judge-v4-question-led",
+      "input_hash": "dafdc1525dac7e4321609651fabb15482b0303162f0b9a5c7fb28760c613067d",
+      "usage": {
+        "completion_tokens": 45,
+        "prompt_tokens": 508,
+        "total_tokens": 553,
+        "completion_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "cache_write_tokens": 0,
+          "cache_creation_tokens": 0
+        }
+      }
+    },
+    "requirements": {
+      "mode": "semantic",
+      "numeric": [],
+      "semantic": [
+        {
+          "id": "s1",
+          "expected": "Determine whether 3M is a capital-intensive business based on FY2022 data."
+        }
+      ],
+      "_meta": {
+        "model": "openai/openai/gpt-5.6-terra",
+        "prompt_version": "component-judge-v4-question-led",
+        "input_hash": "b7baf2bd9df0ab29d5389bee8eb98e73f957fe765108a4bebdbef84e097a82b0",
+        "usage": {
+          "completion_tokens": 41,
+          "prompt_tokens": 330,
+          "total_tokens": 371,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens_details": {
+            "cached_tokens": 0,
+            "cache_write_tokens": 0,
+            "cache_creation_tokens": 0
+          }
+        }
+      }
+    },
+    "reference": "No, the company is managing its CAPEX and Fixed Assets pretty efficiently, which is evident from below key metrics:\nCAPEX/Revenue Ratio: 5.1%\nFixed assets/Total Assets: 20%\nReturn on Assets= 12.4%",
+    "gold_claims": [
+      {
+        "id": "b1",
+        "expected": "The company is managing its CAPEX and fixed assets pretty efficiently."
+      },
+      {
+        "id": "b2",
+        "expected": "The company's CAPEX-to-revenue ratio is 5.1%."
+      },
+      {
+        "id": "b3",
+        "expected": "The company's fixed-assets-to-total-assets ratio is 20%."
+      },
+      {
+        "id": "b4",
+        "expected": "The company's return on assets is 12.4%."
+      }
+    ],
+    "gold_claims_meta": {
+      "model": "openai/openai/gpt-5.6-terra",
+      "prompt_version": "component-judge-v4-question-led",
+      "input_hash": "cd424ccd656c9018b2bf4f1a201ac846eb652c595ce72c0c3eb23a000eadfa1a",
+      "usage": {
+        "completion_tokens": 165,
+        "prompt_tokens": 178,
+        "total_tokens": 343,
+        "completion_tokens_details": {
+          "reasoning_tokens": 69
+        },
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "cache_write_tokens": 0,
+          "cache_creation_tokens": 0
+        }
+      }
+    }
+  },
+  "tool_metrics": {
+    "total_calls": 8,
+    "by_tool": {
+      "bm25_search": 1,
+      "search_tables": 2,
+      "read_table": 2,
+      "read": 2,
+      "finish": 1
+    },
+    "identical_repeat_calls": 0,
+    "tool_error_observations": 0,
+    "delivered_chars": 20993,
+    "note": "Diagnostics only: retries and errors are not automatically model faults; no diversity bonus."
+  },
+  "invalid_citations": [],
+  "financebench_id": "financebench_id_00499",
+  "source_hash": "6584adf926ba5fe71a0a9c4753d83ed164b73dbf5e9f6a968bb3b3670424b219"
+}

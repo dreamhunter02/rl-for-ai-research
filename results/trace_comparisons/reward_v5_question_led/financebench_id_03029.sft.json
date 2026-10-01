@@ -1,0 +1,138 @@
+{
+  "financebench_id": "financebench_id_03029",
+  "model": "Qwen3.5-4B:qwen-sft",
+  "source_hash": "567052b0f1377098aa23f78e53d7e5a65b930bda0a2ddaae5b08e90d4e3650ce",
+  "original_score": {
+    "F": 1.0,
+    "A": 1.0,
+    "G": 1.0,
+    "Ret": 1.0,
+    "reward": 1.0,
+    "correct": 1,
+    "grounded_success": 1,
+    "unresolved": false,
+    "fabricated_citation": false,
+    "grader_version": "workshop-rubric-v3-source-rounding"
+  },
+  "new_score": {
+    "F": 1,
+    "N": 1.0,
+    "S": null,
+    "A": 1.0,
+    "G": 1.0,
+    "reward": 1.0,
+    "correct": 1,
+    "grounded_success": 1,
+    "unresolved": false,
+    "scorer_version": "workshop-rubric-v5-question-led",
+    "judgment": {
+      "numeric": [
+        {
+          "id": "n1",
+          "correct": true,
+          "reason": "Candidate final quantity is USD 1,577 million; reference quantity is USD 1,577 million."
+        }
+      ],
+      "semantic": [],
+      "grounding": [
+        {
+          "claim": "FY2018 capital expenditure was USD 1,577 million.",
+          "supported": true,
+          "receipt_ids": [
+            "r1"
+          ],
+          "reason": "The FY2018 cash flow statement is in millions and reports purchases of PP&E of $(1,577), corresponding to capital expenditures of USD 1,577 million."
+        }
+      ],
+      "unresolved": false,
+      "_meta": {
+        "model": "openai/openai/gpt-5.6-terra",
+        "prompt_version": "component-judge-v4-question-led",
+        "input_hash": "55617e4d706dd9a2ee6c7af9e0ab85a388fbb404a11e3a078e3cf876c9d4f962",
+        "usage": {
+          "completion_tokens": 118,
+          "prompt_tokens": 2753,
+          "total_tokens": 2871,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens_details": {
+            "cached_tokens": 0,
+            "cache_write_tokens": 2750,
+            "cache_creation_tokens": 2750
+          }
+        }
+      }
+    },
+    "rubric": {
+      "mode": "numeric",
+      "numeric": [
+        {
+          "id": "n1",
+          "expected": "1577.00 USD millions"
+        }
+      ],
+      "semantic": [],
+      "_meta": {
+        "model": "openai/openai/gpt-5.6-terra",
+        "prompt_version": "component-judge-v4-question-led",
+        "input_hash": "101b2b2683f6ab55c4f73de6a7bd3cde3bc4e95d59b37600c4f79ac674d375b1",
+        "usage": {
+          "completion_tokens": 30,
+          "prompt_tokens": 486,
+          "total_tokens": 516,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens_details": {
+            "cached_tokens": 0,
+            "cache_write_tokens": 0,
+            "cache_creation_tokens": 0
+          }
+        }
+      },
+      "requirements": {
+        "mode": "numeric",
+        "numeric": [
+          {
+            "id": "n1",
+            "expected": "FY2018 capital expenditure amount for 3M, in USD millions, based on the cash flow statement"
+          }
+        ],
+        "semantic": [],
+        "_meta": {
+          "model": "openai/openai/gpt-5.6-terra",
+          "prompt_version": "component-judge-v4-question-led",
+          "input_hash": "1faab8f9f3623154cc1b1fe45312f682e34010b8bc67b172f021e027cf6bb1c6",
+          "usage": {
+            "completion_tokens": 45,
+            "prompt_tokens": 352,
+            "total_tokens": 397,
+            "completion_tokens_details": {
+              "reasoning_tokens": 0
+            },
+            "prompt_tokens_details": {
+              "cached_tokens": 0,
+              "cache_write_tokens": 0,
+              "cache_creation_tokens": 0
+            }
+          }
+        }
+      },
+      "reference": "$1577.00"
+    },
+    "invalid_citations": []
+  },
+  "tool_metrics": {
+    "total_calls": 3,
+    "by_tool": {
+      "bm25_search": 1,
+      "read_table": 1,
+      "finish": 1
+    },
+    "identical_repeat_calls": 0,
+    "tool_error_observations": 0,
+    "delivered_chars": 6135,
+    "note": "Diagnostics only: retries and errors are not automatically model faults; no diversity bonus."
+  }
+}

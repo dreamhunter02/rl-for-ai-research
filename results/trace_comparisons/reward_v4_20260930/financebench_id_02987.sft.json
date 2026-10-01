@@ -1,0 +1,112 @@
+{
+  "financebench_id": "financebench_id_02987",
+  "model": "Qwen3.5-4B:qwen-sft",
+  "source_hash": "7fa74ed13238d8c77f3161b11abe748440dfd8168f66c74153e884bbb20c1e3d",
+  "original_score": {
+    "F": 1.0,
+    "A": 0.0,
+    "G": 0.0,
+    "Ret": 1.0,
+    "reward": 0.0,
+    "correct": 0,
+    "grounded_success": 0,
+    "unresolved": false,
+    "fabricated_citation": false,
+    "grader_version": "workshop-rubric-v3-source-rounding"
+  },
+  "new_score": {
+    "F": 1,
+    "N": 1.0,
+    "S": null,
+    "A": 1.0,
+    "G": 1.0,
+    "reward": 1.0,
+    "correct": 1,
+    "grounded_success": 1,
+    "unresolved": false,
+    "scorer_version": "workshop-rubric-v4-components",
+    "judgment": {
+      "numeric": [
+        {
+          "id": "n1",
+          "correct": true,
+          "reason": "Candidate final quantity is 24.26 as a ratio (ones), matching the reference quantity of 24.26."
+        }
+      ],
+      "semantic": [],
+      "grounding": [
+        {
+          "claim": "FY2019 fixed asset turnover ratio is 24.26.",
+          "supported": true,
+          "receipt_ids": [
+            "r1",
+            "r2"
+          ],
+          "reason": "r2 reports FY2019 total net revenues of $6,489 million; r1 reports net property and equipment of $253 million (2019) and $282 million (2018). $6,489 / (($253+$282)/2) = 24.26 after rounding."
+        }
+      ],
+      "unresolved": false,
+      "_meta": {
+        "model": "openai/openai/gpt-5.6-terra",
+        "prompt_version": "component-judge-v3-contextual-units",
+        "input_hash": "c278a34e716d395b3d4d7829c6fff1be50845487cefc6dae8c0f2a4f0134d056",
+        "usage": {
+          "completion_tokens": 205,
+          "prompt_tokens": 2501,
+          "total_tokens": 2706,
+          "completion_tokens_details": {
+            "reasoning_tokens": 54
+          },
+          "prompt_tokens_details": {
+            "cached_tokens": 0,
+            "cache_write_tokens": 2498,
+            "cache_creation_tokens": 2498
+          }
+        }
+      }
+    },
+    "rubric": {
+      "mode": "numeric",
+      "numeric": [
+        {
+          "id": "n1",
+          "expected": "24.26"
+        }
+      ],
+      "semantic": [],
+      "_meta": {
+        "model": "openai/openai/gpt-5.6-terra",
+        "prompt_version": "component-judge-v3-contextual-units",
+        "input_hash": "2fcb1aae89f1f468c357d58d22f07a315eb19b383e8a3eb48877553854a11348",
+        "usage": {
+          "completion_tokens": 27,
+          "prompt_tokens": 235,
+          "total_tokens": 262,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens_details": {
+            "cached_tokens": 0,
+            "cache_write_tokens": 0,
+            "cache_creation_tokens": 0
+          }
+        }
+      }
+    },
+    "invalid_citations": []
+  },
+  "tool_metrics": {
+    "total_calls": 8,
+    "by_tool": {
+      "bm25_search": 1,
+      "search_tables": 2,
+      "read_table": 2,
+      "calculate": 2,
+      "finish": 1
+    },
+    "identical_repeat_calls": 0,
+    "tool_error_observations": 2,
+    "delivered_chars": 11314,
+    "note": "Diagnostics only: retries and errors are not automatically model faults; no diversity bonus."
+  }
+}

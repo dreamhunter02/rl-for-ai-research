@@ -1,0 +1,166 @@
+{
+  "E": 1.0,
+  "G": 1.0,
+  "A": 1.0,
+  "B": 1,
+  "F": 1,
+  "N": 1.0,
+  "S": null,
+  "reward": 1.0,
+  "answer_correct": 1,
+  "grounded_success": 1,
+  "unresolved": false,
+  "scorer_version": "workshop-rubric-v6-additive",
+  "judgment": {
+    "numeric": [
+      {
+        "id": "n1",
+        "correct": true,
+        "reason": "$1,615.9 million is the balance-sheet amount for FY2020 trade receivables, net; it is valid source precision and rounds to the requested $1,616.00 million."
+      }
+    ],
+    "semantic": [],
+    "retrieval": {
+      "coverage": "full",
+      "receipt_ids": [
+        "r1"
+      ],
+      "reason": "The FY2020 consolidated balance sheet provides Trade receivables, net of $1,615.9 million and states that figures are in millions."
+    },
+    "grounding": [
+      {
+        "claim": "Amcor's FY2020 net accounts receivable was $1,615.9 million.",
+        "supported": true,
+        "receipt_ids": [
+          "r1"
+        ],
+        "reason": "The cited FY2020 balance sheet reports Trade receivables, net of 1,615.9, with amounts stated in millions."
+      }
+    ],
+    "completeness": [
+      {
+        "id": "b1",
+        "correct": true,
+        "reason": "The candidate's $1,615.9 million is equivalent to the reference $1,616.00 million when rounded to whole millions."
+      }
+    ],
+    "material_contradiction": false,
+    "unresolved": false,
+    "_meta": {
+      "model": "openai/openai/gpt-5.6-terra",
+      "prompt_version": "component-judge-v4-question-led",
+      "input_hash": "4e5cf2fb56e848199e3d055c78d129cd34ee318497e6e60153341c8a741dcdac",
+      "usage": {
+        "completion_tokens": 357,
+        "prompt_tokens": 4104,
+        "total_tokens": 4461,
+        "completion_tokens_details": {
+          "reasoning_tokens": 117
+        },
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "cache_write_tokens": 4101,
+          "cache_creation_tokens": 4101
+        }
+      }
+    }
+  },
+  "rubric": {
+    "mode": "numeric",
+    "numeric": [
+      {
+        "id": "n1",
+        "expected": "$1616.00 million"
+      }
+    ],
+    "semantic": [],
+    "_meta": {
+      "model": "openai/openai/gpt-5.6-terra",
+      "prompt_version": "component-judge-v4-question-led",
+      "input_hash": "88b09ddac2dd079a838a297ddf495f24931b6286ded22e0a610fd3f52dcd11bf",
+      "usage": {
+        "completion_tokens": 30,
+        "prompt_tokens": 489,
+        "total_tokens": 519,
+        "completion_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "cache_write_tokens": 0,
+          "cache_creation_tokens": 0
+        }
+      }
+    },
+    "requirements": {
+      "mode": "numeric",
+      "numeric": [
+        {
+          "id": "n1",
+          "expected": "Amcor's FY2020 year-end net accounts receivable in USD millions, using only balance sheet details"
+        }
+      ],
+      "semantic": [],
+      "_meta": {
+        "model": "openai/openai/gpt-5.6-terra",
+        "prompt_version": "component-judge-v4-question-led",
+        "input_hash": "db0095dcda8faf3d6468ee71c99d7a7366644c8aee8a7c10665f739274cb9b82",
+        "usage": {
+          "completion_tokens": 45,
+          "prompt_tokens": 355,
+          "total_tokens": 400,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens_details": {
+            "cached_tokens": 0,
+            "cache_write_tokens": 0,
+            "cache_creation_tokens": 0
+          }
+        }
+      }
+    },
+    "reference": "$1616.00",
+    "gold_claims": [
+      {
+        "id": "b1",
+        "expected": "The reference answer is $1,616.00."
+      }
+    ],
+    "gold_claims_meta": {
+      "model": "openai/openai/gpt-5.6-terra",
+      "prompt_version": "component-judge-v4-question-led",
+      "input_hash": "1ea1efbe2fb780c622657c36952bac07020927f54f15ee77bcd763c117d6f765",
+      "usage": {
+        "completion_tokens": 52,
+        "prompt_tokens": 127,
+        "total_tokens": 179,
+        "completion_tokens_details": {
+          "reasoning_tokens": 22
+        },
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "cache_write_tokens": 0,
+          "cache_creation_tokens": 0
+        }
+      }
+    }
+  },
+  "tool_metrics": {
+    "total_calls": 7,
+    "by_tool": {
+      "bm25_search": 1,
+      "read_table": 1,
+      "read": 2,
+      "grep_document": 2,
+      "finish": 1
+    },
+    "identical_repeat_calls": 0,
+    "tool_error_observations": 0,
+    "delivered_chars": 9271,
+    "note": "Diagnostics only: retries and errors are not automatically model faults; no diversity bonus."
+  },
+  "invalid_citations": [],
+  "financebench_id": "financebench_id_03882",
+  "source_hash": "c4a775cf33bab1c90f818c70593bbe082de1b491c2bd7ef189e4190649596f26"
+}

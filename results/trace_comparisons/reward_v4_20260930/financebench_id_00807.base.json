@@ -1,0 +1,146 @@
+{
+  "financebench_id": "financebench_id_00807",
+  "model": "Qwen3.5-4B",
+  "source_hash": "e29dd1dc7944ce73db7fbc6d6ef21ccd2c8a19a21e1cadef86cbaa8b3164436f",
+  "original_score": {
+    "F": 1.0,
+    "A": 0.0,
+    "G": 1.0,
+    "Ret": 1.0,
+    "reward": 0.0,
+    "correct": 0,
+    "grounded_success": 0,
+    "unresolved": false,
+    "fabricated_citation": false,
+    "grader_version": "workshop-rubric-v3-source-rounding",
+    "judge_verdict": "contradicted",
+    "judge_confidence": 0.95,
+    "judge_cache_hit": false,
+    "judge_numeric_ok": false
+  },
+  "new_score": {
+    "F": 1,
+    "N": 0.0,
+    "S": 0.0,
+    "A": 0.0,
+    "G": 0.25,
+    "reward": 0.0,
+    "correct": 0,
+    "grounded_success": 0,
+    "unresolved": false,
+    "scorer_version": "workshop-rubric-v4-components",
+    "judgment": {
+      "numeric": [
+        {
+          "id": "n1",
+          "correct": false,
+          "reason": "Candidate’s interpreted final quick ratio is 1.42/approximately 1.44 (ratio), versus the reference quick ratio of 0.96 by the June 2023 close."
+        }
+      ],
+      "semantic": [
+        {
+          "id": "s1",
+          "correct": false,
+          "reason": "Candidate concludes liquidity is reasonably healthy based on a ratio above 1.0. The required conclusion is no: the 0.96 quick ratio is below the 1x benchmark and needs improvement."
+        }
+      ],
+      "grounding": [
+        {
+          "claim": "3M's Q2 FY2023 quick ratio is 1.42 (and approximately 1.44).",
+          "supported": false,
+          "receipt_ids": [
+            "r1"
+          ],
+          "reason": "The cited balance sheet supports the reported current-assets and current-liabilities figures, but dividing total current assets by current liabilities is the current ratio, not the quick ratio; the stated quick-ratio figures are therefore not supported."
+        },
+        {
+          "claim": "Total current assets were $15,754 million and total current liabilities were $10,936 million at June 30, 2023.",
+          "supported": true,
+          "receipt_ids": [
+            "r1"
+          ],
+          "reason": "The consolidated balance sheet reports both June 30, 2023 amounts in millions."
+        },
+        {
+          "claim": "3M had a reasonably healthy liquidity profile and adequate liquidity because its quick ratio was above 1.0.",
+          "supported": false,
+          "receipt_ids": [
+            "r1"
+          ],
+          "reason": "The conclusion relies on an incorrectly calculated and misidentified quick ratio."
+        },
+        {
+          "claim": "The quick ratio is relevant to liquidity because it assesses ability to meet short-term obligations using liquid assets excluding inventory.",
+          "supported": true,
+          "receipt_ids": [],
+          "reason": "This is a standard financial definition and does not require company-specific source support."
+        }
+      ],
+      "unresolved": false,
+      "_meta": {
+        "model": "openai/openai/gpt-5.6-terra",
+        "prompt_version": "component-judge-v3-contextual-units",
+        "input_hash": "ad1da259864af7b57c38365ad1c91f18ca135052048b12696bcdd69232b94890",
+        "usage": {
+          "completion_tokens": 581,
+          "prompt_tokens": 2139,
+          "total_tokens": 2720,
+          "completion_tokens_details": {
+            "reasoning_tokens": 208
+          },
+          "prompt_tokens_details": {
+            "cached_tokens": 0,
+            "cache_write_tokens": 2136,
+            "cache_creation_tokens": 2136
+          }
+        }
+      }
+    },
+    "rubric": {
+      "mode": "mixed",
+      "numeric": [
+        {
+          "id": "n1",
+          "expected": "0.96 by Jun'23 close"
+        }
+      ],
+      "semantic": [
+        {
+          "id": "s1",
+          "expected": "No, 3M does not have a reasonably healthy liquidity profile based on its Q2 FY2023 quick ratio because 0.96 is below the 1x benchmark and needs improvement to reach it."
+        }
+      ],
+      "_meta": {
+        "model": "openai/openai/gpt-5.6-terra",
+        "prompt_version": "component-judge-v3-contextual-units",
+        "input_hash": "ad03e17a1c6f8f86ae7e17008d79a3b87148b3ff0c236b5e0ac9033803880086",
+        "usage": {
+          "completion_tokens": 83,
+          "prompt_tokens": 238,
+          "total_tokens": 321,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens_details": {
+            "cached_tokens": 0,
+            "cache_write_tokens": 0,
+            "cache_creation_tokens": 0
+          }
+        }
+      }
+    },
+    "invalid_citations": []
+  },
+  "tool_metrics": {
+    "total_calls": 8,
+    "by_tool": {
+      "bm25_search": 6,
+      "read_table": 1,
+      "finish": 1
+    },
+    "identical_repeat_calls": 0,
+    "tool_error_observations": 0,
+    "delivered_chars": 19386,
+    "note": "Diagnostics only: retries and errors are not automatically model faults; no diversity bonus."
+  }
+}
