@@ -90,3 +90,33 @@ lineage separately from selected SFT messages.
 configs preserve older protocols; they are not a ready-to-launch v6 GRPO recipe.
 Unify and validate the chosen reward path and learning-signal gate before
 authorizing another paid run. This cleanup launches neither training nor eval.
+
+## Qwen 3.5 4B Unsloth GRPO smoke
+
+`harness/unsloth_financebench_grpo_v6.py` uses Unsloth's 4-bit Qwen loader and
+the saved SFT LoRA as its starting policy. Its optimizer is a custom one-step
+on-policy GRPO loop because each FinanceBench attempt contains several tool
+calls; it is not TRL's single-completion `GRPOTrainer` recipe. The live judge
+uses the same v6 formula as `additive_rescore.py`:
+`R = .15E + F(.20G + .45A + .15B + .05)`. Unresolved judge results are excluded,
+and an all-equal group makes no optimizer update.
+
+The September 30 smoke on SparkTwo used train IDs `04672` and `01865`, two
+generations each, eight turns, 512 new tokens per turn, a 16,384-token context,
+and learning rate `1e-6`. For fast diagnosis it indexed only those questions'
+two source filings. This restriction makes its retrieval scores incomparable
+with full-corpus evaluation. The four rewards were 0.05, 0.40, 0.90 and 0.05;
+two groups were retained and one optimizer step completed. This verifies a
+nonflat learning signal and runnable update, not that the new adapter improves
+held-out accuracy. The new adapter is separate from the served SFT adapter.
+
+To reproduce in the existing SparkTwo Unsloth environment, set
+`FINANCEBENCH_ROOT`, `FINANCEBENCH_FILINGS`, `FINANCEBENCH_TEXT`,
+`FINANCEBENCH_CACHE`, and the protected `COMPONENT_JUDGE_*` variables, then run
+the script with `--model` pointing to the SFT `final_adapter`, `--split` to the
+frozen `split.json`, `--teacher-dataset` to the selected SFT JSONL (tool schema
+only), and a fresh `--output-dir`. The exact arguments, split hash, four
+rollouts, summary, and adapter are under
+`results/grpo_runs/unsloth_qwen35_4b_v6_smoke_20260930/` locally (ignored by
+Git). Use `--rollouts-from` with an identical protocol only to resume a failed
+optimizer step without regenerating or rejudging those trajectories.
