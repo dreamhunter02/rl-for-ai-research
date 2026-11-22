@@ -13,6 +13,7 @@ import json
 import math
 import os
 import re
+import unicodedata
 from collections import Counter, defaultdict
 from pathlib import Path
 from typing import Any
@@ -32,7 +33,8 @@ _YEAR_RE = re.compile(r"(?<!\d)(20\d{2})(?!\d)")
 
 
 def _tokens(text: str) -> list[str]:
-    return [x.lower() for x in _TOKEN_RE.findall(text)]
+    forms = {'statements': 'statement', 'sheets': 'sheet', 'flows': 'flow'}
+    return [forms.get(x.lower(), x.lower()) for x in _TOKEN_RE.findall(text)]
 
 
 def _clean_text(text: str) -> str:
@@ -89,11 +91,41 @@ def _section_hint(text: str) -> str:
     return ""
 
 
-def _extract_pages(pdf_path: Path) -> list[str]:
+def layout_display(plain: str, layout: str) -> tuple[str, str]:
+    """Compact physical PDF rows; fall back if source glyph content is lost."""
+    compact = '\n'.join(re.sub(r'[ ]{2,}', ' | ', line.strip())
+                        for line in layout.splitlines() if line.strip())
+    if not compact:
+        return _clean_text(plain), 'plain_fallback_empty_layout'
+    def numbers(text):
+        return Counter(token.replace('$', '').replace(',', '') for token in
+                       re.findall(r'[(]?[-+]?[$]?[0-9][0-9,]*(?:[.][0-9]+)?[)]?%?', text))
+    if numbers(plain) != numbers(compact):
+        return _clean_text(plain), 'plain_fallback_numeric_mismatch'
+    def letters(text):
+        return Counter(c for c in unicodedata.normalize('NFKC', text).lower() if c.isalpha())
+    if letters(plain) != letters(compact):
+        return _clean_text(plain), 'plain_fallback_text_mismatch'
+    return _clean_text(compact), 'layout_rows'
+
+
+def _extract_pages(pdf_path: Path, extraction_mode='plain', audit=None) -> list[str]:
     try:
         from pypdf import PdfReader
         reader = PdfReader(str(pdf_path))
-        return [_clean_text(page.extract_text() or "") for page in reader.pages]
+        pages = []
+        for page in reader.pages:
+            plain = page.extract_text() or ''
+            text, applied = _clean_text(plain), 'plain'
+            if extraction_mode == 'layout_rows':
+                try:
+                    text, applied = layout_display(plain, page.extract_text(extraction_mode='layout') or '')
+                except Exception:
+                    applied = 'plain_fallback_layout_error'
+            pages.append(text)
+            if audit is not None:
+                audit.append(applied)
+        return pages
     except Exception:
         return []
 
@@ -101,6 +133,9 @@ def _extract_pages(pdf_path: Path) -> list[str]:
 def load_pages(doc_name: str, use_cache: bool = True, use_pdf_pages: bool | None = None) -> list[dict[str, Any]]:
     """Load true PDF pages; legacy whole-filing caches are never reused."""
     CACHE.mkdir(parents=True, exist_ok=True)
+    mode = os.environ.get('FINANCEBENCH_EXTRACTION', 'plain')
+    if mode not in ('plain', 'layout_rows'):
+        raise ValueError('FINANCEBENCH_EXTRACTION must be plain or layout_rows')
     pdf_path = FILINGS / f"{doc_name}.pdf"
     txt_path = TEXTDIR / f"{doc_name}.txt"
     strict = use_pdf_pages if use_pdf_pages is not None else os.environ.get("FINANCEBENCH_PDF_PAGES", "1") == "1"
@@ -109,15 +144,20 @@ def load_pages(doc_name: str, use_cache: bool = True, use_pdf_pages: bool | None
         raise FileNotFoundError(f"Missing filing: {doc_name}")
     stat = source.stat()
     fingerprint = [str(source.resolve()), stat.st_size, stat.st_mtime_ns, strict]
-    cache_path = CACHE / f"{doc_name}.v2.json"
+    version = 2 if mode == 'plain' else 3
+    if mode != 'plain':
+        import pypdf
+        fingerprint += [mode, pypdf.__version__]
+    cache_path = CACHE / (f'{doc_name}.v2.json' if mode == 'plain' else f'{doc_name}.layout_rows_v1.json')
     if use_cache and cache_path.exists():
         try:
             cached = json.loads(cache_path.read_text())
-            if cached.get("version") == 2 and cached.get("source") == fingerprint:
+            if cached.get("version") == version and cached.get("source") == fingerprint:
                 return cached["pages"]
         except (ValueError, KeyError):
             pass
-    pages = _extract_pages(pdf_path) if pdf_path.exists() else []
+    audit = []
+    pages = _extract_pages(pdf_path, mode, audit) if pdf_path.exists() else []
     if not any(pages) and txt_path.exists():
         raw = txt_path.read_text(errors="strict")
         if strict and "\f" not in raw:
@@ -128,7 +168,10 @@ def load_pages(doc_name: str, use_cache: bool = True, use_pdf_pages: bool | None
     if not any(pages):
         raise ValueError(f"Empty/unreadable filing: {doc_name}")
     rows = [{**document_metadata(doc_name), "page": i, "text": text, "section": _section_hint(text)} for i, text in enumerate(pages, 1)]
-    cache_path.write_text(json.dumps({"version": 2, "source": fingerprint, "pages": rows}, ensure_ascii=False))
+    if mode != 'plain':
+        for i, row in enumerate(rows):
+            row['extraction_applied'] = audit[i] if i < len(audit) else 'text_fallback'
+    cache_path.write_text(json.dumps({"version": version, "source": fingerprint, "pages": rows}, ensure_ascii=False))
     return rows
 
 
@@ -173,6 +216,12 @@ def _statement_kind(text: str) -> str:
     # pages that contain two statement blocks, the first title is the governing
     # statement kind because later blocks are subordinate summary rows.
     head = " ".join(" ".join(x.lower() for x in content_lines[:18]).split())
+    if 'index to consolidated financial statements' in head or 'index to financial statements' in head:
+        return 'other'
+    title = r'(?:consolidated\s+)?(?:statements?\s+(?:of|and)\s+(?:operations|income|cash\s*flow\s*s?|comprehensive\s+income|stockholders.?\s*equity)|balance\s*sheets?)(?:\s*\([^)]*\))?'
+    windows = content_lines[:18] + [' '.join(content_lines[i:i + 2]) for i in range(min(17, len(content_lines)))]
+    if not any(re.fullmatch(title, line) for line in windows):
+        return 'other'
     if re.search(r'notes?\s+to\s+(?:the\s+)?(?:consolidated\s+)?financial\s+statements', head):
         return "other"
     cash_matches = list(re.finditer(r"state(\s*ment)?s?\s+(of|and)\s+cash\s*flows?|cash\s*flows?\s*statement", head))
@@ -195,7 +244,7 @@ def _table_intent_bonus(query: str, item: dict[str, Any]) -> float:
     q = query.lower()
     kind = item.get("statement_kind", "other")
     bonus = 0.0
-    if any(x in q for x in ("income statement", "statements of operations", "net income attributable", "net income to shareholders")):
+    if any(x in q for x in ("income statement", "statement of operations", "statements of operations", "operating income", "net income attributable", "net income to shareholders")):
         bonus += 8.0 if kind == "operations" else (-2.0 if kind == "cashflow" else 0.0)
     if any(x in q for x in ("cash flow", "cash from operations", "cash provided by operating")):
         bonus += 8.0 if kind == "cashflow" else 0.0
@@ -218,6 +267,7 @@ class StructuredIndex:
         self.pages_by_doc: dict[str, list[dict[str, Any]]] = defaultdict(list)
         self.passages_by_id: dict[str, dict[str, Any]] = {}
         self.tables_by_id: dict[str, dict[str, Any]] = {}
+        self.page_kinds = {(p['document_id'], p['page']): _statement_kind(p['text']) for p in pages}
         for page in pages:
             self.pages_by_doc[page["document_id"]].append(page)
         for item in passages:
@@ -286,23 +336,61 @@ class StructuredIndex:
         return [{**item, "score": round(score, 5)} for score, item in scored[:top_k]]
 
     def search_prose(self, queries: list[str], filters: dict[str, Any] | None = None, top_k: int = 3) -> list[dict[str, Any]]:
-        hits: dict[str, dict[str, Any]] = {}
-        for query in queries:
-            for item in self._score(query, self.passages, self._prose_counters, self._prose_df, self._prose_avgdl, filters, top_k):
-                key = item["passage_id"]
-                if key not in hits or item["score"] > hits[key]["score"]:
-                    hits[key] = item
-        return sorted(hits.values(), key=lambda x: x["score"], reverse=True)[:top_k]
+        return self._fused_search(queries, filters, top_k, tables=False)
 
     def search_tables(self, queries: list[str], filters: dict[str, Any] | None = None, top_k: int = 3) -> list[dict[str, Any]]:
-        hits: dict[str, dict[str, Any]] = {}
+        return self._fused_search(queries, filters, top_k, tables=True)
+
+    def _fused_search(self, queries, filters, top_k, *, tables):
+        """Fuse ranks, not incomparable raw scores from separate keyword queries."""
+        identity = set(_tokens(str((filters or {}).get('company', ''))))
+        identity.update({'10-k', '10-q', '10k', '10q'})
+        focused = []
         for query in queries:
-            for item in self._score(query, self.tables, self._table_counters, self._table_df, self._table_avgdl, filters, max(top_k, 12)):
-                item = {**item, "score": round(item["score"] + _table_intent_bonus(query, item), 5)}
-                key = item["table_id"]
-                if key not in hits or item["score"] > hits[key]["score"]:
-                    hits[key] = item
-        return sorted(hits.values(), key=lambda x: x["score"], reverse=True)[:top_k]
+            tokens = [t for t in _tokens(query) if t not in identity]
+            # Metadata-only fragments may support a joint query, not compete alone.
+            if tokens and not all(re.fullmatch(r'(?:fy)?20\d{2}', t) for t in tokens):
+                normalized = ' '.join(tokens)
+                if normalized not in focused:
+                    focused.append(normalized)
+        if not focused:
+            focused = list(dict.fromkeys(q.strip() for q in queries if q.strip()))
+        joint = ' '.join(dict.fromkeys(t for q in queries for t in _tokens(q) if t not in identity))
+        weighted = [(q, 1.) for q in focused]
+        if len(focused) > 1:
+            weighted.append((joint, 2.))
+        items, counters, df, avgdl = ((self.tables, self._table_counters, self._table_df, self._table_avgdl)
+                                    if tables else (self.passages, self._prose_counters, self._prose_df, self._prose_avgdl))
+        hits, scores = {}, Counter()
+        for query, weight in weighted:
+            candidates = self._score(query, items, counters, df, avgdl, filters, max(top_k * 10, 100))
+            def priority(item):
+                intent = _table_intent_bonus(query, {
+                    **item, 'statement_kind': self.page_kinds.get((item['document_id'], item['page']), 'other')})
+                return (intent > 0, item['score'] + intent)
+            candidates.sort(key=priority, reverse=True)
+            for rank, item in enumerate(candidates, 1):
+                key = item['table_id' if tables else 'passage_id']
+                if key not in hits:
+                    hits[key] = {**item, 'matched_queries': []}
+                if query not in hits[key]['matched_queries']:
+                    hits[key]['matched_queries'].append(query)
+                scores[key] += weight / (60 + rank)
+        combined_intent = ' '.join(focused)
+        query_years = {int(y) for query in queries for y in _YEAR_RE.findall(query)}
+        for key, item in hits.items():
+            intent = _table_intent_bonus(combined_intent, {
+                **item, 'statement_kind': self.page_kinds.get((item['document_id'], item['page']), 'other')})
+            item['statement_intent_match'] = intent > 0
+            # Keep explicit statement intent after fusion; note cross-query overlap
+            # must not undo the per-query statement ordering.
+            if intent > 0:
+                scores[key] += .1
+            item['query_year_match'] = item.get('year') in query_years
+            if item['query_year_match']:
+                scores[key] += .025
+        return [{**hits[k], 'score': round(scores[k], 7), 'ranking': 'intent_then_reciprocal_rank_fusion'}
+                for k in sorted(hits, key=lambda k: (hits[k]['statement_intent_match'], scores[k]), reverse=True)[:top_k]]
 
     def grep_document(self, document_id: str, patterns: list[str], page_start: int = -1, page_end: int = -1, context_lines: int = 2) -> list[dict[str, Any]]:
         results = []

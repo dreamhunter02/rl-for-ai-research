@@ -116,16 +116,20 @@ def _tool_result(payload: object) -> ToolResult:
 class Bm25Tool:
     """Structured retrieval tools backed by one deterministic corpus index."""
 
-    def __init__(self, index: hb.StructuredIndex, max_turns: int = 8):
+    def __init__(self, index: hb.StructuredIndex, max_turns: int = 8, *, budget_cues: bool = True,
+                 require_citations: bool = False):
         self.index = index
         self.max_turns = max_turns
+        self.budget_cues = budget_cues
+        self.require_citations = require_citations
         self.state = EpisodeState()
 
     def _result(self, payload, name="", should_stop=False):
         payload = dict(payload)
         remaining = max(0, self.max_turns - self.state.turn)
-        payload["turns_remaining"] = remaining
-        if remaining == 1: payload["next_action"] = "Next turn must be finish."
+        if self.budget_cues:
+            payload["turns_remaining"] = remaining
+            if remaining == 1: payload["next_action"] = "Next turn must be finish."
         if name in ("read", "read_table") and "text" in payload:
             payload["receipt_id"] = f"r{len(self.state.receipts)+1}"
         if name == "grep_document":
@@ -153,7 +157,7 @@ class Bm25Tool:
     @tool
     async def bm25_search(
         self,
-        query_list: Annotated[list[str], "One or more keyword queries."],
+        query_list: Annotated[list[str], "One or more complete keyword queries, not a list of individual words. Use company/year filters for filing identity."],
         company: Annotated[str, "Optional company filter, for example 3M."] = "",
         year: Annotated[int, "Optional fiscal year; use -1 when unknown."] = -1,
         filing_type: Annotated[str, "Optional type such as 10-K or 10-Q."] = "",
@@ -166,7 +170,7 @@ class Bm25Tool:
         scope = (scope or "both").lower()
         if scope not in ('prose','tables','table','both'):
             return self._result({'error':'scope must be prose, tables, or both; correct scope and retry.'}, 'bm25_search')
-        out: dict[str, object] = {"queries": query_list, "filters": filters}
+        out: dict[str, object] = {"queries": query_list, "filters": filters, "effective_top_k": top_k}
         if scope in ("prose", "both"):
             out["prose_hits"] = self.index.search_prose(query_list, filters, top_k)
         if scope in ("tables", "table", "both"):
@@ -201,7 +205,8 @@ class Bm25Tool:
     ) -> ToolResult:
         filters = {"document_id": document_id, "company": company, "year": year}
         hits = self.index.search_tables(query_list, filters, max(1, min(int(top_k), 8)))
-        return self._result({"queries": query_list, "table_hits": compact_hits(hits, query_list)}, "search_tables")
+        return self._result({"queries": query_list, "effective_top_k": min(max(int(top_k), 1), 5),
+                             "table_hits": compact_hits(hits, query_list)}, "search_tables")
 
     @tool
     async def read(
@@ -242,8 +247,17 @@ class Bm25Tool:
             self.state.validation_errors += 1
             return self._result({"error": "Multiple terminal submissions are ambiguous"}, "finish", True)
         try:
-            self.state.accepted = validate_submission(dict(answer_type=answer_type, value=value, unit=unit,
+            candidate = validate_submission(dict(answer_type=answer_type, value=value, unit=unit,
                 scale=scale, decision=decision, answer_text=answer_text, citations=citations, derivation=derivation))
+            if self.require_citations:
+                if not candidate['citations']:
+                    raise ValueError('At least one source citation is required. Cite the receipt IDs whose delivered text supports the answer.')
+                for citation in candidate['citations']:
+                    receipt = self.state.receipts.get(citation['receipt_id'])
+                    if (not receipt or not receipt.get('text')
+                        or receipt['document_id'] != citation['document_id'] or receipt['page'] != citation['page']):
+                        raise ValueError('Unknown or mismatched citation: ' + citation['receipt_id'] + '. Use a delivered receipt with its exact document_id and page.')
+            self.state.accepted = candidate
         except ValueError as exc:
             self.state.validation_errors += 1
             return self._result({"error": str(exc)}, "finish")

@@ -131,17 +131,17 @@ async def score(record,rubric,judge):
     return result
 
 
-def render(base,sft,bs,ss):
+def render(base,sft,bs,ss,*,before_label='Base',after_label='SFT'):
     esc=lambda x:html.escape(str(x))
     pretty=lambda x:esc(json.dumps(x,indent=2,ensure_ascii=False))
     out=['<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>FinanceBench latest reward</title><style>body{font:16px system-ui;margin:24px;background:#f4f6f9;color:#192534}article{background:white;padding:24px;margin:20px 0;border-radius:12px}.pair{display:grid;grid-template-columns:1fr 1fr;gap:24px}section{min-width:0}table{width:100%;border-collapse:collapse}td,th{text-align:left;padding:8px;border-bottom:1px solid #ddd}pre{white-space:pre-wrap;overflow-wrap:anywhere;max-height:550px;overflow:auto;background:#eef2f6;padding:12px}summary{cursor:pointer;padding:10px;font-weight:600}.reward{font-size:24px;font-weight:700}@media(max-width:800px){.pair{grid-template-columns:1fr}}</style></head><body><h1>FinanceBench · latest additive reward</h1><p>R = 0.15E + F(0.20G + 0.45A + 0.15B + 0.05)</p><p>E: retrieved evidence sufficiency · G: cited factual grounding · A: core answer correctness · B: binary full-reference completeness · F: accepted finish.</p><p>Post-hoc scoring of saved traces, not new model evaluation. E uses all delivered source receipts; G uses valid final citations. Subjective conclusions are graded in A, not G. B requires A=1 and every material reference claim correct. Judge assessments are not human verification.</p>']
-    for label,scores in [('Base',bs),('SFT',ss)]:
+    for label,scores in [(before_label,bs),(after_label,ss)]:
         done=[r for r in scores if not r['unresolved']]
         mean=sum(r['reward'] for r in done)/len(done) if done else None
         out.append(f'<p>{label}: {len(done)}/{len(scores)} resolved; mean reward over resolved traces: {esc(round(mean,4) if mean is not None else "N/A")}.</p>')
     for b,s,x,y in zip(base,sft,bs,ss):
         out.append(f'<article><h2>{esc(b["financebench_id"])}</h2><p>{esc(b["question"])}</p><p><b>Reference:</b> {esc(b.get("gold",""))}</p><div class="pair">')
-        for label,r,sc in [('Base',b,x),('SFT',s,y)]:
+        for label,r,sc in [(before_label,b,x),(after_label,s,y)]:
             value='Unresolved' if sc['unresolved'] else f'{sc["reward"]:.3f}'
             out.append(f'<section><h3>{label}</h3><p>{esc(r.get("answer_text") or r.get("submission",""))}</p><p class="reward">Reward: {value}</p><table><tr><th>Component</th><th>Latest score</th></tr>')
             for k in ('E','G','A','B','F'):
@@ -185,13 +185,16 @@ async def run(args):
     pairs=await asyncio.gather(*(pair(b,s) for b,s in zip(*groups)))
     scores=[[p[i] for p in pairs] for i in (0,1)]
     for label,rows in zip(('base','sft'),scores): (out/(label+'.jsonl')).write_text(''.join(json.dumps(r)+'\n' for r in rows))
-    (out/'comparison.html').write_text(render(*groups,*scores))
+    (out/'comparison.html').write_text(render(*groups,*scores,before_label=args.before_label,after_label=args.after_label))
     manifest=dict(version=VERSION,formula='0.15E + F*(0.20G + 0.45A + 0.15B + 0.05)',judge_model=judge.model,
-                  inputs={str(p):hashlib.sha256(p.read_bytes()).hexdigest() for p in paths},unresolved=sum(r['unresolved'] for rows in scores for r in rows))
+                  inputs={str(p):hashlib.sha256(p.read_bytes()).hexdigest() for p in paths},
+                  labels={'before':args.before_label,'after':args.after_label},
+                  unresolved=sum(r['unresolved'] for rows in scores for r in rows))
     (out/'manifest.json').write_text(json.dumps(manifest,indent=2))
 
 
 if __name__=='__main__':
     p=argparse.ArgumentParser();p.add_argument('--root',required=True);p.add_argument('--out',required=True);p.add_argument('--concurrency',type=int,default=3)
+    p.add_argument('--before-label',default='Base');p.add_argument('--after-label',default='SFT')
     p.add_argument('--before');p.add_argument('--after')
     asyncio.run(run(p.parse_args()))

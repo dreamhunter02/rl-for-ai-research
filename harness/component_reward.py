@@ -8,6 +8,7 @@ import os
 from pathlib import Path
 import urllib.request
 import urllib.error
+from provider_rate_limit import get_rate_governor
 
 SCORER_VERSION = 'workshop-rubric-v5-question-led'
 PROMPT_VERSION = 'component-judge-v4-question-led'
@@ -194,12 +195,15 @@ class ComponentJudge:
         if not self.endpoint or not self.model or not self.key: raise ValueError('Configure COMPONENT_JUDGE_ENDPOINT, MODEL and API_KEY or KEY_FILE')
 
     def _request(self, prompt, payload):
-        identity=dict(prompt=prompt,payload=payload,endpoint=self.endpoint,max_tokens=6000)
+        identity=dict(prompt=prompt,payload=payload,endpoint=self.endpoint,max_tokens=16000)
         digest=cache_key(identity,self.model); path=self.cache_dir/(digest+'.json')
         if path.exists(): return json.loads(path.read_text())
-        body=dict(model=self.model,messages=[dict(role='system',content=prompt),dict(role='user',content=json.dumps(payload,ensure_ascii=False))],max_tokens=6000)
+        body=dict(model=self.model,messages=[dict(role='system',content=prompt),dict(role='user',content=json.dumps(payload,ensure_ascii=False))],max_tokens=16000)
         req=urllib.request.Request(self.endpoint,data=json.dumps(body).encode(),headers={'Content-Type':'application/json','Authorization':'Bearer '+self.key})
-        with urllib.request.urlopen(req,timeout=120) as response: envelope=json.load(response)
+        def request():
+            with urllib.request.urlopen(req,timeout=120) as response: return json.load(response)
+        governor=get_rate_governor(self.endpoint)
+        envelope=governor.call(request) if governor else request()
         choice=envelope['choices'][0]
         if choice.get('finish_reason') not in ('stop',None): raise ValueError('judge output incomplete')
         content=choice['message'].get('content') or ''
@@ -216,6 +220,9 @@ class ComponentJudge:
         return result
 
     async def _retry(self,prompt,payload):
+        if get_rate_governor(self.endpoint):
+            # The shared governor already owns bounded 429 retries; no outer burst.
+            return await asyncio.to_thread(self._request,prompt,payload)
         for attempt in range(3):
             try: return await asyncio.to_thread(self._request,prompt,payload)
             except Exception:

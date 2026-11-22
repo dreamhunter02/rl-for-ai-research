@@ -11,9 +11,14 @@ def compact_hits(hits, queries=(), limit=5):
     out = []
     for hit in hits[:limit]:
         text = hit.get("text", "")
-        positions = [text.lower().find(t) for t in terms if t in text.lower()]
-        start = max(0, min(positions, default=0) - 100)
-        record = {k: hit[k] for k in ("document_id", "page", "passage_id", "table_id", "score", "units", "title") if k in hit}
+        matched = [w for q in hit.get('matched_queries', ()) for w in re.findall(r'\w+', q.lower()) if len(w) > 2]
+        relevant = set(matched or terms)
+        positions = [m.start() for m in re.finditer(r'\w+', text.lower())
+                     if m.group() in relevant or (m.group().endswith('s') and m.group()[:-1] in relevant)]
+        # Choose the densest query-matching window instead of the first company header.
+        center = max(positions, key=lambda p: sum(abs(p - q) < 150 for q in positions), default=0)
+        start = max(0, center - 100)
+        record = {k: hit[k] for k in ("document_id", "page", "passage_id", "table_id", "score", "units", "title", "company", "year", "filing_type", "statement_intent_match", "query_year_match", "matched_queries", "ranking") if k in hit}
         record.update(snippet=text[start:start + 300], snippet_start=start + hit.get("start", 0))
         out.append(record)
     return out

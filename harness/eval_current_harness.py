@@ -46,7 +46,7 @@ def main() -> None:
         "data/targets.json",
     ))
     parser.add_argument("--out", required=True)
-    parser.add_argument("--phase", choices=("baseline", "post_sft"), required=True)
+    parser.add_argument("--phase", choices=("baseline", "post_sft", "post_grpo"), required=True)
     parser.add_argument("--max-turns", type=int, default=8)
     parser.add_argument("--max-tokens", type=int, default=1024)
     parser.add_argument("--temperature", type=float, default=0.0)

@@ -1,0 +1,23 @@
+{
+  "n": 12,
+  "scored": 12,
+  "unresolved": 0,
+  "accepted_finishes": 8,
+  "finish_rate": 0.6667,
+  "mean_reward": 0.6067,
+  "mean_E": 1.0,
+  "mean_G": 0.6167,
+  "mean_A": 0.5,
+  "mean_B": 0.5,
+  "accuracy_A1": 0.5,
+  "grounded_accuracy": 0.4167,
+  "mean_tool_calls": 14.83,
+  "mean_turns": 14.83,
+  "mean_wall_s": 763.06,
+  "terminations": {
+    "finish": 8,
+    "tool_call_limit": 4
+  },
+  "model": "accounts/fireworks/models/muse-glimmer-30b",
+  "split": "dev"
+}

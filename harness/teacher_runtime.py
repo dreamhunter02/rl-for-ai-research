@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import asyncio
+import copy
 import json
 import os
 from dataclasses import dataclass
@@ -27,11 +28,13 @@ class TeacherToolResult:
 class TeacherHarnessSession:
     """One stateful episode using the exact tools and scorer used by training."""
 
-    def __init__(self, index: Any, max_turns: int = 8):
+    def __init__(self, index: Any, max_turns: int = 8, *, budget_cues: bool = True,
+                 require_citations: bool = False):
         import finance_env as fe
 
         self._finance_env = fe
-        self.tools = fe.Bm25Tool(index, max_turns=max_turns)
+        self.tools = fe.Bm25Tool(index, max_turns=max_turns, budget_cues=budget_cues,
+                                require_citations=require_citations)
 
     @property
     def system_prompt(self) -> str:
@@ -47,7 +50,15 @@ class TeacherHarnessSession:
 
     def tool_specs(self, include_finish: bool = True) -> list[dict[str, Any]]:
         names = TOOL_NAMES if include_finish else TOOL_NAMES[:-1]
-        return [getattr(self.tools, name).to_spec() for name in names]
+        specs = copy.deepcopy([getattr(self.tools, name).to_spec() for name in names])
+        if self.tools.require_citations and include_finish:
+            spec = next(t for t in specs if t['name'] == 'finish')['parameters']
+            spec.setdefault('required', []).append('citations')
+            spec['properties']['citations'].update(minItems=1, items={
+                'type': 'object', 'properties': {'receipt_id': {'type': 'string'},
+                'document_id': {'type': 'string'}, 'page': {'type': 'integer', 'minimum': 1}},
+                'required': ['receipt_id', 'document_id', 'page'], 'additionalProperties': False})
+        return specs
 
     def start_turn(self) -> None:
         self.tools.state.turn += 1

@@ -42,3 +42,6 @@ results/teacher_traces/current_harness_train96*
 results/teacher_traces/inference_hub_train96_shards/
 results/teacher_traces/inference_hub_smoke_id.txt
 results/teacher_traces/retry_probe_ids.txt
+
+# Local venvs, caches, and runtime logs
+run/
