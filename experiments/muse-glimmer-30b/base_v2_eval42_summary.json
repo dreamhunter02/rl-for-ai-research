@@ -1,0 +1,27 @@
+{
+  "n": 42,
+  "scored": 41,
+  "unresolved": 1,
+  "accepted_finishes": 28,
+  "finish_rate": 0.6667,
+  "mean_reward": 0.6573,
+  "mean_E": 0.8293,
+  "mean_G": 0.6341,
+  "mean_A": 0.6585,
+  "mean_B": 0.5122,
+  "accuracy_A1": 0.6585,
+  "grounded_accuracy": 0.561,
+  "mean_tool_calls": 12.69,
+  "mean_turns": 12.4,
+  "mean_wall_s": 723.89,
+  "terminations": {
+    "finish": 28,
+    "tool_call_limit": 13,
+    "generation_token_limit": 1
+  },
+  "model": "accounts/fireworks/models/muse-glimmer-30b",
+  "split": "eval",
+  "temperature": 0.0,
+  "max_tool_calls": 25,
+  "max_tokens": 4096
+}

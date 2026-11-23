@@ -1,0 +1,24 @@
+{
+  "n": 42,
+  "scored": 40,
+  "unresolved": 2,
+  "accepted_finishes": 30,
+  "finish_rate": 0.7143,
+  "mean_reward": 0.7081,
+  "mean_E": 0.875,
+  "mean_G": 0.6844,
+  "mean_A": 0.7,
+  "mean_B": 0.6,
+  "accuracy_A1": 0.7,
+  "grounded_accuracy": 0.65,
+  "mean_tool_calls": 11.74,
+  "mean_turns": 11.67,
+  "mean_wall_s": 695.23,
+  "terminations": {
+    "finish": 30,
+    "generation_token_limit": 1,
+    "tool_call_limit": 11
+  },
+  "model": "vineethkalluru/run-f38c03fe7bc7473f9619967aa8f6066e/fb-mg-v2-step-7-ef2b7444",
+  "split": "eval"
+}
