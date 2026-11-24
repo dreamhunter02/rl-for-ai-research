@@ -1,0 +1,34 @@
+{
+  "total_n": 90,
+  "macro_accuracy": 0.5,
+  "macro_reward": 0.5033,
+  "macro_finish_rate": 0.5667,
+  "per_benchmark": {
+    "finagentbench": {
+      "n": 30,
+      "accuracy": 0.4667,
+      "correct": 14,
+      "finish_rate": 0.5667,
+      "mean_reward": 0.4717,
+      "mean_tool_calls": 11.9
+    },
+    "finretrieval": {
+      "n": 30,
+      "accuracy": 0.8667,
+      "correct": 26,
+      "finish_rate": 0.9,
+      "mean_reward": 0.8683,
+      "mean_tool_calls": 10.23
+    },
+    "finsearchcomp": {
+      "n": 30,
+      "accuracy": 0.1667,
+      "correct": 5,
+      "finish_rate": 0.2333,
+      "mean_reward": 0.17,
+      "mean_tool_calls": 14.63
+    }
+  },
+  "model": "vineethkalluru/run-064f38c62e9248eb976114073fc53ec1/mb-mg-v1-step-5-84b8aefe",
+  "split": "eval"
+}

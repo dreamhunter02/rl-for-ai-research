@@ -1,0 +1,34 @@
+{
+  "total_n": 90,
+  "macro_accuracy": 0.3889,
+  "macro_reward": 0.39,
+  "macro_finish_rate": 0.4111,
+  "per_benchmark": {
+    "finagentbench": {
+      "n": 30,
+      "accuracy": 0.4,
+      "correct": 12,
+      "finish_rate": 0.4667,
+      "mean_reward": 0.4033,
+      "mean_tool_calls": 11.43
+    },
+    "finretrieval": {
+      "n": 30,
+      "accuracy": 0.7,
+      "correct": 21,
+      "finish_rate": 0.7,
+      "mean_reward": 0.7,
+      "mean_tool_calls": 9.37
+    },
+    "finsearchcomp": {
+      "n": 30,
+      "accuracy": 0.0667,
+      "correct": 2,
+      "finish_rate": 0.0667,
+      "mean_reward": 0.0667,
+      "mean_tool_calls": 14.7
+    }
+  },
+  "model": "accounts/fireworks/models/muse-glimmer-30b",
+  "split": "eval"
+}
