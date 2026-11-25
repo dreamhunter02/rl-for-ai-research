@@ -23,6 +23,7 @@ sys.path.insert(0, str(HARNESS_DIR))
 sys.path.insert(0, str(HARNESS_DIR / "benchmarks"))
 
 from benchmarks.multibench_env import DATA_DIR, FinRetrievalDB, MultiBenchJudge, MultiBenchSession
+from financeharness_v3 import UniformResearchMemory
 from eval_multibench import SUBMIT_NUDGE, pack_recent_turns
 from generate_teacher_traces import parse_tool_arguments
 from muse_glimmer_runner import (
@@ -157,6 +158,8 @@ def make_multibench_rollout_fn(
         rid = row["id"]
         bm = row["benchmark"]
         session = MultiBenchSession(bm, fr_db=fr_db)
+        memory = UniformResearchMemory(row['question'])
+        memory = UniformResearchMemory(row['question'])
         initial = [
             {"role": "system", "content": session.system_prompt()},
             {"role": "user", "content": row["question"]},
@@ -172,7 +175,7 @@ def make_multibench_rollout_fn(
 
         try:
             while len(calls) < max_tool_calls:
-                packed = pack_recent_turns(initial, turns)
+                packed = memory.pack(initial, turns, calls_used=len(calls), max_calls=max_tool_calls)
                 muse_msgs = _to_muse_messages(renderer, tool_specs, packed, cid_to_name)
                 model_input = renderer.build_generation_prompt(muse_msgs)
                 prompt_token_ids = model_input_to_token_ids(model_input)
@@ -276,6 +279,9 @@ def make_multibench_rollout_fn(
                         content, stop_flag = json.dumps({"error": parse_error}), False
                     else:
                         content, stop_flag = await asyncio.to_thread(session.execute, name, args)
+                        rid = memory.record_tool_result(name, args, content)
+                        if rid:
+                            content = f'[receipt_id={rid}] ' + content
                     rem = max_tool_calls - len(calls)
                     if not stop_flag and 0 < rem <= 3:
                         content += f"\n[BUDGET: {rem} tool call(s) remaining. Synthesize your best verified answer (or abstain if unanswerable) and call `finish` now.]"

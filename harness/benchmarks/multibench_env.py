@@ -22,6 +22,9 @@ from pathlib import Path
 from typing import Any
 
 from bs4 import BeautifulSoup
+import sys
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+from financeharness_v3 import expand_entity_aliases, run_python_sandbox
 
 ROOT = Path.home() / "financeharness-muse-glimmer"
 DATA_DIR = ROOT / "data" / "multibench"
@@ -112,8 +115,9 @@ class FinRetrievalDB:
 
         out: dict[str, list[dict[str, Any]]] = {}
         for kw in kw_list[:5]:
+            aliases = expand_entity_aliases(kw)
             kw_low = kw.lower()
-            kw_toks = _tokenize(kw)
+            kw_toks = _tokenize(' '.join(aliases))
             scored = []
             for r in rows:
                 ticker = (r["ticker"] or "").lower()
@@ -485,9 +489,101 @@ def tool_yfinance_info(ticker: str) -> str:
         return json.dumps({"error": f"{type(exc).__name__}: {str(exc)[:140]}"})
 
 
-def tool_web_search(query: str, max_results: int = 6) -> str:
+
+# ---------------- Budget-Aware Browserbase Search & Fetch ----------------
+
+_BB_KEY_CACHE: str | None = None
+_BB_LIVE_CALLS = 0
+_BB_MAX_LIVE_CALLS = int(os.environ.get("BB_MAX_LIVE_CALLS", "400"))
+
+
+def _get_bb_key() -> str:
+    global _BB_KEY_CACHE
+    if _BB_KEY_CACHE is None:
+        key = os.environ.get("BROWSERBASE_API_KEY", "").strip()
+        if not key:
+            kp = Path.home() / ".config" / "browserbase" / "api_key"
+            if kp.exists():
+                key = kp.read_text().strip()
+        _BB_KEY_CACHE = key
+    return _BB_KEY_CACHE
+
+
+def _bb_search_request(query: str, num_results: int = 5) -> list[dict[str, Any]] | None:
+    global _BB_LIVE_CALLS
+    key = _get_bb_key()
+    if not key or _BB_LIVE_CALLS >= _BB_MAX_LIVE_CALLS:
+        return None
+    try:
+        body = json.dumps({"query": query, "numResults": min(int(num_results), 6)}).encode()
+        req = urllib.request.Request(
+            "https://api.browserbase.com/v1/search",
+            data=body,
+            headers={"X-BB-API-Key": key, "Content-Type": "application/json"},
+        )
+        _BB_LIVE_CALLS += 1
+        with urllib.request.urlopen(req, timeout=25) as resp:
+            data = json.load(resp)
+        items = data.get("results") or []
+        return [
+            {
+                "title": r.get("title") or r.get("url") or "",
+                "url": r.get("url") or r.get("id") or "",
+                "snippet": r.get("snippet") or r.get("text") or r.get("description") or "",
+            }
+            for r in items
+        ]
+    except Exception:
+        return None
+
+
+def _bb_fetch_request(url: str) -> str | None:
+    global _BB_LIVE_CALLS
+    key = _get_bb_key()
+    if not key or _BB_LIVE_CALLS >= _BB_MAX_LIVE_CALLS:
+        return None
+    try:
+        body = json.dumps({"url": url}).encode()
+        req = urllib.request.Request(
+            "https://api.browserbase.com/v1/fetch",
+            data=body,
+            headers={"X-BB-API-Key": key, "Content-Type": "application/json"},
+        )
+        _BB_LIVE_CALLS += 1
+        with urllib.request.urlopen(req, timeout=30) as resp:
+            data = json.load(resp)
+        raw = data.get("content") or data.get("markdown") or data.get("html") or data.get("body") or ""
+        if not isinstance(raw, str):
+            raw = json.dumps(raw, ensure_ascii=False)
+        if "<html" in raw.lower() or "<body" in raw.lower() or "<div" in raw.lower():
+            soup = BeautifulSoup(raw, "lxml")
+            for tag in soup(["script", "style", "nav", "footer"]):
+                tag.decompose()
+            raw = re.sub(r"[ \t]+", " ", soup.get_text("\n"))
+            raw = re.sub(r"\n{3,}", "\n\n", raw)
+        return raw
+    except Exception:
+        return None
+
+
+def tool_web_search(query: str, max_results: int = 5) -> str:
     WEB_CACHE.mkdir(parents=True, exist_ok=True)
-    key = hashlib.sha256(f"ddgs:{query}:{max_results}".encode()).hexdigest()
+    norm_q = " ".join(str(query).strip().lower().split())
+    n_res = min(int(max_results), 6)
+    bb_key_hash = hashlib.sha256(f"bb_search:{norm_q}:{n_res}".encode()).hexdigest()
+    bb_cpath = WEB_CACHE / f"bb_search_{bb_key_hash}.json"
+    if bb_cpath.exists():
+        return bb_cpath.read_text()
+
+    # 1. Try Browserbase Search API (high-signal Exa/Parallel search, cached by normalized query)
+    bb_items = _bb_search_request(str(query).strip(), num_results=n_res)
+    if bb_items:
+        out = json.dumps({"query": query, "source": "browserbase", "results": bb_items}, ensure_ascii=False)
+        bb_cpath.write_text(out)
+        return out
+
+    # 2. Free fallback: multi-backend DDGS (also disk-cached)
+    key = hashlib.sha256(f"ddgs:{norm_q}:{n_res}".encode()).hexdigest()
     cpath = WEB_CACHE / f"search_{key}.json"
     if cpath.exists():
         return cpath.read_text()
@@ -497,7 +593,7 @@ def tool_web_search(query: str, max_results: int = 6) -> str:
         res = []
         for bk in ("auto", "bing", "yahoo", "lite"):
             try:
-                res = list(DDGS().text(str(query), max_results=min(int(max_results), 10), backend=bk))
+                res = list(DDGS().text(str(query), max_results=n_res, backend=bk))
                 if res:
                     break
             except Exception:
@@ -505,6 +601,7 @@ def tool_web_search(query: str, max_results: int = 6) -> str:
         out = json.dumps(
             {
                 "query": query,
+                "source": "ddgs",
                 "results": [
                     {
                         "title": r.get("title", ""),
@@ -529,18 +626,30 @@ def tool_fetch_url(url: str, query: str | None = None) -> str:
     if cpath.exists():
         text = cpath.read_text(errors="ignore")
     else:
+        text = ""
+        # 1. Free direct urllib fetch first (0 Browserbase credits!)
         try:
             req = urllib.request.Request(str(url), headers=WEB_HEADERS)
-            with urllib.request.urlopen(req, timeout=20) as resp:
+            with urllib.request.urlopen(req, timeout=15) as resp:
                 raw = resp.read(2_000_000).decode("utf-8", errors="ignore")
-            soup = BeautifulSoup(raw, "lxml")
-            for tag in soup(["script", "style", "nav", "footer"]):
-                tag.decompose()
-            text = re.sub(r"[ \t]+", " ", soup.get_text("\n"))
-            text = re.sub(r"\n{3,}", "\n\n", text)
-            cpath.write_text(text)
-        except Exception as exc:
-            return json.dumps({"error": f"fetch_url failed: {type(exc).__name__}: {str(exc)[:140]}"})
+            if raw.lstrip().startswith("{") or raw.lstrip().startswith("["):
+                text = raw
+            else:
+                soup = BeautifulSoup(raw, "lxml")
+                for tag in soup(["script", "style", "nav", "footer"]):
+                    tag.decompose()
+                text = re.sub(r"[ \t]+", " ", soup.get_text("\n"))
+                text = re.sub(r"\n{3,}", "\n\n", text)
+        except Exception:
+            text = ""
+        # 2. Only escalate to Browserbase Fetch API if direct fetch failed or returned <400 chars (403/JS wall)
+        if len(text.strip()) < 400:
+            bb_text = _bb_fetch_request(str(url))
+            if bb_text and len(bb_text.strip()) > len(text.strip()):
+                text = bb_text
+        if not text.strip():
+            return json.dumps({"error": f"fetch_url returned empty content for {url}"})
+        cpath.write_text(text)
 
     if query:
         q_toks = _tokenize(query)
@@ -601,6 +710,15 @@ class MultiBenchSession:
                 "required": ["expression"],
             },
         }
+        py_spec = {
+            "name": "run_python",
+            "description": "Execute pure Python code (math, statistics, Decimal pre-imported; 2s timeout) for multi-step financial ratios, YoY growth, CAGR, or table calculations.",
+            "parameters": {
+                "type": "object",
+                "properties": {"code": {"type": "string"}},
+                "required": ["code"],
+            },
+        }
         if self.benchmark == "finretrieval":
             return [
                 {
@@ -640,6 +758,8 @@ class MultiBenchSession:
                     },
                 },
                 calc_spec,
+            py_spec,
+                py_spec,
                 {
                     "name": "finish",
                     "description": "Submit the final verified answer.",
@@ -705,6 +825,8 @@ class MultiBenchSession:
                     },
                 },
                 calc_spec,
+            py_spec,
+                py_spec,
                 {
                     "name": "finish",
                     "description": "Submit the final verified answer (or mark is_unanswerable=true for adversarial/unanswerable questions).",
@@ -782,6 +904,7 @@ class MultiBenchSession:
                 },
             },
             calc_spec,
+            py_spec,
             {
                 "name": "finish",
                 "description": "Submit the final verified answer.",
@@ -810,6 +933,8 @@ class MultiBenchSession:
         try:
             if name == "calculate":
                 out = safe_calculate(args.get("expression", ""))
+            elif name == "run_python":
+                out = run_python_sandbox(args.get("code", ""))
             elif name == "discover_companies":
                 out = self.fr_db.discover_companies(args.get("keywords", []))
             elif name == "discover_company_series":

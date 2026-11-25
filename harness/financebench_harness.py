@@ -16,6 +16,7 @@ import re
 import unicodedata
 from collections import Counter, defaultdict
 from pathlib import Path
+from financeharness_v3 import expand_entity_aliases
 from typing import Any
 
 BASE = Path(os.environ.get("FINANCEBENCH_ROOT", os.environ.get("FINANCEBENCH_BASE", Path(__file__).resolve().parents[1]))).expanduser()
@@ -297,11 +298,13 @@ class StructuredIndex:
         for key in ("company", "document_id", "filing_type"):
             wanted = str(filters.get(key) or "").strip().lower()
             observed = str(item.get(key, "")).lower()
-            if key == "company":
-                wanted = re.sub(r"[^a-z0-9]", "", wanted)
-                observed = re.sub(r"[^a-z0-9]", "", observed)
-                aliases = {"aescorporation": "aes", "theaescorporation": "aes"}
-                wanted, observed = aliases.get(wanted, wanted), aliases.get(observed, observed)
+            if key == "company" and wanted:
+                obs_comp = re.sub(r"[^a-z0-9]", "", observed)
+                obs_doc = re.sub(r"[^a-z0-9]", "", str(item.get("document_id", "")).lower())
+                aliases = [re.sub(r"[^a-z0-9]", "", a) for a in expand_entity_aliases(wanted)]
+                if not any(a and (a == obs_comp or a in obs_doc or obs_comp in a) for a in aliases):
+                    return False
+                continue
             if wanted and observed != wanted:
                 return False
         year = filters.get("year")
