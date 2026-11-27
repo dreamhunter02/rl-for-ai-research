@@ -1,0 +1,10 @@
+{
+  "steps": 5,
+  "accepted_groups": 26,
+  "resolved_rows": 48,
+  "training_session": "accounts/vineethkalluru/trainingSessions/ts-0029ddcaf33e443ebb9beb2b549aed30",
+  "training_run": "accounts/vineethkalluru/trainingRuns/run-4a4ce00a9e704e8688c7f7e1ea1e1267",
+  "final_sampler_snapshot": "vineethkalluru/run-4a4ce00a9e704e8688c7f7e1ea1e1267/fsc-mg-v4-step-5-2be6c663",
+  "periodic_training_checkpoints": [],
+  "final_training_checkpoint": "vineethkalluru/run-4a4ce00a9e704e8688c7f7e1ea1e1267/fsc-mg-v4-state-step-5"
+}

@@ -1,0 +1,18 @@
+{
+  "total_n": 30,
+  "macro_accuracy": 0.5,
+  "macro_reward": 0.505,
+  "macro_finish_rate": 0.6,
+  "per_benchmark": {
+    "finsearchcomp": {
+      "n": 30,
+      "accuracy": 0.5,
+      "correct": 15,
+      "finish_rate": 0.6,
+      "mean_reward": 0.505,
+      "mean_tool_calls": 13.87
+    }
+  },
+  "model": "vineethkalluru/run-4a4ce00a9e704e8688c7f7e1ea1e1267/fsc-mg-v4-step-5-2be6c663",
+  "split": "eval"
+}
