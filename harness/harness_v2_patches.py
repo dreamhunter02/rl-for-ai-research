@@ -17,7 +17,10 @@ EXTRA_SYSTEM_GUIDANCE = (
     "financial statements and compute it with `calculate` rather than concluding it is "
     "not disclosed. For dimensionless numeric answers (such as ratios or multiples), "
     "set `unit` to \"ratio\" (or \"number\") and `scale` to \"ones\". Avoid repeating "
-    "identical tool calls; once you have the needed receipts, synthesize and call `finish`."
+    "identical tool calls; use `run_python` for multi-step arithmetic (like CCC, ratios, averages) "
+    "instead of long mental math. If 2+ targeted searches of the relevant filing confirm no such "
+    "item/acquisition/security exists (e.g., none disclosed), cite the inspected receipts and call "
+    "`finish` stating None rather than looping until the tool limit."
 )
 
 

@@ -88,6 +88,110 @@ def safe_calculate(expression: str) -> str:
         return json.dumps({"error": f"{type(exc).__name__}: {str(exc)[:120]}"})
 
 
+
+def _html_to_clean_text(raw_html: str) -> str:
+    """Convert HTML to readable text while preserving financial table rows as pipe-delimited markdown."""
+    import warnings
+    from bs4 import XMLParsedAsHTMLWarning
+    warnings.filterwarnings("ignore", category=XMLParsedAsHTMLWarning)
+    soup = BeautifulSoup(raw_html, "lxml")
+    for tag in soup(["script", "style", "nav", "footer"]):
+        tag.decompose()
+    for table in soup.find_all("table"):
+        rows_md = []
+        for tr in table.find_all("tr"):
+            cells = [re.sub(r"\s+", " ", td.get_text(" ", strip=True)) for td in tr.find_all(["th", "td"])]
+            cells = [c for c in cells if c]
+            if cells:
+                rows_md.append("| " + " | ".join(cells) + " |")
+        if rows_md:
+            table.replace_with(soup.new_string("\n" + "\n".join(rows_md) + "\n"))
+    text = re.sub(r"[ \t]+", " ", soup.get_text("\n"))
+    return re.sub(r"\n{3,}", "\n\n", text)
+
+
+def _extract_pdf_bytes(data: bytes, max_pages: int = 40) -> str:
+    """Extract text from PDF bytes using PyMuPDF (fitz)."""
+    import fitz
+    doc = fitz.open(stream=data, filetype="pdf")
+    parts = []
+    for i in range(min(len(doc), max_pages)):
+        parts.append(f"--- Page {i + 1} ---\n" + doc[i].get_text("text"))
+    doc.close()
+    return "\n".join(parts)
+
+
+def tool_fred_series(series_id: str, start_date: str = "", end_date: str = "") -> str:
+    """Fetch official macroeconomic time-series from FRED free CSV endpoint (no API key needed)."""
+    sid = re.sub(r"[^A-Za-z0-9_.-]", "", str(series_id).upper().strip())
+    if not sid:
+        return json.dumps({"error": "series_id is required (e.g., TOTBKCR, CPIAUCSL, GDP, DGS10)."})
+    WEB_CACHE.mkdir(parents=True, exist_ok=True)
+    cpath = WEB_CACHE / f"fred_{sid}.csv"
+    if cpath.exists():
+        csv_text = cpath.read_text(errors="ignore")
+    else:
+        url = f"https://fred.stlouisfed.org/graph/fredgraph.csv?id={sid}"
+        try:
+            req = urllib.request.Request(url, headers=SEC_HEADERS)
+            with urllib.request.urlopen(req, timeout=10) as resp:
+                csv_text = resp.read().decode("utf-8", errors="ignore")
+        except Exception:
+            csv_text = _bb_fetch_request(url) or ""
+        try:
+            if "," not in csv_text or "<html" in csv_text[:200].lower():
+                return json.dumps({"error": f"FRED series {sid} not found."})
+            cpath.write_text(csv_text)
+        except Exception as exc:
+            return json.dumps({"error": f"FRED fetch failed for {sid}: {type(exc).__name__}"})
+    lines = [l.strip() for l in csv_text.splitlines() if l.strip()]
+    rows = []
+    for ln in lines[1:]:
+        parts = ln.split(",")
+        if len(parts) < 2:
+            continue
+        dt, val = parts[0], parts[1]
+        if start_date and dt < start_date:
+            continue
+        if end_date and dt > end_date:
+            continue
+        rows.append({"date": dt, "value": val})
+    if len(rows) > 60:
+        rows = rows[-60:]
+    return json.dumps({"series_id": sid, "count": len(rows), "observations": rows}, ensure_ascii=False)
+
+
+def tool_wikipedia_lookup(query: str) -> str:
+    """Search Wikipedia and return concise summary + key dates/facts (free, cached)."""
+    WEB_CACHE.mkdir(parents=True, exist_ok=True)
+    norm_q = " ".join(str(query).strip().lower().split())
+    h = hashlib.sha256(f"wiki:{norm_q}".encode()).hexdigest()
+    cpath = WEB_CACHE / f"wiki_{h}.json"
+    if cpath.exists():
+        return cpath.read_text()
+    try:
+        import urllib.parse
+        s_url = "https://en.wikipedia.org/w/api.php?action=query&list=search&format=json&srlimit=3&srsearch=" + urllib.parse.quote(str(query))
+        req = urllib.request.Request(s_url, headers=SEC_HEADERS)
+        with urllib.request.urlopen(req, timeout=15) as resp:
+            sdata = json.load(resp)
+        hits = (sdata.get("query") or {}).get("search") or []
+        results = []
+        for hit in hits[:2]:
+            title = hit["title"]
+            e_url = "https://en.wikipedia.org/w/api.php?action=query&prop=extracts&explaintext=1&exchars=2500&format=json&titles=" + urllib.parse.quote(title)
+            with urllib.request.urlopen(urllib.request.Request(e_url, headers=SEC_HEADERS), timeout=15) as resp:
+                edata = json.load(resp)
+            pages = (edata.get("query") or {}).get("pages") or {}
+            extract = next(iter(pages.values()), {}).get("extract", "")
+            results.append({"title": title, "extract": extract[:2500]})
+        out = json.dumps({"query": query, "articles": results}, ensure_ascii=False)
+        cpath.write_text(out)
+        return out
+    except Exception as exc:
+        return json.dumps({"error": f"wikipedia_lookup failed: {type(exc).__name__}"})
+
+
 def _tokenize(text: str) -> set[str]:
     return {t for t in re.findall(r"[a-z0-9]+", str(text).lower()) if len(t) > 1}
 
@@ -169,12 +273,21 @@ class FinRetrievalDB:
         if not by_id:
             return json.dumps({"company_id": company_id, "series": [], "note": "No series found for company_id."})
 
+        # IDF-weighted token scoring so rare accounting terms outrank generic words
+        df: dict[str, int] = {}
+        tok_map: dict[int, set[str]] = {}
+        for sid, name in by_id.items():
+            t = _tokenize(name)
+            tok_map[sid] = t
+            for w in t:
+                df[w] = df.get(w, 0) + 1
+        n_docs = max(1, len(by_id))
         scored = []
         for sid, name in by_id.items():
-            toks = _tokenize(name)
-            overlap = len(kw_toks & toks)
+            toks = tok_map[sid]
+            idf_sum = sum(math.log(1.0 + n_docs / (1.0 + df.get(w, 0))) for w in (kw_toks & toks))
             substr = sum(1 for k in keywords if str(k).strip().lower() in name.lower())
-            score = overlap * 3.0 + substr * 5.0
+            score = idf_sum * 3.0 + substr * 6.0
             scored.append((score, sid, name))
         scored.sort(key=lambda x: (-x[0], len(x[2]), x[1]))
         top = [{"series_id": sid, "full_series_name": name} for _, sid, name in scored[:25]]
@@ -232,7 +345,8 @@ class FinRetrievalDB:
                 note = "Exact period filter had 0 hits; returning all available periods for the requested series."
 
         matched.sort(key=lambda x: (str(x.get("title") or ""), str(x.get("fiscal_period") or ""), str(x.get("calendar_period") or "")))
-        out: dict[str, Any] = {"company_id": company_id, "records": matched[:60]}
+        fy_pairs = sorted({f"fiscal={r.get('fiscal_period')}/cal={r.get('calendar_period')}" for r in matched[:20] if r.get("fiscal_period") or r.get("calendar_period")})
+        out: dict[str, Any] = {"company_id": company_id, "period_alignment_sample": fy_pairs[:8], "records": matched[:60]}
         if note:
             out["note"] = note
         return json.dumps(out, ensure_ascii=False)
@@ -408,11 +522,7 @@ def tool_sec_search_filing(ticker: str, accession_number: str, query: str) -> st
             req = urllib.request.Request(url, headers=SEC_HEADERS)
             with urllib.request.urlopen(req, timeout=30) as resp:
                 raw_html = resp.read().decode("utf-8", errors="ignore")
-            soup = BeautifulSoup(raw_html, "lxml")
-            for tag in soup(["script", "style"]):
-                tag.decompose()
-            text = re.sub(r"[ \t]+", " ", soup.get_text("\n"))
-            text = re.sub(r"\n{3,}", "\n\n", text)
+            text = _html_to_clean_text(raw_html)
             cache_file.write_text(text)
         except Exception as exc:
             return json.dumps({"error": f"Failed fetching filing: {type(exc).__name__}: {str(exc)[:120]}"})
@@ -630,16 +740,17 @@ def tool_fetch_url(url: str, query: str | None = None) -> str:
         # 1. Free direct urllib fetch first (0 Browserbase credits!)
         try:
             req = urllib.request.Request(str(url), headers=WEB_HEADERS)
-            with urllib.request.urlopen(req, timeout=15) as resp:
-                raw = resp.read(2_000_000).decode("utf-8", errors="ignore")
-            if raw.lstrip().startswith("{") or raw.lstrip().startswith("["):
-                text = raw
+            with urllib.request.urlopen(req, timeout=20) as resp:
+                ctype = str(resp.headers.get("Content-Type") or "").lower()
+                raw_bytes = resp.read(8_000_000)
+            if "pdf" in ctype or str(url).lower().split("?")[0].endswith(".pdf") or raw_bytes[:5] == b"%PDF-":
+                text = _extract_pdf_bytes(raw_bytes)
             else:
-                soup = BeautifulSoup(raw, "lxml")
-                for tag in soup(["script", "style", "nav", "footer"]):
-                    tag.decompose()
-                text = re.sub(r"[ \t]+", " ", soup.get_text("\n"))
-                text = re.sub(r"\n{3,}", "\n\n", text)
+                raw = raw_bytes.decode("utf-8", errors="ignore")
+                if raw.lstrip().startswith("{") or raw.lstrip().startswith("["):
+                    text = raw
+                else:
+                    text = _html_to_clean_text(raw)
         except Exception:
             text = ""
         # 2. Only escalate to Browserbase Fetch API if direct fetch failed or returned <400 chars (403/JS wall)
@@ -903,6 +1014,28 @@ class MultiBenchSession:
                     "required": ["ticker", "query"],
                 },
             },
+            {
+                "name": "fred_series",
+                "description": "Fetch official US macroeconomic/banking time-series directly from FRED (e.g., TOTBKCR for commercial bank credit, CPIAUCSL, GDP, DGS10).",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "series_id": {"type": "string"},
+                        "start_date": {"type": "string", "description": "Optional YYYY-MM-DD"},
+                        "end_date": {"type": "string", "description": "Optional YYYY-MM-DD"},
+                    },
+                    "required": ["series_id"],
+                },
+            },
+            {
+                "name": "wikipedia_lookup",
+                "description": "Look up exact historical event dates, product launch dates, index changes, or company facts on Wikipedia.",
+                "parameters": {
+                    "type": "object",
+                    "properties": {"query": {"type": "string"}},
+                    "required": ["query"],
+                },
+            },
             calc_spec,
             py_spec,
             {
@@ -971,6 +1104,10 @@ class MultiBenchSession:
                 out = tool_web_search(args.get("query", ""), args.get("max_results", 6))
             elif name == "fetch_url":
                 out = tool_fetch_url(args.get("url", ""), args.get("query"))
+            elif name == "fred_series":
+                out = tool_fred_series(args.get("series_id", ""), args.get("start_date", ""), args.get("end_date", ""))
+            elif name == "wikipedia_lookup":
+                out = tool_wikipedia_lookup(args.get("query", ""))
             else:
                 out = json.dumps({"error": f"Unknown tool: {name}"})
         except Exception as exc:

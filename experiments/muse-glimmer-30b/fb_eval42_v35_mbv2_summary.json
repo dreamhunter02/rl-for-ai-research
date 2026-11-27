@@ -1,0 +1,26 @@
+{
+  "n": 42,
+  "scored": 41,
+  "unresolved": 1,
+  "accepted_finishes": 34,
+  "finish_rate": 0.8095,
+  "mean_reward": 0.8098,
+  "mean_E": 0.9756,
+  "mean_G": 0.7927,
+  "mean_A": 0.8049,
+  "mean_B": 0.6829,
+  "accuracy_A1": 0.8049,
+  "grounded_accuracy": 0.7805,
+  "mean_tool_calls": 10.71,
+  "mean_turns": 10.55,
+  "mean_wall_s": 156.53,
+  "terminations": {
+    "finish": 34,
+    "tool_call_limit": 8
+  },
+  "model": "vineethkalluru/run-c60bd4380a564247bdfec1c22c1acc3a/mb-mg-v2-step-6-8712aaa3",
+  "split": "eval",
+  "temperature": 0.0,
+  "max_tool_calls": 25,
+  "max_tokens": 4096
+}

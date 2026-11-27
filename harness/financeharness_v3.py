@@ -299,7 +299,7 @@ class UniformResearchMemory:
     INSPECTION_TOOLS = {
         "read", "read_table", "grep_document",
         "get_company_fundamentals", "sec_company_facts", "sec_search_filing",
-        "yfinance_history", "yfinance_info", "fetch_url",
+        "yfinance_history", "yfinance_info", "fetch_url", "fred_series", "wikipedia_lookup",
     }
 
     def __init__(self, question: str, *, max_receipts_in_view: int = 8, max_state_chars: int = 9000):

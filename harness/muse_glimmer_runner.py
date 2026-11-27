@@ -48,6 +48,7 @@ from generate_teacher_traces import (
 from live_additive_reward import LiveAdditiveJudge
 from persistent_state import ResearchMemory
 from harness_v2_patches import patch_system_prompt, patch_tool_observation
+from financeharness_v3 import run_python_sandbox
 from provider_tool_calls import parse_provider_tool_calls
 
 from fireworks.training.sdk import FiretitanServiceClient, types
@@ -186,6 +187,16 @@ async def run_muse_episode(
     for spec in tool_specs:
         if spec.get("name") == "finish":
             spec["description"] = "Submit the final answer and source citations."
+    if improved_harness and not any(s.get("name") == "run_python" for s in tool_specs):
+        tool_specs.append({
+            "name": "run_python",
+            "description": "Execute pure Python code (math, statistics, Decimal pre-imported; 2s timeout) for accurate multi-step financial arithmetic.",
+            "parameters": {
+                "type": "object",
+                "properties": {"code": {"type": "string"}},
+                "required": ["code"],
+            },
+        })
 
     turns: list[list[dict[str, Any]]] = []
     trace: list[dict[str, Any]] = []
@@ -335,6 +346,9 @@ async def run_muse_episode(
                 )
                 if parse_error:
                     content, stop = json.dumps({"error": parse_error}), False
+                elif name == "run_python":
+                    content = await asyncio.to_thread(run_python_sandbox, args.get("code", ""))
+                    stop = False
                 else:
                     result = await asyncio.to_thread(session.execute, name, args, cid)
                     content, stop = result.content, result.should_stop
