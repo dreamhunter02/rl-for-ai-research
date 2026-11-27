@@ -459,11 +459,11 @@ def tool_sec_company_facts(
             if k not in seen:
                 seen.add(k)
                 dedup.append(e)
-            if len(dedup) >= 8:
+            if len(dedup) >= 24:
                 break
         if dedup:
             results.append({"concept": f"{taxonomy}:{cname}", "label": label, "values": dedup})
-    return json.dumps({"ticker": ticker.upper(), "query": query, "matches": results[:8]}, ensure_ascii=False)
+    return json.dumps({"ticker": ticker.upper(), "query": query, "matches": results[:10]}, ensure_ascii=False)
 
 
 def tool_sec_list_filings(ticker: str, form_types: list[str] | None = None, limit: int = 15) -> str:
@@ -561,20 +561,57 @@ def tool_yfinance_history(
             return json.dumps({"ticker": ticker, "rows": [], "note": "No price data found for range."})
         if hasattr(df.columns, "levels"):
             df.columns = [c[0] if isinstance(c, tuple) else c for c in df.columns]
-        rows = []
-        for idx, r in df.head(40).iterrows():
-            rows.append(
-                {
-                    "date": str(idx)[:10],
-                    "open": round(float(r["Open"]), 4) if "Open" in r and math.isfinite(float(r["Open"])) else None,
-                    "high": round(float(r["High"]), 4) if "High" in r and math.isfinite(float(r["High"])) else None,
-                    "low": round(float(r["Low"]), 4) if "Low" in r and math.isfinite(float(r["Low"])) else None,
-                    "close": round(float(r["Close"]), 4) if "Close" in r and math.isfinite(float(r["Close"])) else None,
-                    "volume": int(r["Volume"]) if "Volume" in r and math.isfinite(float(r["Volume"])) else None,
-                }
+        def _row_dict(idx, r):
+            return {
+                "date": str(idx)[:10],
+                "open": round(float(r["Open"]), 4) if "Open" in r and math.isfinite(float(r["Open"])) else None,
+                "high": round(float(r["High"]), 4) if "High" in r and math.isfinite(float(r["High"])) else None,
+                "low": round(float(r["Low"]), 4) if "Low" in r and math.isfinite(float(r["Low"])) else None,
+                "close": round(float(r["Close"]), 4) if "Close" in r and math.isfinite(float(r["Close"])) else None,
+                "volume": int(r["Volume"]) if "Volume" in r and math.isfinite(float(r["Volume"])) else None,
+            }
+
+        if len(df) <= 45:
+            rows = [_row_dict(idx, r) for idx, r in df.iterrows()]
+            return json.dumps(
+                {"ticker": ticker, "auto_adjust": bool(auto_adjust), "total_days": len(df), "rows": rows},
+                ensure_ascii=False,
             )
+
+        # Multi-month / multi-year range: return exact overall + per-year extremes with dates!
+        def _stats(sub):
+            hi_idx = sub["High"].idxmax()
+            lo_idx = sub["Low"].idxmin()
+            c_hi_idx = sub["Close"].idxmax()
+            c_lo_idx = sub["Close"].idxmin()
+            return {
+                "trading_days": int(len(sub)),
+                "start_date": str(sub.index[0])[:10],
+                "end_date": str(sub.index[-1])[:10],
+                "first_open": round(float(sub["Open"].iloc[0]), 4),
+                "last_close": round(float(sub["Close"].iloc[-1]), 4),
+                "max_high": round(float(sub["High"].loc[hi_idx]), 4),
+                "max_high_date": str(hi_idx)[:10],
+                "min_low": round(float(sub["Low"].loc[lo_idx]), 4),
+                "min_low_date": str(lo_idx)[:10],
+                "max_close": round(float(sub["Close"].loc[c_hi_idx]), 4),
+                "max_close_date": str(c_hi_idx)[:10],
+                "min_close": round(float(sub["Close"].loc[c_lo_idx]), 4),
+                "min_close_date": str(c_lo_idx)[:10],
+            }
+
+        yearly = {}
+        for yr, grp in df.groupby(df.index.year):
+            yearly[str(int(yr))] = _stats(grp)
         return json.dumps(
-            {"ticker": ticker, "auto_adjust": bool(auto_adjust), "rows": rows},
+            {
+                "ticker": ticker,
+                "auto_adjust": bool(auto_adjust),
+                "total_days": int(len(df)),
+                "overall": _stats(df),
+                "yearly_summary": yearly,
+                "note": "For exact daily prices on specific dates, call yfinance_history with a narrower <=45-day range.",
+            },
             ensure_ascii=False,
         )
     except Exception as exc:
@@ -676,20 +713,56 @@ def _bb_fetch_request(url: str) -> str | None:
         return None
 
 
+
+def _pplx_search_request(query: str, max_results: int = 5) -> list[dict[str, Any]] | None:
+    key_file = Path.home() / ".config" / "inference-hub" / "api_key"
+    if not key_file.exists():
+        return None
+    try:
+        key = key_file.read_text(encoding="utf-8").strip()
+        if not key:
+            return None
+        body = json.dumps({"query": query, "max_results": min(int(max_results), 8)}).encode("utf-8")
+        req = urllib.request.Request(
+            "https://inference-api.nvidia.com/v1/search/perplexity-search",
+            data=body,
+            headers={
+                "Authorization": f"Bearer {key}",
+                "Content-Type": "application/json",
+                "Accept": "application/json",
+            },
+            method="POST",
+        )
+        with urllib.request.urlopen(req, timeout=30) as resp:
+            data = json.load(resp)
+        items = data.get("results") or []
+        return [
+            {
+                "title": r.get("title") or "",
+                "url": r.get("url") or "",
+                "date": r.get("date") or "",
+                "snippet": str(r.get("snippet") or "")[:1200],
+            }
+            for r in items
+        ]
+    except Exception:
+        return None
+
+
 def tool_web_search(query: str, max_results: int = 5) -> str:
     WEB_CACHE.mkdir(parents=True, exist_ok=True)
     norm_q = " ".join(str(query).strip().lower().split())
     n_res = min(int(max_results), 6)
-    bb_key_hash = hashlib.sha256(f"bb_search:{norm_q}:{n_res}".encode()).hexdigest()
-    bb_cpath = WEB_CACHE / f"bb_search_{bb_key_hash}.json"
-    if bb_cpath.exists():
-        return bb_cpath.read_text()
+    pplx_hash = hashlib.sha256(f"pplx_search:{norm_q}:{n_res}".encode()).hexdigest()
+    pplx_cpath = WEB_CACHE / f"pplx_search_{pplx_hash}.json"
+    if pplx_cpath.exists():
+        return pplx_cpath.read_text()
 
-    # 1. Try Browserbase Search API (high-signal Exa/Parallel search, cached by normalized query)
-    bb_items = _bb_search_request(str(query).strip(), num_results=n_res)
-    if bb_items:
-        out = json.dumps({"query": query, "source": "browserbase", "results": bb_items}, ensure_ascii=False)
-        bb_cpath.write_text(out)
+    # 1. Primary: Perplexity Search via NVIDIA Inference Hub (rich ranked snippets + dates + URLs)
+    pplx_items = _pplx_search_request(str(query).strip(), max_results=n_res)
+    if pplx_items:
+        out = json.dumps({"query": query, "source": "perplexity", "results": pplx_items}, ensure_ascii=False)
+        pplx_cpath.write_text(out)
         return out
 
     # 2. Free fallback: multi-backend DDGS (also disk-cached)
@@ -1274,14 +1347,21 @@ class MultiBenchJudge:
             ok = self._parse_bool_json(raw)
             return {"F": 1, "correct": int(ok), "reward": 1.0 if ok else 0.05, "method": "llm_judge"}
 
-        sys_p = str(row.get("judge_system_prompt") or "") + (
-            "\n\nEnd your response with a single JSON line: {\"correct\": true} or {\"correct\": false}."
+        sys_p = (
+            "You are a strict, accurate financial benchmark grader for FinSearchComp. "
+            "Compare the Student Answer against the Reference Answer for the given Question. "
+            "Follow any tolerance, rounding, or range rules stated in the Reference Answer "
+            "(accept equivalent units/scales such as $16,235 million == $16.235 billion, and rounding differences). "
+            "If the Student Answer matches the Reference Answer within the allowed tolerance, set correct=true. "
+            "Return ONLY a valid JSON object: {\"correct\": true, \"reason\": \"brief\"} or {\"correct\": false, \"reason\": \"brief\"}."
         )
-        tmpl = str(row.get("judge_prompt_template") or "<Question>:\n{prompt}\n\n<Reference Answer>:\n{response_reference}\n\n<Student Answer>:\n{response}")
-        usr_p = (
-            tmpl.replace("{prompt}", row["question"])
-            .replace("{response_reference}", str(row.get("gold_answer") or ""))
-            .replace("{response}", full_cand)
+        usr_p = json.dumps(
+            {
+                "question": row["question"],
+                "reference_answer": str(row.get("gold_answer") or ""),
+                "student_answer": full_cand,
+            },
+            ensure_ascii=False,
         )
         raw = await asyncio.to_thread(self._call_llm_sync, sys_p, usr_p)
         ok = self._parse_bool_json(raw)

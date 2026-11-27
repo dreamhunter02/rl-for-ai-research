@@ -1,0 +1,18 @@
+{
+  "total_n": 30,
+  "macro_accuracy": 0.4667,
+  "macro_reward": 0.4733,
+  "macro_finish_rate": 0.6,
+  "per_benchmark": {
+    "finsearchcomp": {
+      "n": 30,
+      "accuracy": 0.4667,
+      "correct": 14,
+      "finish_rate": 0.6,
+      "mean_reward": 0.4733,
+      "mean_tool_calls": 13.27
+    }
+  },
+  "model": "vineethkalluru/run-834107e63c4e4abe8946eede2d38d56c/mb-mg-v3-step-8-4febc526",
+  "split": "eval"
+}
