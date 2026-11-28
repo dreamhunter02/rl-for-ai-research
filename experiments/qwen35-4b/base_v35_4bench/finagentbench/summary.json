@@ -1,0 +1,16 @@
+{
+  "total_n": 30,
+  "macro_accuracy": 0.6,
+  "macro_reward": 0.6117,
+  "macro_finish_rate": 0.8333,
+  "per_benchmark": {
+    "finagentbench": {
+      "n": 30,
+      "accuracy": 0.6,
+      "correct": 18,
+      "finish_rate": 0.8333,
+      "mean_reward": 0.6117,
+      "mean_tool_calls": 6.5
+    }
+  }
+}

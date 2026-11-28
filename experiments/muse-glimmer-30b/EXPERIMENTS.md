@@ -35,3 +35,21 @@
 4. Stage 3/4 GRPO (`multibench-v2`/`v3`) + `Financeharness v3`: `30.0%` (`9/30`, `F=46.7%`)
 5. Stage 4 GRPO (`multibench-v3`) + Perplexity Search (Inference Hub) + multi-year `yfinance` + 24-val `sec_company_facts`: `46.7%` (`14/30`, `F=60.0%`, T2 `56.2%`, T3 `35.7%`)
 6. **Stage 5 GRPO (`fin-sota-v4`) + Perplexity Search (`5` steps, `26` groups):** **`50.0%` (`15/30`, `F=60.0%`, `83.3%` precision on finished, T2 `56.2%`, T3 `42.9%` — 7.5× baseline, zero regressions)**
+
+---
+
+## Stage 5.5 Harness Upgrade (`fred_search` + Forced Final Synthesis Turn)
+- **FinSearchComp `eval30` (`fin-sota-v4`, `max_calls=24`, `temperature=0.0`):** **`53.3%` (`16/30`, `F=83.3%`, `R=0.5483` — 8.0× baseline)**
+
+---
+
+## Sub-10B Transfer Baselines: `Qwen/Qwen3.5-4B` (Untuned Base) in Uniform `Financeharness v3.5`
+Served locally on `sparkyone` (DGX Spark GB10, vLLM `qwen3_coder` tool parser + `qwen3` reasoning parser, `temperature=0.0`):
+
+| Benchmark | Split | `Qwen3.5-4B` Base (`v3.5`) | Best Muse Glimmer 30B GRPO (`v3.5`) | Teacher–Student Gap | Frontier SOTA Ref |
+| :--- | :---: | :---: | :---: | :---: | :---: |
+| **FinanceBench** | `eval` (`n=42`) | **`73.2%`** (`R=0.7698`, `E=85.4%`, `F=85.7%`, `6.31` calls) | **`80.5%`** (`R=0.8098`, `E=97.6%`) | `+7.3pp` | `~81–85%` |
+| **FinAgentBench** | `eval` (`n=30`) | **`60.0%`** (`18/30`, `F=83.3%`, `6.50` calls) | **`70.0%`** (`21/30`, `F=76.7%`) | `+10.0pp` | `~69.5%` |
+| **FinRetrieval** | `eval` (`n=30`) | **`66.7%`** (`20/30`, `F=80.0%`, `4.13` calls) | **`86.7%`** (`26/30`) | `+20.0pp` | `90.8%` |
+| **FinSearchComp** *(Global T2+T3)* | `eval` (`n=30`) | **`40.0%`** (`12/30`, `F=80.0%`, `6.20` calls) | **`53.3%`** (`16/30`, `F=83.3%`) | `+13.3pp` | `~57–60%` |
+| **4-Benchmark Macro Average** | — | **`60.0%`** | **`72.6%`** | **`+12.7pp`** | **`~75.5%`** |

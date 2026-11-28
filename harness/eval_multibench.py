@@ -190,6 +190,69 @@ async def run_multibench_episode(
             turns.append(turn)
             if terminal:
                 break
+
+        # Forced final synthesis turn: if we hit tool_call_limit without calling finish,
+        # give the model 1 final turn with ONLY `finish` enabled to synthesize from gathered receipts.
+        if termination == "tool_call_limit" and session.accepted is None:
+            finish_only = [t for t in tool_specs if t.get("name") == "finish"]
+            if finish_only:
+                turns.append([
+                    {
+                        "role": "user",
+                        "content": (
+                            "Tool-call budget reached. Do NOT search further. "
+                            "Synthesize your best verified final answer from the evidence and receipts already collected "
+                            "and call `finish` right now."
+                        ),
+                    }
+                ])
+                packed = memory.pack(initial, turns, calls_used=len(calls), max_calls=max_tool_calls)
+                muse_msgs = _to_muse_messages(renderer, finish_only, packed, cid_to_name)
+                prompt = renderer.build_generation_prompt(muse_msgs)
+                prompt_tokens = prompt.to_ints()
+                remaining_ctx = max_seq_len - len(prompt_tokens)
+                if remaining_ctx >= 256:
+                    sampling_params = types.SamplingParams(
+                        max_tokens=min(max_tokens, remaining_ctx),
+                        temperature=temperature,
+                        top_p=top_p if temperature > 0 else 1.0,
+                        stop=stop_seqs,
+                    )
+                    if hasattr(sampler, "sample_async"):
+                        res = await sampler.sample_async(prompt=prompt, num_samples=1, sampling_params=sampling_params)
+                    else:
+                        res = await asyncio.to_thread(
+                            lambda p=prompt, sp=sampling_params: sampler.sample(
+                                prompt=p, num_samples=1, sampling_params=sp
+                            ).result()
+                        )
+                    seq = res.sequences[0]
+                    parsed_msg, _ = renderer.parse_response(list(seq.tokens))
+                    visible_text, thinking_text = _extract_text_and_thinking(parsed_msg)
+                    proposed = list(parsed_msg.get("tool_calls") or [])
+                    if not proposed:
+                        provider_text = "\n".join(p for p in (thinking_text, visible_text) if p)
+                        proposed = parse_provider_tool_calls(provider_text, len(calls))
+                    for tc in proposed:
+                        if hasattr(tc, "function"):
+                            fname, fraw, fcid = tc.function.name, tc.function.arguments, tc.id or f"finish:{len(calls)}"
+                        else:
+                            fname, fraw, fcid = tc["function"]["name"], tc["function"]["arguments"], tc.get("id") or f"finish:{len(calls)}"
+                        if fname == "finish":
+                            fargs, ferr = parse_tool_arguments(fraw)
+                            if not ferr:
+                                _, fstop = await asyncio.to_thread(session.execute, "finish", fargs)
+                                calls.append({"name": "finish", "arguments": fargs, "call_id": fcid})
+                                if fstop:
+                                    termination = "finish"
+                                    break
+                    if session.accepted is None and visible_text and visible_text.strip():
+                        fargs = {"answer": visible_text.strip()}
+                        _, fstop = await asyncio.to_thread(session.execute, "finish", fargs)
+                        calls.append({"name": "finish", "arguments": fargs, "call_id": f"forced_finish:{len(calls)}"})
+                        if fstop:
+                            termination = "finish"
+
     except Exception as exc:
         termination = "error"
         error = f"{type(exc).__name__}: {str(exc)[:180]}"

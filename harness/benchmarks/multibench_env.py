@@ -121,6 +121,68 @@ def _extract_pdf_bytes(data: bytes, max_pages: int = 40) -> str:
     return "\n".join(parts)
 
 
+
+def tool_fred_search(query: str, max_results: int = 8) -> str:
+    """Search FRED public catalog for exact series IDs matching query (disk-cached)."""
+    q = (query or "").strip()
+    if not q:
+        return json.dumps({"error": "Empty query"})
+    cache_key = hashlib.sha256(f"fred_search:{q.lower()}:{max_results}".encode()).hexdigest()[:16]
+    cache_file = WEB_CACHE / f"fred_search_{cache_key}.json"
+    if cache_file.exists():
+        try:
+            return cache_file.read_text()
+        except Exception:
+            pass
+    url = f"https://fred.stlouisfed.org/searchresults/?st={urllib.parse.quote_plus(q)}"
+    html = ""
+    try:
+        req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (compatible; FinanceHarness/3.5)"})
+        with urllib.request.urlopen(req, timeout=3) as resp:
+            html = resp.read().decode("utf-8", errors="replace")
+    except Exception:
+        html = ""
+    results = []
+    if html:
+        soup = BeautifulSoup(html, "lxml")
+        seen = set()
+        for a in soup.select("a[href*="/series/"]"):
+            href = a.get("href", "")
+            m = re.search(r"/series/([A-Za-z0-9_]+)", href)
+            if not m:
+                continue
+            sid = m.group(1)
+            title = " ".join(a.get_text(" ", strip=True).split())
+            if not title or sid in seen:
+                continue
+            seen.add(sid)
+            results.append({"series_id": sid, "title": title[:160]})
+            if len(results) >= max_results:
+                break
+    if not results:
+        try:
+            raw_ws = tool_web_search(f"site:fred.stlouisfed.org/series {q}", max_results=max_results)
+            pplx = json.loads(raw_ws)
+            for item in pplx.get("results", []):
+                u = item.get("url", "")
+                m = re.search(r"/series/([A-Za-z0-9_]+)", u)
+                if m:
+                    results.append({
+                        "series_id": m.group(1),
+                        "title": item.get("title", "")[:160],
+                        "snippet": item.get("snippet", "")[:220],
+                    })
+        except Exception:
+            pass
+    out = json.dumps({"query": q, "results": results[:max_results], "count": len(results[:max_results])}, ensure_ascii=False)
+    if results:
+        try:
+            cache_file.write_text(out)
+        except Exception:
+            pass
+    return out
+
+
 def tool_fred_series(series_id: str, start_date: str = "", end_date: str = "") -> str:
     """Fetch official macroeconomic time-series from FRED free CSV endpoint (no API key needed)."""
     sid = re.sub(r"[^A-Za-z0-9_.-]", "", str(series_id).upper().strip())
@@ -173,7 +235,7 @@ def tool_wikipedia_lookup(query: str) -> str:
         import urllib.parse
         s_url = "https://en.wikipedia.org/w/api.php?action=query&list=search&format=json&srlimit=3&srsearch=" + urllib.parse.quote(str(query))
         req = urllib.request.Request(s_url, headers=SEC_HEADERS)
-        with urllib.request.urlopen(req, timeout=15) as resp:
+        with urllib.request.urlopen(req, timeout=3) as resp:
             sdata = json.load(resp)
         hits = (sdata.get("query") or {}).get("search") or []
         results = []
@@ -1101,6 +1163,18 @@ class MultiBenchSession:
                 },
             },
             {
+                "name": "fred_search",
+                "description": "Search FRED for exact macroeconomic/financial series IDs before calling fred_series (e.g., Japan 1-year bond yield, US commercial bank liabilities).",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "query": {"type": "string"},
+                        "max_results": {"type": "integer", "default": 8},
+                    },
+                    "required": ["query"],
+                },
+            },
+            {
                 "name": "wikipedia_lookup",
                 "description": "Look up exact historical event dates, product launch dates, index changes, or company facts on Wikipedia.",
                 "parameters": {
@@ -1177,6 +1251,8 @@ class MultiBenchSession:
                 out = tool_web_search(args.get("query", ""), args.get("max_results", 6))
             elif name == "fetch_url":
                 out = tool_fetch_url(args.get("url", ""), args.get("query"))
+            elif name == "fred_search":
+                out = tool_fred_search(args.get("query", ""), int(args.get("max_results", 8)))
             elif name == "fred_series":
                 out = tool_fred_series(args.get("series_id", ""), args.get("start_date", ""), args.get("end_date", ""))
             elif name == "wikipedia_lookup":

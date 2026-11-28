@@ -1,0 +1,16 @@
+{
+  "total_n": 30,
+  "macro_accuracy": 0.6667,
+  "macro_reward": 0.6733,
+  "macro_finish_rate": 0.8,
+  "per_benchmark": {
+    "finretrieval": {
+      "n": 30,
+      "accuracy": 0.6667,
+      "correct": 20,
+      "finish_rate": 0.8,
+      "mean_reward": 0.6733,
+      "mean_tool_calls": 4.13
+    }
+  }
+}

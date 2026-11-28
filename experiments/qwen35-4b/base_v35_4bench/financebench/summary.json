@@ -1,0 +1,23 @@
+{
+  "n": 42,
+  "scored": 41,
+  "unresolved": 1,
+  "accepted_finishes": 36,
+  "finish_rate": 0.8571,
+  "mean_reward": 0.7698,
+  "mean_E": 0.8537,
+  "mean_G": 0.8366,
+  "mean_A": 0.7317,
+  "mean_B": 0.6829,
+  "accuracy_A1": 0.7317,
+  "grounded_accuracy": 0.7317,
+  "mean_tool_calls": 6.31,
+  "mean_turns": 6.36,
+  "mean_wall_s": 106.83,
+  "terminations": {
+    "finish": 36,
+    "error": 1,
+    "tool_call_limit": 4,
+    "generation_token_limit": 1
+  }
+}
